@@ -12,6 +12,7 @@ class Main {
     public static main () : void{
         let Server : SketchServer = new SketchServer(6969);
         Server.start();
+        console.log(process.cwd());
     }
 }
 Main.main();

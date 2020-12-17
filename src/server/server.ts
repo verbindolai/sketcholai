@@ -17,6 +17,7 @@ export class SketchServer {
         this._port = port;
         this.app = express();
         this.io = new SocketServer(this.startServer(this._port));
+        this.init();
     }
 
     /**
@@ -42,7 +43,7 @@ export class SketchServer {
      * @private
      */
     private init (): void{
-
+        this.app.use(express.static('./build/client'));
     }
 
     /**
