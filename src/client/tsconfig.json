@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "ES3",
+        "outDir": "../../build/client",
+        "strict": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "esModuleInterop": true
+    },
+    
+   "exclude": [
+       
+   ]
+}
