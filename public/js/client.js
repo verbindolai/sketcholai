@@ -1,5 +1,6 @@
 let port = 6969;
 let socket = io(`http://localhost:${port}`);
+let message = document.getElementById("chatInput").value;
 
 function handle()  {
     socket.on('news', (data) => {
@@ -7,8 +8,8 @@ function handle()  {
     })
 }
 
-function send(ev , msg){
-    socket.emit(ev, msg)
+function send(ev){
+    socket.emit(ev, message)
 }
 
 

@@ -44,6 +44,7 @@ export class SketchServer {
      */
     private init (): void{
         this.app.use(express.static('./build/client'));
+        this.app.use(express.static('./public'));
     }
 
     /**
@@ -61,7 +62,7 @@ export class SketchServer {
      */
     private getRequestHandler() : void{
         this.app.get('/', function (req : Request, res : Response) {
-            res.sendFile("C:/Mega/Dev/sketcholai/src/index.html", (err) => {
+            res.sendFile("C:/Mega/Dev/sketcholai/public/html/index.html", (err) => {
                 if (err){
                     console.error("There was an error sending the Response-File.")
                 } else {
