@@ -1,3 +1,3 @@
 function test () {
-    console.error("GAY")
+    console.error("TEST")
 }

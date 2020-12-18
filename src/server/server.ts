@@ -82,6 +82,7 @@ export class SketchServer {
             socket.emit('news', "Hey, from the Server!");
             socket.on('message',  (data) => {
                 console.log(`Server received Message:\n${data}`);
+                socket.emit('chat', data);
             });
         });
     }
