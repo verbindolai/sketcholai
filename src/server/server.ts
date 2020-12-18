@@ -25,6 +25,7 @@ export class SketchServer {
      */
     public get port(){
         return this._port;
+
     }
 
     /**
@@ -77,13 +78,16 @@ export class SketchServer {
      * @private
      */
     private websocketHandler() : void {
-        this.io.on('connection', function (socket : Socket) {
+        this.io.on('connection',  (socket : Socket) => {
             console.log("New Connection!")
             socket.emit('news', "Hey, from the Server!");
-            socket.on('message',  (data) => {
+            socket.on('chat',  (data) => {
                 console.log(`Server received Message:\n${data}`);
-                socket.emit('chat', data);
+                this.io.emit("chat", data)
             });
+            socket.on('disconnect', (data) => {
+                console.log("Socket disconnected.")
+            })
         });
     }
 
