@@ -17,16 +17,18 @@
                 <div class="grid-main grid-item inner-grid-item"><div>Canvas</div></div>
                 <div class="grid-right grid-item inner-grid-item" id="chatCotainer">
                     <div class="chat-window" id="chat">
-                        <div id="chatDisplay">Display</div>
-                        <div id="chatInputContainer"><input type="text" id="chatInput"> </div>
+                        <div id="chatDisplay">Display
+                            <ul id="chatList"></ul>
+                        </div>
+                        <div id="chatInputContainer"><input type="text" id="chatInput"></div>
                     </div>
                 </div>
                 <div class="grid-footer grid-item inner-grid-item"><div>Werkzeuge/Pinsel/Farben/Etc.</div></div>
             </div>
         </div>
         <div class="grid-right grid-item">Right Side-Bar</div>
-        <div class="grid-footer grid-item">Footer</div>
-
+        <div class="grid-footer grid-item">Footer
+            <button onclick="send('chat')">send</button></div>
     </div>
 </body>
 <script src="/js/client.js"></script>

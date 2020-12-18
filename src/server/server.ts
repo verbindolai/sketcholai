@@ -1,6 +1,10 @@
 import express, {Express, Request, Response} from "express";
 import {Server as SocketServer, Socket} from "socket.io";
 import {Server as HTTPServer} from "http"
+import {Player} from "./player";
+import {GameLobby} from "./gameLobby"
+import { LinkedList } from 'linked-list-typescript';
+
 
 /**
  * Represents the Sketch-Server
@@ -12,6 +16,8 @@ export class SketchServer {
     private app : Express;
     private readonly _port : number;
     private io: SocketServer;
+    private lobbys : LinkedList<GameLobby> = new LinkedList<GameLobby>();
+    private playerSocket : Map<number,Socket> = new Map<number, Socket>();
 
     constructor(port : number) {
         this._port = port;
@@ -79,18 +85,29 @@ export class SketchServer {
      */
     private websocketHandler() : void {
         this.io.on('connection',  (socket : Socket) => {
+            let player = new Player("TEST")
+            this.playerSocket.set(player.id,socket)
             console.log("New Connection!")
-            socket.emit('news', "Hey, from the Server!");
-            socket.on('chat',  (data) => {
-                console.log(`Server received Message:\n${data}`);
-                this.io.emit("chat", data)
-            });
-            socket.on('disconnect', (data) => {
-                console.log("Socket disconnected.")
-            })
-        });
+            this.handleChat(socket)
+            this.handleDisconnect(socket,player)
+        })
     }
 
 
+    private handleDisconnect(socket:Socket, player : Player) : void {
+        socket.on('disconnect', (data) => {
+            console.log(data)
+            console.log("Socket disconnected.")
+            this.playerSocket.delete(player.id)
+        })
+    }
+
+    private handleChat (socket : Socket) {
+        socket.on('chat',  (data) =>  {
+            console.log(`Server received Message:\n${data}`);
+
+            this.io.emit("chat", data)
+        });
+    }
 }
 
