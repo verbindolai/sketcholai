@@ -2,6 +2,7 @@ html, body {
     padding: 0;
     margin: 0;
     height: 100%;
+    width: 100%;
 }
 
 .grid-header {
@@ -21,7 +22,7 @@ html, body {
 }
 
 .outer-grid-container {
-    height: 100%;
+    min-height: 100%;
     display: grid;
     grid-template-areas: "hd hd hd"
                          "l mn r"
@@ -31,7 +32,7 @@ html, body {
 }
 
 .inner-grid-container {
-    height: 100%;
+    min-height: 100%;
     display: grid;
     grid-template-areas: "hd hd hd"
                          "l mn r"
@@ -47,12 +48,36 @@ html, body {
     text-align: center;
 }
 
-.inner-gird-item {
-    display: grid;
-    justify-content: center;
-    align-items: center;
+.inner-grid-item {
+
+}
+#chatCotainer{
+    padding: 0;
 }
 
- #main-item{
+.chat-window {
+    height: 100%;
+    display: grid;
+    grid-template-rows: 10fr 1fr;
+}
+#chatDisplay {
+    border: 1px solid rgba(0, 0, 0, 0.8);
+}
+#chatInputContainer{
+    border: 1px solid rgba(0, 0, 0, 0.8);
+}
+#chatInput {
+    width: 100%;
+    height: 100%;
+    background-color: #f8f8f8;
+    padding: 12px 20px;
+    border: 2px solid #ccc;
+    box-sizing: border-box;
+    resize: none;
+    border-radius: 4px;
+}
+
+ #mainItem{
+     min-height: 100%;
      padding: 0;
  }
