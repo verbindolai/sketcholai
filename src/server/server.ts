@@ -1,4 +1,4 @@
-import express, {Express, Request, Response} from "express";
+import express, {Express, json, Request, Response} from "express";
 import {Server as SocketServer, Socket} from "socket.io";
 import {Server as HTTPServer} from "http"
 import {Player} from "./player";
@@ -17,7 +17,7 @@ export class SketchServer {
     private readonly _port : number;
     private io: SocketServer;
     private lobbys : LinkedList<GameLobby> = new LinkedList<GameLobby>();
-    private playerSocket : Map<number,Socket> = new Map<number, Socket>();
+    private playerSocket : Map<string, number> = new Map<string, number>();
 
     constructor(port : number) {
         this._port = port;
@@ -31,7 +31,6 @@ export class SketchServer {
      */
     public get port(){
         return this._port;
-
     }
 
     /**
@@ -69,7 +68,7 @@ export class SketchServer {
      */
     private getRequestHandler() : void{
         this.app.get('/', function (req : Request, res : Response) {
-            res.sendFile("C:/Mega/Dev/sketcholai/public/html/index.html", (err) => {
+            res.sendFile(process.cwd() + "/public/html/index.html", (err) => {
                 if (err){
                     console.error("There was an error sending the Response-File.")
                 } else {
@@ -77,6 +76,16 @@ export class SketchServer {
                 }
             });
         });
+        this.app.get('/lobby', function (req : Request, res : Response) {
+            res.sendFile(process.cwd() + "/public/html/lobby.html", (err) => {
+                if (err){
+                    console.error("There was an error sending the Response-File.")
+                } else {
+                    console.log("Response-File transmitted.")
+                }
+            });
+        });
+
     }
 
     /**
@@ -85,29 +94,64 @@ export class SketchServer {
      */
     private websocketHandler() : void {
         this.io.on('connection',  (socket : Socket) => {
-            let player = new Player("TEST")
-            this.playerSocket.set(player.id,socket)
-            console.log("New Connection!")
-            this.handleChat(socket)
-            this.handleDisconnect(socket,player)
+            this.handleCreateRoom(socket);
+            this.handleChat(socket);
+            this.handleDisconnect(socket);
         })
     }
 
 
-    private handleDisconnect(socket:Socket, player : Player) : void {
+    private handleDisconnect(socket:Socket) : void {
         socket.on('disconnect', (data) => {
-            console.log(data)
-            console.log("Socket disconnected.")
-            this.playerSocket.delete(player.id)
+            if (!this.playerSocket.delete(socket.id)) {
+                console.error("Couldn't remove this Socket.")
+            }
         })
     }
 
     private handleChat (socket : Socket) {
         socket.on('chat',  (data) =>  {
-            console.log(`Server received Message:\n${data}`);
-
-            this.io.emit("chat", data)
+            console.log(socket.rooms);
+            let message = new Message<any>(new Player("test"), data)
+            this.io.emit("chat", JSON.stringify(message))
         });
     }
+
+
+    private handleCreateRoom (socket : Socket){
+        console.log("Room handler")
+        socket.on('createNewRoom', (name) => {
+            console.log("Handling new Room request..")
+            let creator = new Player(name);
+            this.playerSocket.set(socket.id, creator.id);
+            let room = new GameLobby(1, "RANDOM CODE", 20);
+            room.addPlayer(creator);
+            socket.join(room.msgChannel);
+            console.log(socket.rooms)
+        })
+
+    }
+
+    private handleDeleteRoom (socket : Socket, lobby : GameLobby) {
+
+        socket.off(lobby.msgChannel, this.listener);
+
+    }
+
+    listener (data : number) {
+
+    }
+
+
 }
 
+class Message<T> {
+
+    author: Player | undefined;
+    msg: T;
+
+    constructor(author: Player, msg: T) {
+        this.author = author;
+        this.msg = msg;
+    }
+}

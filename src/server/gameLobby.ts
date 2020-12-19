@@ -4,19 +4,20 @@ import { LinkedList } from 'linked-list-typescript';
 export class GameLobby {
 
     private readonly id: number;
-    private readonly msgChannel: string;
-    private players : LinkedList<Player> = new LinkedList<Player>();
+    private readonly _msgChannel: string;
+    private _players : LinkedList<Player> = new LinkedList<Player>();
     private readonly limit : number;
 
     constructor(id : number, msgChannel : string, limit : number) {
         this.id = id;
-        this.msgChannel = msgChannel;
+        this._msgChannel = msgChannel;
         this.limit = limit;
     }
 
     public addPlayer (player : Player) : boolean {
-        if (this.players.length < this.limit){
-            this.players.append(player);
+        if (this._players.length < this.limit){
+            this._players.append(player);
+            player.isInRoom = true;
             return true;
         } else {
             return false;
@@ -24,6 +25,15 @@ export class GameLobby {
     }
 
     public removePlayer(player : Player) {
-        this.players.remove(player);
+        this._players.remove(player);
+    }
+
+
+    get players(): LinkedList<Player> {
+        return this._players;
+    }
+
+    get msgChannel(): string {
+        return this._msgChannel;
     }
 }

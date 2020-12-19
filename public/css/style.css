@@ -71,10 +71,10 @@ html, body {
 }
 #chatInputContainer{
     border: 1px solid rgba(0, 0, 0, 0.8);
+    display: flex;
 }
 #chatInput {
-    width: 100%;
-    height: 100%;
+    flex: 3;
     background-color: #f8f8f8;
     padding: 12px 20px;
     border: 2px solid #ccc;
@@ -83,12 +83,13 @@ html, body {
     border-radius: 4px;
     z-index: 1;
 }
+#sendButton{
+    flex: 1;
+}
 
 #chatList{
-
     list-style-position: outside;
     list-style-type: none;
-
 }
 #mainContainer {
     max-height: 100%;

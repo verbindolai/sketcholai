@@ -7,29 +7,7 @@
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <div class="outer-grid-container">
-        <div class="grid-header grid-item">Header</div>
-        <div class="grid-left grid-item">Left Sider-Bar</div>
-        <div class="grid-item" id="mainItem" >
-            <div class="grid-main inner-grid-container" id="mainContainer">
-                <div class="grid-header grid-item inner-grid-item"><div>Game-Bar</div></div>
-                <div class="grid-left grid-item inner-grid-item"><div>Player List</div></div>
-                <div class="grid-main grid-item inner-grid-item"><div>Canvas</div></div>
-                <div class="grid-right grid-item inner-grid-item" id="chatCotainer">
-                    <div class="chat-window" id="chat">
-                        <div id="chatDisplay">Display
-                            <ul id="chatList"></ul>
-                        </div>
-                        <div id="chatInputContainer"><input type="text" id="chatInput"></div>
-                    </div>
-                </div>
-                <div class="grid-footer grid-item inner-grid-item"><div>Werkzeuge/Pinsel/Farben/Etc.</div></div>
-            </div>
-        </div>
-        <div class="grid-right grid-item">Right Side-Bar</div>
-        <div class="grid-footer grid-item">Footer
-            <button onclick="send('chat')">send</button></div>
-    </div>
+    <button onclick="createNewRoom(); pageLoad()">Join Room</button>
 </body>
 <script src="/js/client.js"></script>
 </html>

@@ -6,12 +6,14 @@ export class Player {
     private _name: string;
     private _isDrawing : boolean;
     private _points : number;
+    private _isInRoom : boolean;
 
     constructor(name: string) {
         this._id = Player.maxId;
         this._name = name;
         this._isDrawing = false;
         this._points = 0;
+        this._isInRoom = false;
         Player.maxId++;
     }
 
@@ -26,6 +28,14 @@ export class Player {
 
     get isDrawing(): boolean {
         return this._isDrawing;
+    }
+
+    get isInRoom(): boolean {
+        return this._isInRoom;
+    }
+
+    set isInRoom(value: boolean) {
+        this._isInRoom = value;
     }
 
     get points(): number {
