@@ -10,6 +10,9 @@ socket.on('chat', (data) => {
     scrollDown();
 })
 
+socket.on('message', (data)=>{
+    console.log(data);
+})
 
 function sendChatMsg() {
     let chatInput = document.getElementById("chatInput");
@@ -21,8 +24,27 @@ function sendChatMsg() {
 
 function createNewRoom(){
     console.log("creating new room...")
-    let name = 1;
-    socket.emit('createNewRoom', name)
+    let nameInput = document.querySelector("#nameInput");
+    let name = nameInput.value;
+
+    if (name == undefined || name == ""){
+        name = randomString(6);
+    }
+    socket.emit('createNewRoom', name);
+    pageLoad();
+}
+
+function joinRoom() {
+    let nameInput = document.querySelector("#nameInput");
+    let roomInput = document.querySelector("#roomInput");
+    let name = nameInput.value;
+    let roomID = roomInput.value;
+
+    if (name == undefined || name == ""){
+        name = randomString(6);
+    }
+    socket.emit('joinRoom', name, roomID);
+    pageLoad();
 }
 
 
@@ -44,4 +66,14 @@ function pageLoad () {
     }
     xhr.open('get', '/html/lobby.html')
     xhr.send()
+}
+
+function randomString(length) {
+    let result           = '';
+    let characters       = 'abcdefghijklmnopqrstuvwxyz';
+    let charactersLength = characters.length;
+    for ( let i = 0; i < length; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
 }

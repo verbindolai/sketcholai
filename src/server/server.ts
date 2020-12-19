@@ -95,6 +95,7 @@ export class SketchServer {
     private websocketHandler() : void {
         this.io.on('connection',  (socket : Socket) => {
             this.handleCreateRoom(socket);
+            this.handelJoinRoom(socket);
             this.handleChat(socket);
             this.handleDisconnect(socket);
         })
@@ -111,25 +112,69 @@ export class SketchServer {
 
     private handleChat (socket : Socket) {
         socket.on('chat',  (data) =>  {
-            console.log(socket.rooms);
-            let message = new Message<any>(new Player("test"), data)
-            this.io.emit("chat", JSON.stringify(message))
+
+            let author;
+            let authorID = this.playerSocket.get(socket.id);
+            if (authorID != undefined){
+                author = this.getPlayerByID(authorID);
+                if (author != undefined){
+                    let message = new Message<any>(author, data)
+                    let lobby = this.getLobbyByID(author.lobbyID);
+                    if (lobby != undefined){
+                        this.io.to(lobby.msgChannel).emit("chat", JSON.stringify(message))
+                    }
+                }
+            }
         });
     }
 
+    private getPlayerByID(id : number) : Player | undefined{
+        for (let lobby of this.lobbys){
+            for (let player of lobby.players){
+                if (player.id == id){
+                    return player;
+                }
+            }
+        }
+        return undefined
+    }
+
+    private getLobbyByID(id :number) : GameLobby | undefined{
+        for (let lobby of this.lobbys){
+            if (lobby.id == id) {
+                return lobby;
+            }
+        }
+        return undefined;
+    }
 
     private handleCreateRoom (socket : Socket){
-        console.log("Room handler")
-        socket.on('createNewRoom', (name) => {
-            console.log("Handling new Room request..")
-            let creator = new Player(name);
-            this.playerSocket.set(socket.id, creator.id);
-            let room = new GameLobby(1, "RANDOM CODE", 20);
-            room.addPlayer(creator);
-            socket.join(room.msgChannel);
-            console.log(socket.rooms)
-        })
 
+        socket.on('createNewRoom', (name) => {
+            let room = new GameLobby(GameLobby.randomString(), 20);
+            let creator = new Player(name, room.id);
+            this.playerSocket.set(socket.id, creator.id);
+            room.addPlayer(creator);
+            this.lobbys.append(room);
+            socket.join(room.msgChannel);
+            socket.send("Room ID: " +room.id);
+        });
+
+    }
+
+    public handelJoinRoom(socket : Socket){
+        socket.on('joinRoom', (name, roomID) => {
+            let room = this.getLobbyByID(roomID);
+
+            if (room == undefined){
+                return;
+            }
+            let player = new Player(name, room.id)
+            this.playerSocket.set(socket.id, player.id);
+            room.addPlayer(player);
+            socket.join(room.msgChannel);
+
+        });
     }
 
     private handleDeleteRoom (socket : Socket, lobby : GameLobby) {

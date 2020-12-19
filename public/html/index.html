@@ -7,7 +7,10 @@
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <button onclick="createNewRoom(); pageLoad()">Join Room</button>
+    <input id="nameInput">
+    <button onclick="createNewRoom();">Create Room</button>
+    <input id="roomInput">
+    <button onclick="joinRoom();">Join Room</button>
 </body>
 <script src="/js/client.js"></script>
 </html>
