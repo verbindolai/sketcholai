@@ -4,13 +4,26 @@
     <meta charset="UTF-8">
     <title>Sketcholai</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/index.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Reenie+Beanie&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&display=swap" rel="stylesheet">
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <input id="nameInput">
-    <button onclick="createNewRoom();">Create Room</button>
-    <input id="roomInput">
-    <button onclick="joinRoom();">Join Room</button>
+<div class="outer-grid-container">
+    <div class="grid-header grid-item" id="headLine">Sketcholai</div>
+    <div class="grid-left grid-item">Left Sider-Bar</div>
+    <div class="grid-item" id="mainItem">
+        <div id="connectionContainer">
+            <input id="nameInput" class="user-input-field"  placeholder="Nickname">
+            <button onclick="createNewRoom();" class="input-button">Create Room</button>
+            <input id="roomInput" class="user-input-field"  placeholder="Room-ID">
+            <button onclick="joinRoom();" class="input-button">Join Room</button></div>
+        </div>
+    <div class="grid-right grid-item">Right Side-Bar</div>
+    <div class="grid-footer grid-item">Footer</div>
+</div>
 </body>
 <script src="/js/client.js"></script>
 </html>
