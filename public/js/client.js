@@ -10,6 +10,10 @@ socket.on('chat', (data) => {
     scrollDown();
 })
 
+socket.on(drawEvent,(data)=>{
+    const pkg = JSON.parse(data); //TODO
+})
+
 socket.on('message', (data)=>{
     console.log(data);
 })
@@ -60,6 +64,7 @@ function pageLoad () {
     xhr.onload = function () {
         if (this.status === 200){
             container.innerHTML = xhr.responseText;
+            init();
         } else {
             console.log("UPPS")
         }

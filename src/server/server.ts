@@ -49,7 +49,6 @@ export class SketchServer {
      * @private
      */
     private init (): void{
-        this.app.use(express.static('./build/client'));
         this.app.use(express.static('./public'));
     }
 
@@ -162,7 +161,11 @@ export class SketchServer {
 
     }
 
-    public handelJoinRoom(socket : Socket){
+    private handleDraw(socket : Socket){
+        //TODO
+    }
+
+    private handelJoinRoom(socket : Socket){
         socket.on('joinRoom', (name, roomID) => {
             let room = this.getLobbyByID(roomID);
 
