@@ -17,6 +17,7 @@ export class SketchServer {
         this._port = port;
         this.app = express();
         this.io = new SocketServer(this.startServer(this._port));
+        this.init();
     }
 
     /**
@@ -42,7 +43,8 @@ export class SketchServer {
      * @private
      */
     private init (): void{
-
+        this.app.use(express.static('./build/client'));
+        this.app.use(express.static('./public'));
     }
 
     /**
@@ -60,7 +62,7 @@ export class SketchServer {
      */
     private getRequestHandler() : void{
         this.app.get('/', function (req : Request, res : Response) {
-            res.sendFile("C:/Mega/Dev/sketcholai/src/index.html", (err) => {
+            res.sendFile("C:/Mega/Dev/sketcholai/public/html/index.html", (err) => {
                 if (err){
                     console.error("There was an error sending the Response-File.")
                 } else {
@@ -80,6 +82,7 @@ export class SketchServer {
             socket.emit('news', "Hey, from the Server!");
             socket.on('message',  (data) => {
                 console.log(`Server received Message:\n${data}`);
+                socket.emit('chat', data);
             });
         });
     }

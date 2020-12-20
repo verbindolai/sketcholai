@@ -1,6 +1,4 @@
 import {SketchServer} from "./server"
-import {Client} from "./Client"
-
 /**
  * Entrypoint
  * @author Christopher Peters, Mathusan Kannathasan, Nikolai Wieczorek
@@ -14,11 +12,7 @@ class Main {
     public static main () : void{
         let Server : SketchServer = new SketchServer(6969);
         Server.start();
-
-        let client : Client = new Client(Server.port);
-        client.send()
-        client.handle()
-        client.send()
+        console.log(process.cwd());
     }
 }
 Main.main();
