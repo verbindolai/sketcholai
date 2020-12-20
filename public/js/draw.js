@@ -47,7 +47,7 @@ function init(){
                 let color = '#111111'
                 drawLine(oldPosition.x,oldPosition.y,pos.x,pos.y,color)
                 const pkg = new DrawInfoPackage(pos.x,pos.y,color,lineWidth)
-                socket.emit(drawEvent,JSON.stringify(pkg));
+                socket.emit(drawEvent, JSON.stringify(pkg));
             }
             oldPosition.x = pos.x;
             oldPosition.y = pos.y;

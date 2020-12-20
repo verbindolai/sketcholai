@@ -3,7 +3,6 @@ let socket = io(`http://localhost:${port}`);
 
 socket.on('chat', (data) => {
     let message = JSON.parse(data);
-    message.author._name
     let li = document.createElement("li");
     li.appendChild(document.createTextNode(message.author._name + ": " + message.msg));
     document.querySelector("#chatList").appendChild(li);
@@ -11,11 +10,34 @@ socket.on('chat', (data) => {
 })
 
 socket.on(drawEvent,(data)=>{
-    const pkg = JSON.parse(data); //TODO
+    const message = JSON.parse(data);
+    const msg = JSON.parse(message.msg);
+    let x = msg.x;
+    let y = msg.y;
+    let color = msg.color;
+    let width = msg.width;
+
+    draw(x,y);
+
+    console.log("X: " + x)
+    console.log("Y: " + y)
+
 })
 
+function draw(x, y){
+    if(oldPosition.x > 0 && oldPosition.y > 0){
+        let color = '#111111'
+        drawLine(oldPosition.x,oldPosition.y,x,y,color)
+        const pkg = new DrawInfoPackage(x,y,color,lineWidth)
+    }
+    oldPosition.x = x;
+    oldPosition.y = y;
+}
+
+
 socket.on('message', (data)=>{
-    console.log(data);
+    let message = JSON.parse(data);
+    console.log(message)
 })
 
 function sendChatMsg() {

@@ -70,21 +70,9 @@ export class SketchServer {
             res.sendFile(process.cwd() + "/public/html/index.html", (err) => {
                 if (err){
                     console.error("There was an error sending the Response-File.")
-                } else {
-                    console.log("Response-File transmitted.")
                 }
             });
         });
-        this.app.get('/lobby', function (req : Request, res : Response) {
-            res.sendFile(process.cwd() + "/public/html/lobby.html", (err) => {
-                if (err){
-                    console.error("There was an error sending the Response-File.")
-                } else {
-                    console.log("Response-File transmitted.")
-                }
-            });
-        });
-
     }
 
     /**
@@ -94,8 +82,9 @@ export class SketchServer {
     private websocketHandler() : void {
         this.io.on('connection',  (socket : Socket) => {
             this.handleCreateRoom(socket);
-            this.handelJoinRoom(socket);
+            this.handleJoinRoom(socket);
             this.handleChat(socket);
+            this.handleDraw(socket);
             this.handleDisconnect(socket);
         })
     }
@@ -111,21 +100,38 @@ export class SketchServer {
 
     private handleChat (socket : Socket) {
         socket.on('chat',  (data) =>  {
-
-            let author;
-            let authorID = this.playerSocket.get(socket.id);
-            if (authorID != undefined){
-                author = this.getPlayerByID(authorID);
-                if (author != undefined){
-                    let message = new Message<any>(author, data)
-                    let lobby = this.getLobbyByID(author.lobbyID);
-                    if (lobby != undefined){
-                        this.io.to(lobby.msgChannel).emit("chat", JSON.stringify(message))
-                    }
-                }
+            if(!this.deployMessage(socket, data,'chat')){
+                console.error("Couldn't deploy Message.")
             }
+
         });
     }
+
+    private handleDraw(socket : Socket){
+        socket.on("draw", (data) => {
+            if(!this.deployMessage(socket, data, 'draw')){
+                console.error("Couldn't deploy Message.")
+            }
+        })
+    }
+
+    private deployMessage(socket: Socket, data : any, event : string) : boolean{
+        let author;
+        let authorID = this.playerSocket.get(socket.id);
+        if (authorID != undefined){
+            author = this.getPlayerByID(authorID);
+            if (author != undefined){
+                let message = new Message<any>(author, data)
+                let lobby = this.getLobbyByID(author.lobbyID);
+                if (lobby != undefined){
+                    this.io.to(lobby.msgChannel).emit(event, JSON.stringify(message))
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
     private getPlayerByID(id : number) : Player | undefined{
         for (let lobby of this.lobbys){
@@ -161,11 +167,7 @@ export class SketchServer {
 
     }
 
-    private handleDraw(socket : Socket){
-        //TODO
-    }
-
-    private handelJoinRoom(socket : Socket){
+    private handleJoinRoom(socket : Socket){
         socket.on('joinRoom', (name, roomID) => {
             let room = this.getLobbyByID(roomID);
 
