@@ -3,18 +3,13 @@ import { LinkedList } from 'linked-list-typescript';
 
 export class GameLobby {
 
-
-    private static maxId : number = 0;
-    private readonly _id: number;
-    private readonly _msgChannel: string;
+    private readonly _lobbyID: string;
     private _players : LinkedList<Player> = new LinkedList<Player>();
     private readonly limit : number;
 
-    constructor(msgChannel : string, limit : number) {
-        this._id = GameLobby.maxId;
-        this._msgChannel = msgChannel;
+    constructor(lobbID : string, limit : number) {
+        this._lobbyID = lobbID;
         this.limit = limit;
-        GameLobby.maxId++;
     }
 
     public addPlayer (player : Player) : boolean {
@@ -31,17 +26,12 @@ export class GameLobby {
         this._players.remove(player);
     }
 
-
     get players(): LinkedList<Player> {
         return this._players;
     }
 
-    get msgChannel(): string {
-        return this._msgChannel;
-    }
-
-    get id(): number {
-        return this._id;
+    get lobbyID(): string {
+        return this._lobbyID;
     }
 
     public static randomString() : string{

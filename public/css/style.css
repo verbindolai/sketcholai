@@ -44,7 +44,7 @@ html, body {
 }
 
 .grid-item{
-    border: 1px solid rgba(0, 0, 0, 0.8);
+
     padding: 20px;
     font-size: 30px;
     text-align: center;
@@ -65,9 +65,11 @@ html, body {
     grid-template-rows: 10fr 1fr;
 }
 #chatDisplay {
+    border-radius: 5px;
+    border:2px solid #000000;
+    background-color: white;
     max-height: 100%;
     overflow-y: scroll;
-    border: 1px solid rgba(0, 0, 0, 0.8);
 }
 #chatInputContainer{
     border: 1px solid rgba(0, 0, 0, 0.8);
@@ -101,7 +103,8 @@ html, body {
 }
 
 #canvas{
-    border:1px solid #000000;
+    border-radius: 5px;
+    border:2px solid #000000;
     background-color: white;
 }
 
