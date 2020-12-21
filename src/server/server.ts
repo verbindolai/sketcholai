@@ -3,7 +3,7 @@ import {Server as SocketServer, Socket} from "socket.io";
 import {Server as HTTPServer} from "http"
 import {Player} from "./player";
 import {GameLobby} from "./gameLobby"
-import {LinkedList} from 'linked-list-typescript';
+import {LinkedList} from "typescriptcollectionsframework";
 
 
 /**
@@ -92,19 +92,17 @@ export class SketchServer {
     private handleDisconnect(socket: Socket): void {
         socket.on('disconnect', (data) => {
 
-            // let room = this.getRoom(socket.id);
-            // let player = room?.player;
-            // let lobby = room?.lobby;
-            //
-            // if (player == undefined || lobby == undefined){
-            //     return;
-            // }
-            //
-            // lobby?.removePlayer(player);
-            //
-            // if(!this.deleteLobbyIfEmpty(socket)) {
-            //     console.error("Couldn't delete Lobby.")
-            // }
+            let room = this.getRoom(socket.id);
+            let player = room?.player;
+            let lobby = room?.lobby;
+
+            if (player == undefined || lobby == undefined){
+                return;
+            }
+
+            if(!this.deleteLobbyIfEmpty(socket)) {
+                console.error("Couldn't delete Lobby.")
+            }
         })
     }
     private handleChat(socket: Socket) {
@@ -126,7 +124,7 @@ export class SketchServer {
             let room = new GameLobby(GameLobby.randomString(), 20);
             let creator = new Player(socket.id, name, room.lobbyID);
             room.addPlayer(creator);
-            this.lobbys.append(room);
+            this.lobbys.add(room);
             socket.join(room.lobbyID);
             socket.send("Room ID: " + room.lobbyID);
             console.log(room.lobbyID)
@@ -149,10 +147,13 @@ export class SketchServer {
 
     private deleteLobbyIfEmpty (socket : Socket) : boolean {
         let room = this.getRoom(socket.id);
-        console.log(room)
+        console.log("Room: " + room)
         let lobby = room?.lobby;
+
+        console.log("Lobby: " + lobby)
+
         if (lobby != undefined){
-            if (lobby.players.length == 0){
+            if (lobby.players.size() == 0){
                 this.lobbys.remove(lobby);
                 return true
             }

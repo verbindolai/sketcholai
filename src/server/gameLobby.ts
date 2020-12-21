@@ -1,5 +1,5 @@
 import {Player} from "./player";
-import { LinkedList } from 'linked-list-typescript';
+import {LinkedList} from "typescriptcollectionsframework";
 
 export class GameLobby {
 
@@ -13,8 +13,8 @@ export class GameLobby {
     }
 
     public addPlayer (player : Player) : boolean {
-        if (this._players.length < this.limit){
-            this._players.append(player);
+        if (this._players.size() < this.limit){
+            this._players.add(player);
             player.isInRoom = true;
             return true;
         } else {
