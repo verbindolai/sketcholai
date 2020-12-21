@@ -91,7 +91,20 @@ export class SketchServer {
 
     private handleDisconnect(socket: Socket): void {
         socket.on('disconnect', (data) => {
-            this.deleteLobbyIfEmpty(socket);
+
+            // let room = this.getRoom(socket.id);
+            // let player = room?.player;
+            // let lobby = room?.lobby;
+            //
+            // if (player == undefined || lobby == undefined){
+            //     return;
+            // }
+            //
+            // lobby?.removePlayer(player);
+            //
+            // if(!this.deleteLobbyIfEmpty(socket)) {
+            //     console.error("Couldn't delete Lobby.")
+            // }
         })
     }
     private handleChat(socket: Socket) {
@@ -116,6 +129,7 @@ export class SketchServer {
             this.lobbys.append(room);
             socket.join(room.lobbyID);
             socket.send("Room ID: " + room.lobbyID);
+            console.log(room.lobbyID)
         });
 
     }
@@ -135,6 +149,7 @@ export class SketchServer {
 
     private deleteLobbyIfEmpty (socket : Socket) : boolean {
         let room = this.getRoom(socket.id);
+        console.log(room)
         let lobby = room?.lobby;
         if (lobby != undefined){
             if (lobby.players.length == 0){

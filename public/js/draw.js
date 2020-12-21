@@ -16,11 +16,13 @@ class DrawInfoPackage {
     y;
     width;
     color;
-    constructor(x,y,color,width) {
+    drawing;
+    constructor(x,y,color,width, drawing) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.color = color;
+        this.drawing = drawing;
     }
 }
 
@@ -35,7 +37,12 @@ function init(){
 
     canvas.addEventListener('mouseup', (event) => {
         drawing = false;
+        const pos = getMousePos(canvas,event);
+        let color = '#111111'
+        const pkg = new DrawInfoPackage(pos.x,pos.y,color,lineWidth,drawing)
+        socket.emit(drawEvent, JSON.stringify(pkg));
         clearOldPosition();
+
     })
 
     canvas.addEventListener('mouseout', (event) => {clearOldPosition();})
@@ -46,7 +53,7 @@ function init(){
             if(oldPosition.x > 0 && oldPosition.y > 0){
                 let color = '#111111'
                 drawLine(oldPosition.x,oldPosition.y,pos.x,pos.y,color)
-                const pkg = new DrawInfoPackage(pos.x,pos.y,color,lineWidth)
+                const pkg = new DrawInfoPackage(pos.x,pos.y,color,lineWidth,drawing)
                 socket.emit(drawEvent, JSON.stringify(pkg));
             }
             oldPosition.x = pos.x;

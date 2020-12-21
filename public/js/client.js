@@ -16,15 +16,22 @@ socket.on(drawEvent,(data)=>{
     let y = msg.y;
     let color = msg.color;
     let width = msg.width;
+    let drawing = msg.drawing;
+    if (drawing){
+        draw(x,y);
+        console.log("X: " + x)
+        console.log("Y: " + y)
+    } else {
+        oldPosition.x = -1;
+        oldPosition.y = -1;
+    }
 
-    draw(x,y);
-
-    console.log("X: " + x)
-    console.log("Y: " + y)
+    console.log(drawing)
 
 })
 
 function draw(x, y){
+
     if(oldPosition.x > 0 && oldPosition.y > 0){
         let color = '#111111'
         drawLine(oldPosition.x,oldPosition.y,x,y,color)
