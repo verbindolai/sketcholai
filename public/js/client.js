@@ -17,6 +17,7 @@ socket.on(drawEvent,(data)=>{
     let color = msg.color;
     let width = msg.width;
     let drawing = msg.drawing;
+    console.log(msg)
     if (drawing){
         draw(x,y);
         console.log("X: " + x)

@@ -2,6 +2,7 @@
 
 let context;
 let canvas;
+let site;
 let drawing = false;
 let lineWidth = 2;
 const drawEvent = 'draw';
@@ -30,22 +31,25 @@ class DrawInfoPackage {
 function init(){
     canvas = document.querySelector('#canvas')
     context = canvas.getContext('2d');
+    site = document.querySelector('body');
 
     canvas.addEventListener('mousedown', (event) => {
         drawing = true;
     })
 
-    canvas.addEventListener('mouseup', (event) => {
+    site.addEventListener('mouseup', (event) => {
         drawing = false;
-        const pos = getMousePos(canvas,event);
-        let color = '#111111'
-        const pkg = new DrawInfoPackage(pos.x,pos.y,color,lineWidth,drawing)
+        const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
         socket.emit(drawEvent, JSON.stringify(pkg));
         clearOldPosition();
 
     })
 
-    canvas.addEventListener('mouseout', (event) => {clearOldPosition();})
+    canvas.addEventListener('mouseout', (event) => {
+        const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
+        socket.emit(drawEvent, JSON.stringify(pkg));
+        clearOldPosition();
+    })
 
     canvas.addEventListener('mousemove', (event) => {
         if(drawing){

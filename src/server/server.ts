@@ -97,10 +97,11 @@ export class SketchServer {
             let lobby = room?.lobby;
 
             if (player == undefined || lobby == undefined){
+                console.error("Disconnect Error, Lobby or Player is undefined.")
                 return;
             }
 
-            if(!this.deleteLobbyIfEmpty(socket)) {
+            if(!this.closeRoom(socket)) {
                 console.error("Couldn't delete Lobby.")
             }
         })
@@ -145,20 +146,27 @@ export class SketchServer {
         });
     }
 
-    private deleteLobbyIfEmpty (socket : Socket) : boolean {
+    private closeRoom (socket : Socket) : boolean {
         let room = this.getRoom(socket.id);
-        console.log("Room: " + room)
         let lobby = room?.lobby;
+        let player = room?.player;
 
-        console.log("Lobby: " + lobby)
+        if (player == undefined || lobby == undefined){
+            return false
+        }
 
-        if (lobby != undefined){
-            if (lobby.players.size() == 0){
-                this.lobbys.remove(lobby);
-                return true
+        if(!lobby.players.remove(player)){
+            console.error("Couldn't remove Player!")
+            return false;
+        }
+
+        if (lobby.players.size() == 0){
+            if (!this.lobbys.remove(lobby)) {
+                console.error("Couldn't remove Lobby!")
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**
