@@ -1,6 +1,11 @@
 import {Player} from "./player";
 import {LinkedList} from "typescriptcollectionsframework";
 
+/**
+ * Represents a Lobby.
+ * @author Christopher Peters, Nikolai Wieczorek
+ * @version 1.0
+ */
 export class GameLobby {
 
     private readonly _lobbyID: string;
@@ -22,8 +27,8 @@ export class GameLobby {
         }
     }
 
-    public removePlayer(player : Player) {
-        this._players.remove(player);
+    public removePlayer(player : Player) : boolean{
+       return this._players.remove(player);
     }
 
     get players(): LinkedList<Player> {
@@ -35,7 +40,7 @@ export class GameLobby {
     }
 
     public static randomString() : string{
-        let length = 10;
+        let length = 15;
         let result           = '';
         let characters       = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         let charactersLength = characters.length;

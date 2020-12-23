@@ -1,5 +1,10 @@
-export class Player {
+/**
+ * Represents a Player.
+ * @author Christopher Peters, Nikolai Wieczorek+
+ * @version 1.0
+ */
 
+export class Player {
 
     private readonly _socketID : string;
     private _name: string;

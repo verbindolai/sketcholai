@@ -1,10 +1,12 @@
-import express, {Express, json, Request, Response} from "express";
+import express, {Express, Request, Response} from "express";
 import {Server as SocketServer, Socket} from "socket.io";
 import {Server as HTTPServer} from "http"
 import {Player} from "./player";
 import {GameLobby} from "./gameLobby"
 import {LinkedList} from "typescriptcollectionsframework";
-
+import {RoomHandler} from "./roomHandler";
+import {CommunicationHandler} from "./communicationHandler";
+import {GameHandler} from "./gameHandler";
 
 /**
  * Represents the Sketch-Server
@@ -81,10 +83,12 @@ export class SketchServer {
      */
     private websocketHandler(): void {
         this.io.on('connection', (socket: Socket) => {
-            this.handleCreateRoom(socket);
-            this.handleJoinRoom(socket);
-            this.handleChat(socket);
-            this.handleDraw(socket);
+            let roomhandler = new RoomHandler();
+            let gameHandler = new GameHandler();
+            let communicationHandler = new CommunicationHandler();
+            roomhandler.handle(socket, this.lobbys, this.io);
+            communicationHandler.handle(socket, this.lobbys, this.io)
+            gameHandler.handle(socket, this.lobbys, this.io);
             this.handleDisconnect(socket);
         })
     }
@@ -92,7 +96,7 @@ export class SketchServer {
     private handleDisconnect(socket: Socket): void {
         socket.on('disconnect', (data) => {
 
-            let room = this.getRoom(socket.id);
+            let room = RoomHandler.getRoom(socket.id, this.lobbys);
             let player = room?.player;
             let lobby = room?.lobby;
 
@@ -101,129 +105,10 @@ export class SketchServer {
                 return;
             }
 
-            if(!this.closeRoom(socket)) {
+            if(!RoomHandler.closeRoom(socket, this.lobbys)) {
                 console.error("Couldn't delete Lobby.")
             }
         })
     }
-    private handleChat(socket: Socket) {
-        socket.on('chat', (data) => {
-            if (!this.deployMessage(socket, data, 'chat', true)) {
-                console.error("Couldn't deploy Message.")
-            }
-        });
-    }
-    private handleDraw(socket: Socket) {
-        socket.on("draw", (data) => {
-            if (!this.deployMessage(socket, data, 'draw', false)) {
-                console.error("Couldn't deploy Message.")
-            }
-        })
-    }
-    private handleCreateRoom(socket: Socket) {
-        socket.on('createNewRoom', (name) => {
-            let room = new GameLobby(GameLobby.randomString(), 20);
-            let creator = new Player(socket.id, name, room.lobbyID);
-            room.addPlayer(creator);
-            this.lobbys.add(room);
-            socket.join(room.lobbyID);
-            socket.send("Room ID: " + room.lobbyID);
-            console.log(room.lobbyID)
-        });
-
-    }
-    private handleJoinRoom(socket: Socket) {
-        socket.on('joinRoom', (name, lobbyID) => {
-            let lobby = this.getLobbyByID(lobbyID);
-
-            if (lobby == undefined) {
-                return;
-            }
-            let player = new Player(socket.id, name, lobby.lobbyID)
-            lobby.addPlayer(player);
-            socket.join(lobby.lobbyID);
-
-        });
-    }
-
-    private closeRoom (socket : Socket) : boolean {
-        let room = this.getRoom(socket.id);
-        let lobby = room?.lobby;
-        let player = room?.player;
-
-        if (player == undefined || lobby == undefined){
-            return false
-        }
-
-        if(!lobby.players.remove(player)){
-            console.error("Couldn't remove Player!")
-            return false;
-        }
-
-        if (lobby.players.size() == 0){
-            if (!this.lobbys.remove(lobby)) {
-                console.error("Couldn't remove Lobby!")
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Deploys a Message to all Members of the Authors-Room
-     * @param socket
-     * @param data
-     * @param event
-     * @param include -> wether or not the Author should be included
-     * @private
-     */
-    private deployMessage(socket: Socket, data: any, event: string, include: boolean): boolean {
-        let room = this.getRoom(socket.id);
-        let author = room?.player;
-        let lobby = room?.lobby;
-
-        if (author == undefined || lobby == undefined) {
-            return false;
-        }
-        let message = new Message<any>(author, data)
-        if (include) {
-            this.io.to(lobby.lobbyID).emit(event, JSON.stringify(message))
-        } else {
-            socket.broadcast.to(lobby.lobbyID).emit(event, JSON.stringify(message))
-        }
-        return true;
-
-    }
-
-    private getRoom(socketID: string) {
-        for (let lobby of this.lobbys) {
-            for (let player of lobby.players) {
-                if (player.socketID == socketID) {
-                    return {player: player, lobby: lobby};
-                }
-            }
-        }
-        return undefined
-    }
-
-    private getLobbyByID(lobbyID : string) : GameLobby | undefined{
-        for (let lobby of this.lobbys) {
-            if (lobby.lobbyID == lobbyID){
-                return lobby;
-            }
-        }
-        return undefined
-    }
-
 }
 
-class Message<T> {
-
-    author: Player;
-    msg: T;
-
-    constructor(author: Player, msg: T) {
-        this.author = author;
-        this.msg = msg;
-    }
-}
