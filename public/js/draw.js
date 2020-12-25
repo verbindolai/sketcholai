@@ -2,6 +2,7 @@
 
 let context;
 let canvas;
+let site;
 let drawing = false;
 let lineWidth = 2;
 const drawEvent = 'draw';
@@ -16,11 +17,13 @@ class DrawInfoPackage {
     y;
     width;
     color;
-    constructor(x,y,color,width) {
+    drawing;
+    constructor(x,y,color,width, drawing) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.color = color;
+        this.drawing = drawing;
     }
 }
 
@@ -28,17 +31,24 @@ class DrawInfoPackage {
 function init(){
     canvas = document.querySelector('#canvas')
     context = canvas.getContext('2d');
+    site = document.querySelector('html');
 
     canvas.addEventListener('mousedown', (event) => {
         drawing = true;
     })
 
-    canvas.addEventListener('mouseup', (event) => {
+    site.addEventListener('mouseup', (event) => {
         drawing = false;
+        const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
+        socket.emit(drawEvent, JSON.stringify(pkg));
         clearOldPosition();
     })
 
-    canvas.addEventListener('mouseout', (event) => {clearOldPosition();})
+    canvas.addEventListener('mouseout', (event) => {
+        const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
+        socket.emit(drawEvent, JSON.stringify(pkg));
+        clearOldPosition();
+    })
 
     canvas.addEventListener('mousemove', (event) => {
         if(drawing){
@@ -46,8 +56,8 @@ function init(){
             if(oldPosition.x > 0 && oldPosition.y > 0){
                 let color = '#111111'
                 drawLine(oldPosition.x,oldPosition.y,pos.x,pos.y,color)
-                const pkg = new DrawInfoPackage(pos.x,pos.y,color,lineWidth)
-                socket.emit(drawEvent,JSON.stringify(pkg));
+                const pkg = new DrawInfoPackage(pos.x,pos.y,color,lineWidth,drawing)
+                socket.emit(drawEvent, JSON.stringify(pkg));
             }
             oldPosition.x = pos.x;
             oldPosition.y = pos.y;

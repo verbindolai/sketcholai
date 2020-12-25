@@ -1,25 +1,25 @@
 import {Player} from "./player";
-import { LinkedList } from 'linked-list-typescript';
+import {LinkedList} from "typescriptcollectionsframework";
 
+/**
+ * Represents a Lobby.
+ * @author Christopher Peters, Nikolai Wieczorek
+ * @version 1.0
+ */
 export class GameLobby {
 
-
-    private static maxId : number = 0;
-    private readonly _id: number;
-    private readonly _msgChannel: string;
+    private readonly _lobbyID: string;
     private _players : LinkedList<Player> = new LinkedList<Player>();
     private readonly limit : number;
 
-    constructor(msgChannel : string, limit : number) {
-        this._id = GameLobby.maxId;
-        this._msgChannel = msgChannel;
+    constructor(lobbID : string, limit : number) {
+        this._lobbyID = lobbID;
         this.limit = limit;
-        GameLobby.maxId++;
     }
 
     public addPlayer (player : Player) : boolean {
-        if (this._players.length < this.limit){
-            this._players.append(player);
+        if (this._players.size() < this.limit){
+            this._players.add(player);
             player.isInRoom = true;
             return true;
         } else {
@@ -27,25 +27,20 @@ export class GameLobby {
         }
     }
 
-    public removePlayer(player : Player) {
-        this._players.remove(player);
+    public removePlayer(player : Player) : boolean{
+       return this._players.remove(player);
     }
-
 
     get players(): LinkedList<Player> {
         return this._players;
     }
 
-    get msgChannel(): string {
-        return this._msgChannel;
-    }
-
-    get id(): number {
-        return this._id;
+    get lobbyID(): string {
+        return this._lobbyID;
     }
 
     public static randomString() : string{
-        let length = 10;
+        let length = 15;
         let result           = '';
         let characters       = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         let charactersLength = characters.length;

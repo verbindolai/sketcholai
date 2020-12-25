@@ -1,4 +1,5 @@
 import {SketchServer} from "./server"
+
 /**
  * Entrypoint
  * @author Christopher Peters, Mathusan Kannathasan, Nikolai Wieczorek

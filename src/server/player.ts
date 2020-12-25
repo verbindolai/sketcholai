@@ -1,28 +1,30 @@
+/**
+ * Represents a Player.
+ * @author Christopher Peters, Nikolai Wieczorek+
+ * @version 1.0
+ */
+
 export class Player {
 
-
-    private static maxId : number = 0;
-
-    private readonly _id : number;
+    private readonly _socketID : string;
     private _name: string;
     private _isDrawing : boolean;
     private _points : number;
     private _isInRoom : boolean;
-    private _lobbyID : number;
+    private _lobbyID : string;
 
-    constructor(name: string, roomID : number) {
-        this._id = Player.maxId;
+    constructor(id: string, name: string, lobbyID : string) {
+        this._socketID = id;
         this._name = name;
         this._isDrawing = false;
         this._points = 0;
         this._isInRoom = false;
-        this._lobbyID = roomID;
-        Player.maxId++;
+        this._lobbyID = lobbyID;
     }
 
 
-    get id(): number {
-        return this._id;
+    get socketID(): string {
+        return this._socketID;
     }
 
     get name(): string {
@@ -45,17 +47,17 @@ export class Player {
         return this._points;
     }
 
-    get lobbyID(): number {
+    get lobbyID(): string {
         return this._lobbyID;
     }
 
-    set lobbyID(value: number) {
+    set lobbyID(value: string) {
         this._lobbyID = value;
     }
 
     public toString() :string {
         return  "name: " + this._name + "\n" +
-                "id: " + this._id + "\n" +
+                "id: " + this._socketID + "\n" +
                 "isDrawing: " + this._isDrawing + "\n" +
                 "isInRoom: " + this._isInRoom + "\n" +
                 "lobbyID: " + this._lobbyID + "\n";
