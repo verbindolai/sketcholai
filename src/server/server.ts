@@ -62,7 +62,6 @@ export class SketchServer {
      * Starts the Request- and Websocket-Handling
      */
     public start(): void {
-        this.init();
         this.getRequestHandler();
         this.websocketHandler();
     }
@@ -89,7 +88,6 @@ export class SketchServer {
         this.io.on('connection', (socket: Socket) => {
             this.startHandlers(socket);
             this.handleDisconnect(socket);
-            console.log(this.handlerObjects.size())
         })
     }
 
@@ -114,18 +112,15 @@ export class SketchServer {
     private startHandlers(socket : Socket) : void{
         for (const handler of this.handlerObjects) {
             handler.handle(socket, this.lobbys, this.io)
-            console.log(handler)
         }
     }
 
     private addHandlers() : void{
-        let i = 0;
         const handlerFiles = fs.readdirSync('src/server/handlers').filter(file => file.endsWith('.ts') && file !== 'handlerInterface.ts');
         for (const file of handlerFiles) {
             const fileWithoutTS = file.replace(".ts","");
             let command = require(`./handlers/${fileWithoutTS}`);
             this.handlerObjects.add(command.handler)
-            i++;
         }
     }
 
