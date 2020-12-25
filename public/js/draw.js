@@ -63,6 +63,8 @@ function init(){
             oldPosition.y = pos.y;
         }
     })
+
+
 }
 
 function clearOldPosition(){

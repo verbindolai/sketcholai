@@ -14,7 +14,7 @@ export class RoomHandler implements HandlerInterface {
                 room.addPlayer(creator);
                 lobbys.add(room);
                 socket.join(room.lobbyID);
-                socket.send("Room ID: " + room.lobbyID);
+                socket.emit("roomID", room.lobbyID)
                 console.log(room.lobbyID)
         });
 

@@ -1,5 +1,6 @@
 let port = 6969;
 let socket = io(`http://localhost:${port}`);
+let lobbyID;
 
 socket.on('chat', (data) => {
     let message = JSON.parse(data);
@@ -46,6 +47,10 @@ function draw(x, y){
 socket.on('message', (data)=>{
     let message = JSON.parse(data);
     console.log(message)
+})
+
+socket.on("roomID", (id) => {
+    lobbyID = id;
 })
 
 function sendChatMsg() {
@@ -95,12 +100,18 @@ function pageLoad () {
         if (this.status === 200){
             container.innerHTML = xhr.responseText;
             init();
+            displayRoomCode()
         } else {
             console.log("UPPS")
         }
     }
     xhr.open('get', '/html/lobby.html')
     xhr.send()
+}
+
+function displayRoomCode (){
+    let idContainer = document.querySelector("#roomCodeContainer");
+    idContainer.innerHTML += lobbyID;
 }
 
 function randomString(length) {

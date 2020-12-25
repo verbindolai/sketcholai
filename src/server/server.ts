@@ -4,8 +4,6 @@ import {Server as HTTPServer} from "http"
 import {GameLobby} from "./gameLobby"
 import {LinkedList} from "typescriptcollectionsframework";
 import {RoomHandler} from "./handlers/roomHandler";
-import {CommunicationHandler} from "./handlers/communicationHandler";
-import {GameHandler} from "./handlers/gameHandler";
 import {HandlerInterface} from "./handlers/handlerInterface";
 import * as fs from "fs";
 
