@@ -1,7 +1,7 @@
 import {HandlerInterface} from "./handlerInterface";
 import {Socket, Server as SocketServer} from "socket.io";
-import {GameLobby} from "./gameLobby";
-import {Player} from "./player";
+import {GameLobby} from "../gameLobby";
+import {Player} from "../player";
 import {LinkedList} from "typescriptcollectionsframework";
 
 export class RoomHandler implements HandlerInterface {
@@ -84,3 +84,4 @@ export class RoomHandler implements HandlerInterface {
     }
 
 }
+export let handler = new RoomHandler();

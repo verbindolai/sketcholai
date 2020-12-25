@@ -1,11 +1,12 @@
 import {HandlerInterface} from "./handlerInterface";
 import {Socket, Server as SocketServer} from "socket.io";
 import {LinkedList} from "typescriptcollectionsframework";
-import {GameLobby} from "./gameLobby";
+import {GameLobby} from "../gameLobby";
 import {RoomHandler} from "./roomHandler";
-import {Player} from "./player";
+import {Player} from "../player";
 
 export class CommunicationHandler implements HandlerInterface{
+
     handle(socket: Socket, lobbys: LinkedList<GameLobby>, io : SocketServer) {
         socket.on('chat', (data) => {
             if (!CommunicationHandler.deployMessage(socket, data, 'chat', true, lobbys, io)) {
@@ -53,3 +54,4 @@ class Message<T> {
         this.msg = msg;
     }
 }
+export let handler = new CommunicationHandler();

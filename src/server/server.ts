@@ -1,12 +1,13 @@
 import express, {Express, Request, Response} from "express";
 import {Server as SocketServer, Socket} from "socket.io";
 import {Server as HTTPServer} from "http"
-import {Player} from "./player";
 import {GameLobby} from "./gameLobby"
 import {LinkedList} from "typescriptcollectionsframework";
-import {RoomHandler} from "./roomHandler";
-import {CommunicationHandler} from "./communicationHandler";
-import {GameHandler} from "./gameHandler";
+import {RoomHandler} from "./handlers/roomHandler";
+import {CommunicationHandler} from "./handlers/communicationHandler";
+import {GameHandler} from "./handlers/gameHandler";
+import {HandlerInterface} from "./handlers/handlerInterface";
+import * as fs from "fs";
 
 /**
  * Represents the Sketch-Server
@@ -19,12 +20,14 @@ export class SketchServer {
     private readonly _port: number;
     private io: SocketServer;
     private lobbys: LinkedList<GameLobby> = new LinkedList<GameLobby>();
+    private handlerObjects : LinkedList<HandlerInterface>
 
 
     constructor(port: number) {
         this._port = port;
         this.app = express();
         this.io = new SocketServer(this.startServer(this._port));
+        this.handlerObjects = new LinkedList<HandlerInterface>();
         this.init();
     }
 
@@ -51,6 +54,7 @@ export class SketchServer {
      * @private
      */
     private init(): void {
+        this.addHandlers();
         this.app.use(express.static('./public'));
     }
 
@@ -83,13 +87,9 @@ export class SketchServer {
      */
     private websocketHandler(): void {
         this.io.on('connection', (socket: Socket) => {
-            let roomhandler = new RoomHandler();
-            let gameHandler = new GameHandler();
-            let communicationHandler = new CommunicationHandler();
-            roomhandler.handle(socket, this.lobbys, this.io);
-            communicationHandler.handle(socket, this.lobbys, this.io)
-            gameHandler.handle(socket, this.lobbys, this.io);
+            this.startHandlers(socket);
             this.handleDisconnect(socket);
+            console.log(this.handlerObjects.size())
         })
     }
 
@@ -110,5 +110,24 @@ export class SketchServer {
             }
         })
     }
+
+    private startHandlers(socket : Socket) : void{
+        for (const handler of this.handlerObjects) {
+            handler.handle(socket, this.lobbys, this.io)
+            console.log(handler)
+        }
+    }
+
+    private addHandlers() : void{
+        let i = 0;
+        const handlerFiles = fs.readdirSync('src/server/handlers').filter(file => file.endsWith('.ts') && file !== 'handlerInterface.ts');
+        for (const file of handlerFiles) {
+            const fileWithoutTS = file.replace(".ts","");
+            let command = require(`./handlers/${fileWithoutTS}`);
+            this.handlerObjects.add(command.handler)
+            i++;
+        }
+    }
+
 }
 

@@ -31,7 +31,7 @@ class DrawInfoPackage {
 function init(){
     canvas = document.querySelector('#canvas')
     context = canvas.getContext('2d');
-    site = document.querySelector('body');
+    site = document.querySelector('html');
 
     canvas.addEventListener('mousedown', (event) => {
         drawing = true;
@@ -42,7 +42,6 @@ function init(){
         const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
         socket.emit(drawEvent, JSON.stringify(pkg));
         clearOldPosition();
-
     })
 
     canvas.addEventListener('mouseout', (event) => {
