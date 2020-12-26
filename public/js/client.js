@@ -53,6 +53,7 @@ socket.on("roomID", (id) => {
     lobbyID = id;
 })
 
+
 function sendChatMsg() {
     let chatInput = document.getElementById("chatInput");
     let message = chatInput.value;
@@ -108,6 +109,7 @@ function pageLoad () {
     xhr.open('get', '/html/lobby.html')
     xhr.send()
 }
+
 
 function displayRoomCode (){
     let idContainer = document.querySelector("#roomCodeContainer");

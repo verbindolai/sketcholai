@@ -91,7 +91,6 @@ export class SketchServer {
 
     private handleDisconnect(socket: Socket): void {
         socket.on('disconnect', (data) => {
-
             let room = RoomHandler.getRoom(socket.id, this.lobbys);
             let player = room?.player;
             let lobby = room?.lobby;
@@ -112,6 +111,9 @@ export class SketchServer {
             handler.handle(socket, this.lobbys, this.io)
         }
     }
+
+
+
 
     private addHandlers() : void{
         const handlerFiles = fs.readdirSync('src/server/handlers').filter(file => file.endsWith('.ts') && file !== 'handlerInterface.ts');
