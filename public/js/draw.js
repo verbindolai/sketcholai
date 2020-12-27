@@ -1,11 +1,21 @@
 "use strict"
 
+const drawEvent = 'draw';
+const COL_WHITE = '#ffffff';
+const COL_BLACK = '#000000';
+const COL_RED = '#ff0000';
+const COL_GREEN = '#2cb323';
+const COL_BLUE = '#1c37b5';
+const COL_YELLOW = '#e3cf19';
+
+const ERASER = COL_WHITE;
+
 let context;
 let canvas;
 let site;
 let drawing = false;
 let lineWidth = 2;
-const drawEvent = 'draw';
+let currentColor = COL_BLACK;
 
 let oldPosition = {
     x: -1,
@@ -35,6 +45,9 @@ function init(){
 
     canvas.addEventListener('mousedown', (event) => {
         drawing = true;
+        // const pos = getMousePos(canvas,event)
+        // const pkg = new DrawInfoPackage(pos.x, pos.y, currentColor, lineWidth, drawing)
+        // socket.emit(drawEvent, JSON.stringify(pkg));
     })
 
     site.addEventListener('mouseup', (event) => {
@@ -54,7 +67,7 @@ function init(){
         if(drawing){
             const pos = getMousePos(canvas,event);
             if(oldPosition.x > 0 && oldPosition.y > 0){
-                let color = '#111111'
+                let color = currentColor;
                 drawLine(oldPosition.x,oldPosition.y,pos.x,pos.y,color)
                 const pkg = new DrawInfoPackage(pos.x,pos.y,color,lineWidth,drawing)
                 socket.emit(drawEvent, JSON.stringify(pkg));
@@ -65,6 +78,12 @@ function init(){
     })
 
 
+}
+
+function changeColor(button){
+    currentColor = button.value;
+    console.log(currentColor);
+    console.log(button.value);
 }
 
 function clearOldPosition(){
