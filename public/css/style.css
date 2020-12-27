@@ -106,10 +106,13 @@ html, body {
     border-radius: 5px;
     border:2px solid #000000;
     background-color: white;
+
 }
 
 #canvasContainer{
-    height: 100%;
+
 }
 
-
+#mainGridContainer {
+    padding: 0;
+}

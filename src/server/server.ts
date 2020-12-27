@@ -4,8 +4,6 @@ import {Server as HTTPServer} from "http"
 import {GameLobby} from "./gameLobby"
 import {LinkedList} from "typescriptcollectionsframework";
 import {RoomHandler} from "./handlers/roomHandler";
-import {CommunicationHandler} from "./handlers/communicationHandler";
-import {GameHandler} from "./handlers/gameHandler";
 import {HandlerInterface} from "./handlers/handlerInterface";
 import * as fs from "fs";
 
@@ -93,7 +91,6 @@ export class SketchServer {
 
     private handleDisconnect(socket: Socket): void {
         socket.on('disconnect', (data) => {
-
             let room = RoomHandler.getRoom(socket.id, this.lobbys);
             let player = room?.player;
             let lobby = room?.lobby;
@@ -114,6 +111,9 @@ export class SketchServer {
             handler.handle(socket, this.lobbys, this.io)
         }
     }
+
+
+
 
     private addHandlers() : void{
         const handlerFiles = fs.readdirSync('src/server/handlers').filter(file => file.endsWith('.ts') && file !== 'handlerInterface.ts');

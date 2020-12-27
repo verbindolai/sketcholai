@@ -12,6 +12,10 @@ export class GameHandler implements HandlerInterface {
                 console.error("Couldn't deploy Message.")
             }
         })
+
+        socket.on('canvasStatus',  (data) => {
+            CommunicationHandler.deployMessage(socket, data, 'canvasUpdate', false, lobbys, io)
+        })
     }
 }
 export let handler = new GameHandler();

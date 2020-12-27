@@ -1,5 +1,6 @@
 let port = 6969;
 let socket = io(`http://localhost:${port}`);
+let lobbyID;
 
 socket.on('chat', (data) => {
     let message = JSON.parse(data);
@@ -17,18 +18,12 @@ socket.on(drawEvent,(data)=>{
     let color = msg.color;
     let width = msg.width;
     let drawing = msg.drawing;
-    console.log(msg)
     if (drawing){
         draw(x,y);
-        console.log("X: " + x)
-        console.log("Y: " + y)
     } else {
         oldPosition.x = -1;
         oldPosition.y = -1;
     }
-
-    console.log(drawing)
-
 })
 
 function draw(x, y){
@@ -45,8 +40,33 @@ function draw(x, y){
 
 socket.on('message', (data)=>{
     let message = JSON.parse(data);
-    console.log(message)
 })
+
+socket.on("roomID", (id) => {
+    lobbyID = id;
+})
+
+socket.on("canvasStatus", (data) => {
+    if (data){
+        const img = canvas.toDataURL();
+        socket.emit("canvasStatus", img);
+    }
+})
+
+socket.on('canvasUpdate', (data) => {
+    let message = JSON.parse(data);
+    drawDataURIOnCanvas(message.msg)
+})
+
+function drawDataURIOnCanvas(strDataURI) {
+    let img = new window.Image();
+    img.addEventListener("load", function () {
+       context.drawImage(img, 0, 0);
+    });
+    img.setAttribute("src", strDataURI);
+}
+
+
 
 function sendChatMsg() {
     let chatInput = document.getElementById("chatInput");
@@ -57,7 +77,6 @@ function sendChatMsg() {
 }
 
 function createNewRoom(){
-    console.log("creating new room...")
     let nameInput = document.querySelector("#nameInput");
     let name = nameInput.value;
 
@@ -95,12 +114,19 @@ function pageLoad () {
         if (this.status === 200){
             container.innerHTML = xhr.responseText;
             init();
+            displayRoomCode()
         } else {
             console.log("UPPS")
         }
     }
     xhr.open('get', '/html/lobby.html')
     xhr.send()
+}
+
+
+function displayRoomCode (){
+    let idContainer = document.querySelector("#roomCodeContainer");
+    idContainer.innerHTML += lobbyID;
 }
 
 function randomString(length) {

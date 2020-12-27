@@ -27,6 +27,13 @@ export class GameLobby {
         }
     }
 
+    /**
+     * Returns the number of Players which are currently in this Lobby.
+     */
+    public size() : number{
+        return this._players.size()
+    }
+
     public removePlayer(player : Player) : boolean{
        return this._players.remove(player);
     }
