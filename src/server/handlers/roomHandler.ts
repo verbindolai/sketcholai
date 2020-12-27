@@ -3,6 +3,7 @@ import {Socket, Server as SocketServer} from "socket.io";
 import {GameLobby} from "../gameLobby";
 import {Player} from "../player";
 import {LinkedList} from "typescriptcollectionsframework";
+import {CommunicationHandler} from "./communicationHandler";
 
 export class RoomHandler implements HandlerInterface {
 
@@ -27,6 +28,10 @@ export class RoomHandler implements HandlerInterface {
                 lobby.addPlayer(player);
                 socket.join(lobby.lobbyID);
                 socket.emit("roomID", lobby.lobbyID);
+
+                if (lobby.size() > 1) {
+                    socket.broadcast.to(lobby.players.getFirst().socketID).emit('canvasStatus', true);
+                }
         });
 
     }
