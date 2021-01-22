@@ -1,6 +1,8 @@
 "use strict"
 
 const drawEvent = 'draw';
+const fillEvent = 'fill';
+
 const COL_WHITE = '#ffffff';
 const COL_BLACK = '#000000';
 const COL_RED = '#ff0000';
@@ -16,6 +18,7 @@ let site;
 let drawing = false;
 let lineWidth = 2;
 let currentColor = COL_BLACK;
+let isFloodFill = false;
 
 let oldPosition = {
     x: -1,
@@ -44,17 +47,25 @@ function init(){
     site = document.querySelector('html');
 
     canvas.addEventListener('mousedown', (event) => {
-        drawing = true;
-        // const pos = getMousePos(canvas,event)
-        // const pkg = new DrawInfoPackage(pos.x, pos.y, currentColor, lineWidth, drawing)
-        // socket.emit(drawEvent, JSON.stringify(pkg));
+        if(isFloodFill){
+            //Bucket functionality
+            console.log(isFloodFill);
+            const pos = getMousePos(canvas,event);
+            context.fillStyle = currentColor;
+            context.fillFlood(pos.x,pos.y,128);
+            socket.emit(fillEvent,new DrawInfoPackage(pos.x,pos.y,currentColor,undefined));
+        }else{
+            drawing = true;
+        }
     })
 
     site.addEventListener('mouseup', (event) => {
-        drawing = false;
-        const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
-        socket.emit(drawEvent, JSON.stringify(pkg));
-        clearOldPosition();
+        if(!isFloodFill){
+            drawing = false;
+            const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
+            socket.emit(drawEvent, JSON.stringify(pkg));
+            clearOldPosition();
+        }
     })
 
     canvas.addEventListener('mouseout', (event) => {
@@ -80,10 +91,18 @@ function init(){
 
 }
 
+function switchFloodFill(activateFloodFill){
+    if(activateFloodFill === "true"){
+        isFloodFill = true;
+    }else if(activateFloodFill === "false"){
+        isFloodFill = false;
+    }else{
+        console.log("ERROR: not boolean");
+    }
+}
+
 function changeColor(button){
     currentColor = button.value;
-    console.log(currentColor);
-    console.log(button.value);
 }
 
 function clearOldPosition(){

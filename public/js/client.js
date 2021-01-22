@@ -26,6 +26,13 @@ socket.on(drawEvent,(data)=>{
     }
 })
 
+socket.on(fillEvent,(data)=>{
+    const message = JSON.parse(data);
+
+    context.fillStyle = message.msg.color;
+    context.fillFlood(message.msg.x,message.msg.y,128);
+})
+
 function draw(x, y, color){
 
     if(oldPosition.x > 0 && oldPosition.y > 0){
