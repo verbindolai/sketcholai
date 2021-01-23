@@ -19,19 +19,24 @@ socket.on(drawEvent,(data)=>{
     let width = msg.width;
     let drawing = msg.drawing;
     if (drawing){
-        draw(x,y);
+        draw(x,y,color);
     } else {
         oldPosition.x = -1;
         oldPosition.y = -1;
     }
 })
 
-function draw(x, y){
+socket.on(fillEvent,(data)=>{
+    const message = JSON.parse(data);
+
+    context.fillStyle = message.msg.color;
+    context.fillFlood(message.msg.x,message.msg.y,128);
+})
+
+function draw(x, y, color){
 
     if(oldPosition.x > 0 && oldPosition.y > 0){
-        let color = '#111111'
         drawLine(oldPosition.x,oldPosition.y,x,y,color)
-        const pkg = new DrawInfoPackage(x,y,color,lineWidth)
     }
     oldPosition.x = x;
     oldPosition.y = y;
