@@ -30,7 +30,7 @@ socket.on(drawEvent,(data)=>{
 socket.on(fillEvent,(data)=>{
     const message = JSON.parse(data);
     let bucket = new Bucket(context, canvas);
-    bucket.fill(message.msg.x, message.msg.y,128,message.msg.color, false)
+    bucket.fill(message.msg.x, message.msg.y,128, message.msg.color, false)
 })
 
 socket.on('message', (data)=>{
