@@ -19,7 +19,8 @@ socket.on(drawEvent,(data)=>{
     let width = msg.width;
     let drawing = msg.drawing;
     if (drawing){
-        draw(x,y,color);
+        let pen = new Pen(width, context, canvas);
+        pen.draw(x,y,color, false);
     } else {
         oldPosition.x = -1;
         oldPosition.y = -1;
@@ -28,20 +29,9 @@ socket.on(drawEvent,(data)=>{
 
 socket.on(fillEvent,(data)=>{
     const message = JSON.parse(data);
-
-    context.fillStyle = message.msg.color;
-    context.fillFlood(message.msg.x,message.msg.y,128);
+    let bucket = new Bucket(context, canvas);
+    bucket.fill(message.msg.x, message.msg.y,128, message.msg.color, false)
 })
-
-function draw(x, y, color){
-
-    if(oldPosition.x > 0 && oldPosition.y > 0){
-        drawLine(oldPosition.x,oldPosition.y,x,y,color)
-    }
-    oldPosition.x = x;
-    oldPosition.y = y;
-}
-
 
 socket.on('message', (data)=>{
     let message = JSON.parse(data);
@@ -70,8 +60,6 @@ function drawDataURIOnCanvas(strDataURI) {
     });
     img.setAttribute("src", strDataURI);
 }
-
-
 
 function sendChatMsg() {
     let chatInput = document.getElementById("chatInput");

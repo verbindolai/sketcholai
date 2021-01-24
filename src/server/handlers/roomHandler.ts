@@ -62,7 +62,7 @@ export class RoomHandler implements HandlerInterface {
      * @private
      * @returns
      */
-    public static closeRoom (socket : Socket, lobbys : LinkedList<GameLobby>) : boolean {
+    public static removePlayer (socket : Socket, lobbys : LinkedList<GameLobby>) : boolean {
         let room = RoomHandler.getRoom(socket.id, lobbys);
         let lobby = room?.lobby;
         let player = room?.player;
@@ -80,9 +80,11 @@ export class RoomHandler implements HandlerInterface {
             if (!lobbys.remove(lobby)) {
                 console.error("Couldn't remove Lobby!");
                 return false;
+            } else {
+                console.log("Closed Room successfully!");
             }
         }
-        console.log("Closed Room successfully!");
+
         return true;
     }
 

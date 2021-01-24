@@ -100,7 +100,7 @@ export class SketchServer {
                 return;
             }
 
-            if(!RoomHandler.closeRoom(socket, this.lobbys)) {
+            if(!RoomHandler.removePlayer(socket, this.lobbys)) {
                 console.error("Couldn't delete Lobby.")
             }
         })

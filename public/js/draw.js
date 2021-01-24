@@ -9,8 +9,11 @@ const COL_RED = '#ff0000';
 const COL_GREEN = '#2cb323';
 const COL_BLUE = '#1c37b5';
 const COL_YELLOW = '#e3cf19';
-
 const ERASER = COL_WHITE;
+
+const toolEnum = {"PEN":1, "ERASER":2, "BUCKET":3};
+Object.freeze(toolEnum);
+
 
 let context;
 let canvas;
@@ -19,7 +22,7 @@ let drawing = false;
 let lineWidth = 2;
 let currentColor = COL_BLACK;
 let isFloodFill = false;
-
+let currentTool = toolEnum.PEN;
 let oldPosition = {
     x: -1,
     y: -1
@@ -40,6 +43,73 @@ class DrawInfoPackage {
     }
 }
 
+class Tool {
+    context;
+    canvas;
+
+    constructor(context, canvas) {
+        this.canvas = canvas;
+        this.context = context;
+    }
+}
+
+class Pen extends Tool{
+
+    lineWidth;
+
+    constructor(lineWidth, context, canvas) {
+        super(context, canvas);
+        this.lineWidth = lineWidth;
+    }
+
+    drawLine(x0, y0, x1, y1, color) {
+        this.context.beginPath();
+        this.context.moveTo(x0, y0);
+        this.context.lineTo(x1, y1);
+        this.context.strokeStyle = color;
+        this.context.lineWidth = this.lineWidth;
+        this.context.stroke();
+        this.context.closePath();
+    }
+
+    draw(x, y, color, send) {
+        if(oldPosition.x > 0 && oldPosition.y > 0){
+            this.drawLine(oldPosition.x,oldPosition.y, x, y, color)
+            if (send) {
+                const pkg = new DrawInfoPackage(x, y, color, this.lineWidth, drawing)
+                socket.emit(drawEvent, JSON.stringify(pkg));
+            }
+        }
+        oldPosition.x = x;
+        oldPosition.y = y;
+    }
+}
+
+class Bucket extends Tool {
+
+    constructor(context, canvas) {
+        super(context, canvas);
+    }
+
+    fill(x, y, tol, color, send) {
+        this.context.fillStyle = color;
+        this.context.fillFlood(x,y,tol);
+        if (send) {
+            socket.emit(fillEvent,new DrawInfoPackage(x,y,currentColor,undefined));
+        }
+    }
+}
+
+class Eraser extends Pen {
+
+    constructor(context, canvas) {
+        super(10, context, canvas);
+    }
+
+    erase(x, y, send) {
+        super.draw(x,y,"#ffffff", send)
+    }
+}
 
 function init(){
     canvas = document.querySelector('#canvas')
@@ -47,20 +117,21 @@ function init(){
     site = document.querySelector('html');
 
     canvas.addEventListener('mousedown', (event) => {
-        if(isFloodFill){
-            //Bucket functionality
-            console.log(isFloodFill);
-            const pos = getMousePos(canvas,event);
-            context.fillStyle = currentColor;
-            context.fillFlood(pos.x,pos.y,128);
-            socket.emit(fillEvent,new DrawInfoPackage(pos.x,pos.y,currentColor,undefined));
-        }else{
-            drawing = true;
+        switch(currentTool) {
+            case toolEnum.PEN:
+            case toolEnum.ERASER:
+                drawing = true;
+                break;
+            case toolEnum.BUCKET:
+                const pos = getMousePos(canvas,event);
+                let bucket = new Bucket(context, canvas);
+                bucket.fill(pos.x, pos.y, 128, currentColor, true);
+                break;
         }
     })
 
     site.addEventListener('mouseup', (event) => {
-        if(!isFloodFill){
+        if(currentTool === toolEnum.PEN || currentTool === toolEnum.ERASER){
             drawing = false;
             const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
             socket.emit(drawEvent, JSON.stringify(pkg));
@@ -77,28 +148,35 @@ function init(){
     canvas.addEventListener('mousemove', (event) => {
         if(drawing){
             const pos = getMousePos(canvas,event);
-            if(oldPosition.x > 0 && oldPosition.y > 0){
-                let color = currentColor;
-                drawLine(oldPosition.x,oldPosition.y,pos.x,pos.y,color)
-                const pkg = new DrawInfoPackage(pos.x,pos.y,color,lineWidth,drawing)
-                socket.emit(drawEvent, JSON.stringify(pkg));
+            switch (currentTool) {
+                case toolEnum.PEN:
+                    let pen = new Pen(3, context, canvas);
+                    pen.draw(pos.x, pos.y, currentColor, true);
+                    break;
+                case toolEnum.ERASER:
+                    let eraser = new Eraser(context, canvas);
+                    eraser.erase(pos.x, pos.y, true)
+                    break;
             }
-            oldPosition.x = pos.x;
-            oldPosition.y = pos.y;
         }
     })
-
-
 }
 
-function switchFloodFill(activateFloodFill){
-    if(activateFloodFill === "true"){
-        isFloodFill = true;
-    }else if(activateFloodFill === "false"){
-        isFloodFill = false;
-    }else{
-        console.log("ERROR: not boolean");
+function switchTool(tool){
+
+    switch (tool) {
+        case "PEN":
+            currentTool = toolEnum.PEN;
+            break;
+        case "BUCKET" :
+            currentTool = toolEnum.BUCKET;
+            break;
+        case "ERASER" :
+            currentTool = toolEnum.ERASER;
+            break;
     }
+
+
 }
 
 function changeColor(button){
