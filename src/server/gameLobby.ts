@@ -1,5 +1,6 @@
 import {Connection} from "./connection";
 import {LinkedList} from "typescriptcollectionsframework";
+import {Game} from "./game";
 
 /**
  * Represents a Lobby.
@@ -11,6 +12,7 @@ export class GameLobby {
     private readonly _lobbyID: string;
     private _connections : LinkedList<Connection> = new LinkedList<Connection>();
     private readonly limit : number;
+    private _game : Game | undefined;
 
     constructor(lobbID : string, limit : number) {
         this._lobbyID = lobbID;
@@ -44,6 +46,15 @@ export class GameLobby {
 
     get lobbyID(): string {
         return this._lobbyID;
+    }
+
+
+    get game(): Game | undefined {
+        return this._game;
+    }
+
+    set game(value: Game | undefined) {
+        this._game = value;
     }
 
     public static randomString() : string{

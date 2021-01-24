@@ -1,22 +1,45 @@
 import {HashMap, LinkedList} from "typescriptcollectionsframework";
 import {Connection} from "./connection";
+import {Socket, Server as SocketServer} from "socket.io";
+
 
 export class Game {
 
     private points : HashMap<string, number> = new HashMap<string, number>();
     private winner : Connection | undefined = undefined;
     private readonly players : LinkedList<Connection>;
+    private readonly lobbyId : string;
 
-    constructor(players : LinkedList<Connection>) {
+    private readonly roundDurationMs : number;
+    private roundStartDate : number;
+
+    constructor(lobbyId : string, roundDuration : number, players : LinkedList<Connection>, ) {
         this.players = players;
+        this.roundDurationMs = roundDuration;
+        this.roundStartDate = 0;
+        this.lobbyId = lobbyId;
     }
 
-    private init() {
+    //Called on game initialization
+    public init(server : SocketServer) {
         this.chooseTurn();
+        this.startRound(server)
     }
 
-    private start() {
+    //Called upon every round start
+    private startRound(server : SocketServer) {
+        this.roundStartDate = Date.now();
+        this.chooseTurn();
         //Start Timer
+        //Send timestamp to client
+        server.to(this.lobbyId).emit("gameTime", JSON.stringify(this.roundStartDate));
+        const timer = setTimeout(()=>{
+            this.endRound();
+        },this.roundDurationMs);
+    }
+
+    private endRound() {
+
     }
 
     private chooseTurn() {

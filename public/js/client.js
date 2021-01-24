@@ -48,6 +48,10 @@ socket.on("canvasStatus", (data) => {
     }
 })
 
+socket.on("gameTime", (data) => {  //TODO
+    console.log(data);
+});
+
 socket.on('canvasUpdate', (data) => {
     let message = JSON.parse(data);
     drawDataURIOnCanvas(message.msg)

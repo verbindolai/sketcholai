@@ -184,6 +184,10 @@ function clearOldPosition(){
     oldPosition.y = -1;
 }
 
+function startGame(){
+    socket.emit("startGame", JSON.stringify("start"));
+}
+
 //stackoverflow
 function getMousePos(canvas, evt) {
     const rect = canvas.getBoundingClientRect();
