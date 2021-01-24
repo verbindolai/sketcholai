@@ -21,7 +21,6 @@ let site;
 let drawing = false;
 let lineWidth = 2;
 let currentColor = COL_BLACK;
-let isFloodFill = false;
 let currentTool = toolEnum.PEN;
 let oldPosition = {
     x: -1,
@@ -118,14 +117,14 @@ function init(){
 
     canvas.addEventListener('mousedown', (event) => {
         switch(currentTool) {
-            case toolEnum.PEN:
+            case toolEnum.PEN:;
             case toolEnum.ERASER:
                 drawing = true;
                 break;
             case toolEnum.BUCKET:
                 const pos = getMousePos(canvas,event);
                 let bucket = new Bucket(context, canvas);
-                bucket.fill(pos.x, pos.y, 128, currentColor, true);
+                bucket.fill(pos.x, pos.y, 70, currentColor, true);
                 break;
         }
     })
@@ -163,7 +162,6 @@ function init(){
 }
 
 function switchTool(tool){
-
     switch (tool) {
         case "PEN":
             currentTool = toolEnum.PEN;
@@ -175,8 +173,6 @@ function switchTool(tool){
             currentTool = toolEnum.ERASER;
             break;
     }
-
-
 }
 
 function changeColor(button){

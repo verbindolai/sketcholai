@@ -1,9 +1,9 @@
 import {HandlerInterface} from "./handlerInterface";
 import {Socket, Server as SocketServer} from "socket.io";
 import {GameLobby} from "../gameLobby";
-import {Player} from "../player";
+import {Connection} from "../connection";
 import {LinkedList} from "typescriptcollectionsframework";
-import {CommunicationHandler} from "./communicationHandler";
+
 
 export class RoomHandler implements HandlerInterface {
 
@@ -11,7 +11,7 @@ export class RoomHandler implements HandlerInterface {
 
         socket.on('createNewRoom', (name) => {
                 let room = new GameLobby(GameLobby.randomString(), 20);
-                let creator = new Player(socket.id, name, room.lobbyID);
+                let creator = new Connection(socket.id, name, room.lobbyID);
                 room.addPlayer(creator);
                 lobbys.add(room);
                 socket.join(room.lobbyID);
@@ -24,13 +24,13 @@ export class RoomHandler implements HandlerInterface {
                 if (lobby == undefined) {
                     return;
                 }
-                let player = new Player(socket.id, name, lobby.lobbyID)
+                let player = new Connection(socket.id, name, lobby.lobbyID)
                 lobby.addPlayer(player);
                 socket.join(lobby.lobbyID);
                 socket.emit("roomID", lobby.lobbyID);
 
                 if (lobby.size() > 1) {
-                    socket.broadcast.to(lobby.players.getFirst().socketID).emit('canvasStatus', true);
+                    socket.broadcast.to(lobby.connections.getFirst().socketID).emit('canvasStatus', true);
                 }
         });
 
@@ -38,9 +38,9 @@ export class RoomHandler implements HandlerInterface {
 
     public static getRoom(socketID: string, lobbys : LinkedList<GameLobby>) {
         for (let lobby of lobbys) {
-            for (let player of lobby.players) {
-                if (player.socketID == socketID) {
-                    return {player: player, lobby: lobby};
+            for (let connection of lobby.connections) {
+                if (connection.socketID == socketID) {
+                    return {connection: connection, lobby: lobby};
                 }
             }
         }
@@ -65,7 +65,7 @@ export class RoomHandler implements HandlerInterface {
     public static removePlayer (socket : Socket, lobbys : LinkedList<GameLobby>) : boolean {
         let room = RoomHandler.getRoom(socket.id, lobbys);
         let lobby = room?.lobby;
-        let player = room?.player;
+        let player = room?.connection;
 
         if (player == undefined || lobby == undefined){
             return false;
@@ -76,7 +76,9 @@ export class RoomHandler implements HandlerInterface {
             return false;
         }
 
-        if (lobby.players.size() == 0){
+        //TODO only one lef?
+
+        if (lobby.connections.size() == 0){
             if (!lobbys.remove(lobby)) {
                 console.error("Couldn't remove Lobby!");
                 return false;

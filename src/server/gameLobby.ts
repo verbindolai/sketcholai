@@ -1,4 +1,4 @@
-import {Player} from "./player";
+import {Connection} from "./connection";
 import {LinkedList} from "typescriptcollectionsframework";
 
 /**
@@ -9,7 +9,7 @@ import {LinkedList} from "typescriptcollectionsframework";
 export class GameLobby {
 
     private readonly _lobbyID: string;
-    private _players : LinkedList<Player> = new LinkedList<Player>();
+    private _connections : LinkedList<Connection> = new LinkedList<Connection>();
     private readonly limit : number;
 
     constructor(lobbID : string, limit : number) {
@@ -17,10 +17,10 @@ export class GameLobby {
         this.limit = limit;
     }
 
-    public addPlayer (player : Player) : boolean {
-        if (this._players.size() < this.limit){
-            this._players.add(player);
-            player.isInRoom = true;
+    public addPlayer (connection : Connection) : boolean {
+        if (this._connections.size() < this.limit){
+            this._connections.add(connection);
+            connection.isInRoom = true;
             return true;
         } else {
             return false;
@@ -31,15 +31,15 @@ export class GameLobby {
      * Returns the number of Players which are currently in this Lobby.
      */
     public size() : number{
-        return this._players.size()
+        return this._connections.size()
     }
 
-    public removePlayer(player : Player) : boolean{
-       return this._players.remove(player);
+    public removePlayer(connection : Connection) : boolean{
+       return this._connections.remove(connection);
     }
 
-    get players(): LinkedList<Player> {
-        return this._players;
+    get connections(): LinkedList<Connection> {
+        return this._connections;
     }
 
     get lobbyID(): string {

@@ -92,7 +92,7 @@ export class SketchServer {
     private handleDisconnect(socket: Socket): void {
         socket.on('disconnect', (data) => {
             let room = RoomHandler.getRoom(socket.id, this.lobbys);
-            let player = room?.player;
+            let player = room?.connection;
             let lobby = room?.lobby;
 
             if (player == undefined || lobby == undefined){

@@ -3,7 +3,7 @@ import {Socket, Server as SocketServer} from "socket.io";
 import {LinkedList} from "typescriptcollectionsframework";
 import {GameLobby} from "../gameLobby";
 import {RoomHandler} from "./roomHandler";
-import {Player} from "../player";
+import {Connection} from "../connection";
 
 export class CommunicationHandler implements HandlerInterface{
 
@@ -28,7 +28,7 @@ export class CommunicationHandler implements HandlerInterface{
 
     public static deployMessage(socket: Socket, data: any, event: string, include: boolean, lobbys : LinkedList<GameLobby>, io : SocketServer): boolean {
         let room = RoomHandler.getRoom(socket.id, lobbys);
-        let author = room?.player;
+        let author = room?.connection;
         let lobby = room?.lobby;
 
         if (author == undefined || lobby == undefined) {
@@ -46,10 +46,10 @@ export class CommunicationHandler implements HandlerInterface{
 
 class Message<T> {
 
-    author: Player;
+    author: Connection;
     msg: T;
 
-    constructor(author: Player, msg: T) {
+    constructor(author: Connection, msg: T) {
         this.author = author;
         this.msg = msg;
     }
