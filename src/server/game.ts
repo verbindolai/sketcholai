@@ -18,6 +18,9 @@ export class Game {
     private roundStartDate: number;
     private readonly maxRoundCount : number;
 
+    private gameIntervall : NodeJS.Timeout | undefined;
+    private currentPlayer : Connection | undefined;
+
     constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, server : SocketServer, players: LinkedList<Connection>,) {
         this.players = players;
         this.roundDurationMs = roundDuration;
@@ -33,50 +36,63 @@ export class Game {
         this.startGameLoop()
     }
 
-    private startGameLoop(){
-
-    }
-
     private startRound(){
         this.roundPlayerSet = new HashSet<Connection>();
         for(let player of this.players){
             this.roundPlayerSet.add(player);
         }
-    }
-
-    //Called upon every round start
-    private startTurn() {
+        this.currentPlayer = this.roundPlayerSet.iterator().next();
+        this.currentPlayer.player.isDrawing = true;
         this.roundStartDate = Date.now();
         this.server.to(this.lobbyId).emit("gameTime", JSON.stringify(this.roundStartDate));
-        let connection : Connection = this.roundPlayerSet.iterator().next();
-        connection.player.isDrawing = true;
-        return new Promise<Connection>((resolve, reject) => {
-            setTimeout(() => {
-                resolve(connection);
-            }, this.roundDurationMs);
-        })
-        //Send infos
     }
 
-    private endTurn(connection : Connection){
-        connection.player.isDrawing = false;
-        this.roundPlayerSet.remove(connection);
-        return new Promise<boolean>(((resolve, reject) => {
-            if(this.roundPlayerSet.isEmpty()){
-                this.endRound();
-            }else{
-                this.startTurn().then((conn)=> this.endTurn(conn));
+    private startGameLoop(){
+        this.startRound();
+
+        this.gameIntervall = setInterval(() => {
+
+            //End of the Game
+            if (this.roundCount > this.maxRoundCount){
+                if (this.gameIntervall != undefined){
+                    clearInterval(this.gameIntervall);
+                }
+                //send the Gamestate to Clients
+                this.resetGame()
+                return;
             }
-        }))
-        //Send infos
+
+            //End of one Turn
+            if (Date.now() - this.roundStartDate > this.roundDurationMs){
+                if (this.currentPlayer != undefined){
+                    this.currentPlayer.player.isDrawing = false;
+                    this.roundPlayerSet.remove(this.currentPlayer);
+                }
+                if(this.roundPlayerSet.size() == 0){
+                    this.roundCount++;
+                    this.roundPlayerSet = new HashSet<Connection>();
+                    for(let player of this.players){
+                        this.roundPlayerSet.add(player);
+                    }
+                } else {
+                    this.currentPlayer = this.roundPlayerSet.iterator().next();
+                    this.currentPlayer.player.isDrawing = true;
+                    this.roundStartDate = Date.now();
+                    this.server.to(this.lobbyId).emit("gameTime", JSON.stringify(this.roundStartDate));
+                }
+
+            }
+
+        }, 500)
     }
 
-    private endRound() {
-        this.roundCount++;
-        if(this.roundCount < this.maxRoundCount){
-            this.startTurn();
-        }
+    private resetGame() {
+        this.roundCount = 0;
+        this.currentPlayer = undefined;
+        this.gameIntervall = undefined;
     }
+
+
 
     private checkWord(word: string, socketid: string) {
 
