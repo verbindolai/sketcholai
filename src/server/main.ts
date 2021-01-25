@@ -1,5 +1,4 @@
 import {SketchServer} from "./server"
-import {Game} from "./game";
 
 /**
  * Entrypoint
@@ -11,12 +10,13 @@ class Main {
     /**
      * Starts the Server
      */
-    public static main () : void{
+    public static main(): void {
 
-        let Server : SketchServer = new SketchServer(6969);
+        let Server: SketchServer = new SketchServer(6969);
         Server.start();
 
     }
 }
+
 Main.main();
 

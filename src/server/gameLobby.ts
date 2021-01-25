@@ -10,17 +10,17 @@ import {Game} from "./game";
 export class GameLobby {
 
     private readonly _lobbyID: string;
-    private _connections : LinkedList<Connection> = new LinkedList<Connection>();
-    private readonly limit : number;
-    private _game : Game | undefined;
+    private _connections: LinkedList<Connection> = new LinkedList<Connection>();
+    private readonly limit: number;
+    private _game: Game | undefined;
 
-    constructor(lobbID : string, limit : number) {
+    constructor(lobbID: string, limit: number) {
         this._lobbyID = lobbID;
         this.limit = limit;
     }
 
-    public addPlayer (connection : Connection) : boolean {
-        if (this._connections.size() < this.limit){
+    public addPlayer(connection: Connection): boolean {
+        if (this._connections.size() < this.limit) {
             this._connections.add(connection);
             connection.isInRoom = true;
             return true;
@@ -32,12 +32,12 @@ export class GameLobby {
     /**
      * Returns the number of Players which are currently in this Lobby.
      */
-    public size() : number{
+    public size(): number {
         return this._connections.size()
     }
 
-    public removePlayer(connection : Connection) : boolean{
-       return this._connections.remove(connection);
+    public removePlayer(connection: Connection): boolean {
+        return this._connections.remove(connection);
     }
 
     get connections(): LinkedList<Connection> {
@@ -57,12 +57,12 @@ export class GameLobby {
         this._game = value;
     }
 
-    public static randomString() : string{
+    public static randomString(): string {
         let length = 15;
-        let result           = '';
-        let characters       = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        let characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         let charactersLength = characters.length;
-        for ( let i = 0; i < length; i++ ) {
+        for (let i = 0; i < length; i++) {
             result += characters.charAt(Math.floor(Math.random() * charactersLength));
         }
         return result;

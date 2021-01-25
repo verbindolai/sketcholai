@@ -18,7 +18,7 @@ export class SketchServer {
     private readonly _port: number;
     private io: SocketServer;
     private lobbys: LinkedList<GameLobby> = new LinkedList<GameLobby>();
-    private handlerObjects : LinkedList<HandlerInterface>
+    private handlerObjects: LinkedList<HandlerInterface>
 
 
     constructor(port: number) {
@@ -45,6 +45,7 @@ export class SketchServer {
     private startServer(port: number): HTTPServer {
         console.log(`Listening on Port ${port} ...`)
         return this.app.listen(port);
+
     }
 
     /**
@@ -95,30 +96,28 @@ export class SketchServer {
             let player = room?.connection;
             let lobby = room?.lobby;
 
-            if (player == undefined || lobby == undefined){
+            if (player == undefined || lobby == undefined) {
                 console.error("Disconnect Error, Lobby or Player is undefined.")
                 return;
             }
 
-            if(!RoomHandler.removePlayer(socket, this.lobbys)) {
+            if (!RoomHandler.removePlayer(socket, this.lobbys)) {
                 console.error("Couldn't delete Lobby.")
             }
         })
     }
 
-    private startHandlers(socket : Socket) : void{
+    private startHandlers(socket: Socket): void {
         for (const handler of this.handlerObjects) {
             handler.handle(socket, this.lobbys, this.io)
         }
     }
 
 
-
-
-    private addHandlers() : void{
+    private addHandlers(): void {
         const handlerFiles = fs.readdirSync('src/server/handlers').filter(file => file.endsWith('.ts') && file !== 'handlerInterface.ts');
         for (const file of handlerFiles) {
-            const fileWithoutTS = file.replace(".ts","");
+            const fileWithoutTS = file.replace(".ts", "");
             let command = require(`./handlers/${fileWithoutTS}`);
             this.handlerObjects.add(command.handler)
         }

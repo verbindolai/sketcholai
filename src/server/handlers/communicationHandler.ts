@@ -1,14 +1,13 @@
 import {HandlerInterface} from "./handlerInterface";
-import {Socket, Server as SocketServer} from "socket.io";
+import {Server as SocketServer, Socket} from "socket.io";
 import {LinkedList} from "typescriptcollectionsframework";
 import {GameLobby} from "../gameLobby";
 import {RoomHandler} from "./roomHandler";
 import {Connection} from "../connection";
-import {Game} from "../game";
 
-export class CommunicationHandler implements HandlerInterface{
+export class CommunicationHandler implements HandlerInterface {
 
-    handle(socket: Socket, lobbys: LinkedList<GameLobby>, io : SocketServer) {
+    handle(socket: Socket, lobbys: LinkedList<GameLobby>, io: SocketServer) {
         socket.on('chat', (data) => {
             if (!CommunicationHandler.deployMessage(socket, data, 'chat', true, lobbys, io)) {
                 console.error("Couldn't deploy Message.")
@@ -27,7 +26,7 @@ export class CommunicationHandler implements HandlerInterface{
      * @private
      */
 
-    public static deployMessage(socket: Socket, data: any, event: string, include: boolean, lobbys : LinkedList<GameLobby>, io : SocketServer): boolean {
+    public static deployMessage(socket: Socket, data: any, event: string, include: boolean, lobbys: LinkedList<GameLobby>, io: SocketServer): boolean {
         let room = RoomHandler.getRoom(socket.id, lobbys);
         let author = room?.connection;
         let lobby = room?.lobby;
@@ -55,4 +54,5 @@ class Message<T> {
         this.msg = msg;
     }
 }
+
 export let handler = new CommunicationHandler();

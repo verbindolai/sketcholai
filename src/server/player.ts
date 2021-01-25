@@ -1,6 +1,6 @@
 export class Player {
-    private _isDrawing : boolean;
-    private _points : number;
+    private _isDrawing: boolean;
+    private _points: number;
 
     constructor() {
         this._isDrawing = false;

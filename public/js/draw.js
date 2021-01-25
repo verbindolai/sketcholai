@@ -11,7 +11,7 @@ const COL_BLUE = '#1c37b5';
 const COL_YELLOW = '#e3cf19';
 const ERASER = COL_WHITE;
 
-const toolEnum = {"PEN":1, "ERASER":2, "BUCKET":3};
+const toolEnum = {"PEN": 1, "ERASER": 2, "BUCKET": 3};
 Object.freeze(toolEnum);
 
 
@@ -33,7 +33,8 @@ class DrawInfoPackage {
     width;
     color;
     drawing;
-    constructor(x,y,color,width, drawing) {
+
+    constructor(x, y, color, width, drawing) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -52,7 +53,7 @@ class Tool {
     }
 }
 
-class Pen extends Tool{
+class Pen extends Tool {
 
     lineWidth;
 
@@ -72,8 +73,8 @@ class Pen extends Tool{
     }
 
     draw(x, y, color, send) {
-        if(oldPosition.x > 0 && oldPosition.y > 0){
-            this.drawLine(oldPosition.x,oldPosition.y, x, y, color)
+        if (oldPosition.x > 0 && oldPosition.y > 0) {
+            this.drawLine(oldPosition.x, oldPosition.y, x, y, color)
             if (send) {
                 const pkg = new DrawInfoPackage(x, y, color, this.lineWidth, drawing)
                 socket.emit(drawEvent, JSON.stringify(pkg));
@@ -92,9 +93,9 @@ class Bucket extends Tool {
 
     fill(x, y, tol, color, send) {
         this.context.fillStyle = color;
-        this.context.fillFlood(x,y,tol);
+        this.context.fillFlood(x, y, tol);
         if (send) {
-            socket.emit(fillEvent,new DrawInfoPackage(x,y,currentColor,undefined));
+            socket.emit(fillEvent, new DrawInfoPackage(x, y, currentColor, undefined));
         }
     }
 }
@@ -106,23 +107,24 @@ class Eraser extends Pen {
     }
 
     erase(x, y, send) {
-        super.draw(x,y,"#ffffff", send)
+        super.draw(x, y, "#ffffff", send)
     }
 }
 
-function init(){
+function init() {
     canvas = document.querySelector('#canvas')
     context = canvas.getContext('2d');
     site = document.querySelector('html');
 
     canvas.addEventListener('mousedown', (event) => {
-        switch(currentTool) {
-            case toolEnum.PEN:;
+        switch (currentTool) {
+            case toolEnum.PEN:
+                ;
             case toolEnum.ERASER:
                 drawing = true;
                 break;
             case toolEnum.BUCKET:
-                const pos = getMousePos(canvas,event);
+                const pos = getMousePos(canvas, event);
                 let bucket = new Bucket(context, canvas);
                 bucket.fill(pos.x, pos.y, 70, currentColor, true);
                 break;
@@ -130,7 +132,7 @@ function init(){
     })
 
     site.addEventListener('mouseup', (event) => {
-        if(currentTool === toolEnum.PEN || currentTool === toolEnum.ERASER){
+        if (currentTool === toolEnum.PEN || currentTool === toolEnum.ERASER) {
             drawing = false;
             const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
             socket.emit(drawEvent, JSON.stringify(pkg));
@@ -145,8 +147,8 @@ function init(){
     })
 
     canvas.addEventListener('mousemove', (event) => {
-        if(drawing){
-            const pos = getMousePos(canvas,event);
+        if (drawing) {
+            const pos = getMousePos(canvas, event);
             switch (currentTool) {
                 case toolEnum.PEN:
                     let pen = new Pen(3, context, canvas);
@@ -161,7 +163,7 @@ function init(){
     })
 }
 
-function switchTool(tool){
+function switchTool(tool) {
     switch (tool) {
         case "PEN":
             currentTool = toolEnum.PEN;
@@ -175,16 +177,16 @@ function switchTool(tool){
     }
 }
 
-function changeColor(button){
+function changeColor(button) {
     currentColor = button.value;
 }
 
-function clearOldPosition(){
+function clearOldPosition() {
     oldPosition.x = -1;
     oldPosition.y = -1;
 }
 
-function startGame(){
+function startGame() {
     socket.emit("startGame", JSON.stringify("start"));
 }
 

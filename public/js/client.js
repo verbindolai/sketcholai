@@ -1,6 +1,10 @@
 let port = 6969;
 let socket = io(`http://localhost:${port}`);
 let lobbyID;
+let roundStartTime;
+let roundTime = 10;
+let timerTime = roundTime;
+let timer;
 
 socket.on('chat', (data) => {
     let message = JSON.parse(data);
@@ -10,7 +14,7 @@ socket.on('chat', (data) => {
     scrollDown();
 })
 
-socket.on(drawEvent,(data)=>{
+socket.on(drawEvent, (data) => {
     const message = JSON.parse(data);
     const msg = JSON.parse(message.msg);
     let x = msg.x;
@@ -18,22 +22,22 @@ socket.on(drawEvent,(data)=>{
     let color = msg.color;
     let width = msg.width;
     let drawing = msg.drawing;
-    if (drawing){
+    if (drawing) {
         let pen = new Pen(width, context, canvas);
-        pen.draw(x,y,color, false);
+        pen.draw(x, y, color, false);
     } else {
         oldPosition.x = -1;
         oldPosition.y = -1;
     }
 })
 
-socket.on(fillEvent,(data)=>{
+socket.on(fillEvent, (data) => {
     const message = JSON.parse(data);
     let bucket = new Bucket(context, canvas);
-    bucket.fill(message.msg.x, message.msg.y,70, message.msg.color, false)
+    bucket.fill(message.msg.x, message.msg.y, 70, message.msg.color, false)
 })
 
-socket.on('message', (data)=>{
+socket.on('message', (data) => {
     let message = JSON.parse(data);
 })
 
@@ -42,15 +46,35 @@ socket.on("roomID", (id) => {
 })
 
 socket.on("canvasStatus", (data) => {
-    if (data){
+    if (data) {
         const img = canvas.toDataURL();
         socket.emit("canvasStatus", img);
     }
 })
 
-socket.on("gameTime", (data) => {  //TODO
-    console.log(data);
+socket.on("gameTime", (unixTime) => {  //TODO
+    clearInterval(timer);
+    let realUnix = Math.floor(unixTime / 1000);
+    roundStartTime = realUnix;
+    let time = new Date(realUnix * 1000);
+    let hours = time.getHours();
+    let minutes = time.getMinutes();
+    let seconds = time.getSeconds();
+    timer = setInterval(() => {
+        updateTime();
+    }, 1000)
+    console.log(hours + ":" + minutes + ":" + seconds);
 });
+
+function updateTime() {
+    let time = Math.floor(Date.now() / 1000) - roundStartTime;
+    timerTime = roundTime - time;
+    console.log(timerTime);
+    if (timerTime <= 0) {
+        timerTime = 0;
+        clearInterval(timer);
+    }
+}
 
 socket.on('canvasUpdate', (data) => {
     let message = JSON.parse(data);
@@ -60,7 +84,7 @@ socket.on('canvasUpdate', (data) => {
 function drawDataURIOnCanvas(strDataURI) {
     let img = new window.Image();
     img.addEventListener("load", function () {
-       context.drawImage(img, 0, 0);
+        context.drawImage(img, 0, 0);
     });
     img.setAttribute("src", strDataURI);
 }
@@ -73,11 +97,11 @@ function sendChatMsg() {
     scrollDown();
 }
 
-function createNewRoom(){
+function createNewRoom() {
     let nameInput = document.querySelector("#nameInput");
     let name = nameInput.value;
 
-    if (name == undefined || name == ""){
+    if (name == undefined || name == "") {
         name = randomString(6);
     }
     socket.emit('createNewRoom', name);
@@ -90,7 +114,7 @@ function joinRoom() {
     let name = nameInput.value;
     let roomID = roomInput.value;
 
-    if (name == undefined || name == ""){
+    if (name == undefined || name == "") {
         name = randomString(6);
     }
     socket.emit('joinRoom', name, roomID);
@@ -103,12 +127,12 @@ function scrollDown() {
     chatDisplay.scrollTop = chatDisplay.scrollHeight - chatDisplay.clientHeight;
 }
 
-function pageLoad () {
+function pageLoad() {
     const xhr = new XMLHttpRequest()
     const container = document.body;
 
     xhr.onload = function () {
-        if (this.status === 200){
+        if (this.status === 200) {
             container.innerHTML = xhr.responseText;
             init();
             displayRoomCode()
@@ -121,16 +145,16 @@ function pageLoad () {
 }
 
 
-function displayRoomCode (){
+function displayRoomCode() {
     let idContainer = document.querySelector("#roomCodeContainer");
     idContainer.innerHTML += lobbyID;
 }
 
 function randomString(length) {
-    let result           = '';
-    let characters       = 'abcdefghijklmnopqrstuvwxyz';
+    let result = '';
+    let characters = 'abcdefghijklmnopqrstuvwxyz';
     let charactersLength = characters.length;
-    for ( let i = 0; i < length; i++ ) {
+    for (let i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;

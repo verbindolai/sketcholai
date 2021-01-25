@@ -7,13 +7,13 @@ import {Player} from "./player";
 
 export class Connection {
 
-    private readonly _socketID : string;
+    private readonly _socketID: string;
     private _name: string;
-    private _isInRoom : boolean;
-    private _lobbyID : string;
+    private _isInRoom: boolean;
+    private _lobbyID: string;
     private player: Player;
 
-    constructor(id: string, name: string, lobbyID : string) {
+    constructor(id: string, name: string, lobbyID: string) {
         this._socketID = id;
         this._name = name;
         this._isInRoom = false;
@@ -48,11 +48,11 @@ export class Connection {
         this._lobbyID = value;
     }
 
-    public toString() :string {
-        return  "name: " + this._name + "\n" +
-                "id: " + this._socketID + "\n" +
-                "isInRoom: " + this._isInRoom + "\n" +
-                "lobbyID: " + this._lobbyID + "\n";
+    public toString(): string {
+        return "name: " + this._name + "\n" +
+            "id: " + this._socketID + "\n" +
+            "isInRoom: " + this._isInRoom + "\n" +
+            "lobbyID: " + this._lobbyID + "\n";
 
     }
 }
