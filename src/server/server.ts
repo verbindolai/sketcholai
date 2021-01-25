@@ -2,10 +2,11 @@ import express, {Express, Request, Response} from "express";
 import {Server as SocketServer, Socket} from "socket.io";
 import {Server as HTTPServer} from "http"
 import {GameLobby} from "./gameLobby"
-import {LinkedList} from "typescriptcollectionsframework";
+import {HashMap, LinkedList} from "typescriptcollectionsframework";
 import {RoomHandler} from "./handlers/roomHandler";
 import {HandlerInterface} from "./handlers/handlerInterface";
 import * as fs from "fs";
+import {Connection} from "./connection";
 
 /**
  * Represents the Sketch-Server
@@ -19,6 +20,7 @@ export class SketchServer {
     private io: SocketServer;
     private lobbys: LinkedList<GameLobby> = new LinkedList<GameLobby>();
     private handlerObjects: LinkedList<HandlerInterface>
+    private allConnections : HashMap<string, Connection> = new HashMap<string, Connection>();
 
 
     constructor(port: number) {
@@ -101,7 +103,7 @@ export class SketchServer {
                 return;
             }
 
-            if (!RoomHandler.removePlayer(socket, this.lobbys)) {
+            if (!RoomHandler.removePlayer(socket, this.lobbys, this.allConnections)) {
                 console.error("Couldn't delete Lobby.")
             }
         })
@@ -109,7 +111,7 @@ export class SketchServer {
 
     private startHandlers(socket: Socket): void {
         for (const handler of this.handlerObjects) {
-            handler.handle(socket, this.lobbys, this.io)
+            handler.handle(socket, this.lobbys, this.io, this.allConnections)
         }
     }
 

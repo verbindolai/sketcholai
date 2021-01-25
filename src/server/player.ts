@@ -11,4 +11,17 @@ export class Player {
         this._isDrawing = false;
         this._points = 0;
     }
+
+
+    set isDrawing(value: boolean) {
+        this._isDrawing = value;
+    }
+
+    get isDrawing(): boolean {
+        return this._isDrawing;
+    }
+
+    get points(): number {
+        return this._points;
+    }
 }

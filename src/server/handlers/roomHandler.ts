@@ -2,16 +2,17 @@ import {HandlerInterface} from "./handlerInterface";
 import {Server as SocketServer, Socket} from "socket.io";
 import {GameLobby} from "../gameLobby";
 import {Connection} from "../connection";
-import {LinkedList} from "typescriptcollectionsframework";
+import {HashMap, LinkedList} from "typescriptcollectionsframework";
 
 
 export class RoomHandler implements HandlerInterface {
 
-    handle(socket: Socket, lobbys: LinkedList<GameLobby>, io: SocketServer): void {
+    handle(socket: Socket, lobbys: LinkedList<GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>): void {
 
         socket.on('createNewRoom', (name) => {
             let room = new GameLobby(GameLobby.randomString(), 20);
             let creator = new Connection(socket.id, name, room.lobbyID);
+            allConnections.put(socket.id,creator);
             room.addPlayer(creator);
             lobbys.add(room);
             socket.join(room.lobbyID);
@@ -28,6 +29,7 @@ export class RoomHandler implements HandlerInterface {
             lobby.addPlayer(player);
             socket.join(lobby.lobbyID);
             socket.emit("roomID", lobby.lobbyID);
+            allConnections.put(socket.id,player);
 
             if (lobby.size() > 1) {
                 socket.broadcast.to(lobby.connections.getFirst().socketID).emit('canvasStatus', true);
@@ -63,7 +65,7 @@ export class RoomHandler implements HandlerInterface {
      * @private
      * @returns
      */
-    public static removePlayer(socket: Socket, lobbys: LinkedList<GameLobby>): boolean {
+    public static removePlayer(socket: Socket, lobbys: LinkedList<GameLobby>, allPlayers : HashMap<string, Connection>): boolean {
         let room = RoomHandler.getRoom(socket.id, lobbys);
         let lobby = room?.lobby;
         let player = room?.connection;
@@ -76,6 +78,7 @@ export class RoomHandler implements HandlerInterface {
             console.error("Couldn't remove Player!");
             return false;
         }
+        allPlayers.remove(player.socketID);
 
         //TODO only one lef?
 

@@ -1,13 +1,13 @@
 import {HandlerInterface} from "./handlerInterface";
 import {Server as SocketServer, Socket} from "socket.io";
-import {LinkedList} from "typescriptcollectionsframework";
+import {HashMap, LinkedList} from "typescriptcollectionsframework";
 import {GameLobby} from "../gameLobby";
 import {RoomHandler} from "./roomHandler";
 import {Connection} from "../connection";
 
 export class CommunicationHandler implements HandlerInterface {
 
-    handle(socket: Socket, lobbys: LinkedList<GameLobby>, io: SocketServer) {
+    handle(socket: Socket, lobbys: LinkedList<GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>) {
         socket.on('chat', (data) => {
             if (!CommunicationHandler.deployMessage(socket, data, 'chat', true, lobbys, io)) {
                 console.error("Couldn't deploy Message.")

@@ -11,14 +11,14 @@ export class Connection {
     private _name: string;
     private _isInRoom: boolean;
     private _lobbyID: string;
-    private player: Player;
+    private _player: Player;
 
     constructor(id: string, name: string, lobbyID: string) {
         this._socketID = id;
         this._name = name;
         this._isInRoom = false;
         this._lobbyID = lobbyID;
-        this.player = new Player();
+        this._player = new Player();
     }
 
 
@@ -30,6 +30,10 @@ export class Connection {
         return this._name;
     }
 
+
+    get player(): Player {
+        return this._player;
+    }
 
     get isInRoom(): boolean {
         return this._isInRoom;
