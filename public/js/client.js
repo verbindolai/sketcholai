@@ -105,7 +105,7 @@ function createNewRoom() {
         name = randomString(6);
     }
     socket.emit('createNewRoom', name);
-    pageLoad();
+    pageLoad("lobby");
 }
 
 function joinRoom() {
@@ -118,7 +118,7 @@ function joinRoom() {
         name = randomString(6);
     }
     socket.emit('joinRoom', name, roomID);
-    pageLoad();
+    pageLoad("lobby");
 }
 
 
@@ -127,7 +127,7 @@ function scrollDown() {
     chatDisplay.scrollTop = chatDisplay.scrollHeight - chatDisplay.clientHeight;
 }
 
-function pageLoad() {
+function pageLoad(name) {
     const xhr = new XMLHttpRequest()
     const container = document.body;
 
@@ -140,7 +140,7 @@ function pageLoad() {
             console.log("UPPS")
         }
     }
-    xhr.open('get', '/html/lobby.html')
+    xhr.open('get', `/html/${name}.html`)
     xhr.send()
 }
 
