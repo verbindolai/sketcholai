@@ -1,0 +1,51 @@
+    <div class="outer-grid-container">
+        <div class="grid-header grid-item">Sketcholai</div>
+        <div class="grid-left grid-item"></div>
+        <div class="grid-item" id="mainItem" >
+            <div class="grid-main inner-grid-container" id="mainContainer">
+                <div class="grid-header grid-item inner-grid-item">
+                    <div id="roomCodeContainer">Roomcode:
+                    </div>
+                </div>
+                <div class="grid-left grid-item inner-grid-item">
+                    <div>
+                    </div>
+                </div>
+                <div class="grid-main grid-item inner-grid-item" id="mainGridContainer">
+                    <div id="canvasContainer">
+                        <canvas id="canvas" width="1000" height="750">
+                        </canvas>
+                    </div>
+                </div>
+                <div class="grid-right grid-item inner-grid-item" id="chatCotainer">
+                    <div class="chat-window" id="chat">
+                        <div id="chatDisplay">
+                            <ul id="chatList"></ul>
+                        </div>
+                        <div id="chatInputContainer">
+                            <input type="text" id="chatInput">
+                            <button id="sendButton" onclick="sendChatMsg()">send</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-footer grid-item inner-grid-item">
+                    <div id="toolBox">
+                        <div id="colorContainer">
+                            <button value="#ffffff" onclick="changeColor(this)">WHITE</button>
+                            <button value="#000000" onclick="changeColor(this)">BLACK</button>
+                            <button value="#2cb323" onclick="changeColor(this)">GREEN</button>
+                            <button value="#ff0000" onclick="changeColor(this)">RED</button>
+                            <button value="#e3cf19" onclick="changeColor(this)">YELLOW</button>
+                            <button value="#1c37b5" onclick="changeColor(this)">BLUE</button>
+                            <button value="ERASER" onclick="switchTool(this.value)">ERASER</button>
+                            <button value="BUCKET" onclick="switchTool(this.value)">BUCKET</button>
+                            <button value="PEN" onclick="switchTool(this.value)">PEN</button>
+                            <button onclick="startGame()">START</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="grid-right grid-item"></div>
+        <div class="grid-footer grid-item"></div>
+    </div>
