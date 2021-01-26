@@ -3,6 +3,7 @@ import {Server as SocketServer, Socket} from "socket.io";
 import {GameLobby} from "../gameLobby";
 import {Connection} from "../connection";
 import {HashMap, LinkedList} from "typescriptcollectionsframework";
+import {CommunicationHandler} from "./communicationHandler";
 
 
 export class RoomHandler implements HandlerInterface {
@@ -17,6 +18,7 @@ export class RoomHandler implements HandlerInterface {
             lobbys.add(room);
             socket.join(room.lobbyID);
             socket.emit("roomID", room.lobbyID);
+            CommunicationHandler.deployMessage(socket,JSON.stringify([RoomHandler.listToArr(room.connections)]),"created", true, lobbys, io);
         });
 
 
@@ -30,9 +32,9 @@ export class RoomHandler implements HandlerInterface {
             socket.join(lobby.lobbyID);
             socket.emit("roomID", lobby.lobbyID);
             allConnections.put(socket.id,player);
-
+            CommunicationHandler.deployMessage(socket,JSON.stringify([RoomHandler.listToArr(lobby.connections)]),"joined", true, lobbys, io);
             if (lobby.size() > 1) {
-                socket.broadcast.to(lobby.connections.getFirst().socketID).emit('canvasStatus', true);
+                //socket.broadcast.to(lobby.connections.getFirst().socketID).emit('canvasStatus', true);
             }
         });
 
@@ -92,6 +94,15 @@ export class RoomHandler implements HandlerInterface {
         }
 
         return true;
+    }
+
+
+    public static listToArr <T> (list : LinkedList<T>)  : T[] {
+        let result : T[] = [];
+        for (let obj of list) {
+            result.push(obj)
+        }
+        return result;
     }
 
 }

@@ -192,6 +192,7 @@ function startGame() {
         init();
         displayRoomCode()
         timerCont = document.querySelector("#timerContainer");
+        nameCont = document.querySelector("#nameContainer");
     })
 }
 

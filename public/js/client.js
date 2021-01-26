@@ -6,6 +6,7 @@ let roundTime = 10;
 let timerTime = roundTime;
 let timer;
 let timerCont;
+let nameCont;
 let currentPlayerName;
 
 
@@ -55,13 +56,51 @@ socket.on("canvasStatus", (data) => {
     }
 })
 
+socket.on("joined", (data) =>{
+    let message = JSON.parse(data);
+    let msg = JSON.parse(message.msg)
+    let connections = msg[0];
+
+    pageLoad("lobby2",()=>{
+        let connectionContainer = document.querySelector("#connectedPlayerList");
+        connectionContainer.innerHTML = "";
+
+        for(let con of connections) {
+            let li = document.createElement("li");
+            li.appendChild(document.createTextNode(con._name));
+            connectionContainer.appendChild(li);
+        }
+    });
+
+})
+
+
+socket.on("created", (data) => {
+    let message = JSON.parse(data);
+    let msg = JSON.parse(message.msg)
+    let connections = msg[0];
+
+    pageLoad("lobby", () => {
+        let connectionContainer = document.querySelector("#connectedPlayerList");
+        connectionContainer.innerHTML = "";
+
+        for(let con of connections) {
+            let li = document.createElement("li");
+            li.appendChild(document.createTextNode(con._name));
+            connectionContainer.appendChild(li);
+        }
+    });
+})
+
 socket.on("gameTime", (args) => {  //TODO
     let data = JSON.parse(args);
     let unixTime = data[0];
     let duration = data[1];
     let name = data[2];
     currentPlayerName = name;
-    document.querySelector("#nameContainer").innerHTML = "Current Player: " + currentPlayerName;
+    if(nameCont != undefined){
+        nameCont.innerHTML = "Current Player: " + currentPlayerName;
+    }
     roundTime = duration;
     clearInterval(timer);
     let realUnix = Math.floor(unixTime / 1000);
@@ -108,7 +147,6 @@ function sendChatMsg() {
 }
 
 function createNewRoom() {
-    console.log("crate")
     let nameInput = document.querySelector("#nameInput");
     let name = nameInput.value;
 
@@ -116,9 +154,7 @@ function createNewRoom() {
         name = randomString(6);
     }
     socket.emit('createNewRoom', name);
-    pageLoad("lobby", () => {
 
-    });
 }
 
 function joinRoom() {
@@ -131,9 +167,6 @@ function joinRoom() {
         name = randomString(6);
     }
     socket.emit('joinRoom', name, roomID);
-    pageLoad("lobby",()=>{
-
-    });
 }
 
 

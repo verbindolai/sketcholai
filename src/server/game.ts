@@ -37,6 +37,9 @@ export class Game {
             this.roundPlayerSet.add(player);
         }
         this.currentPlayer = this.roundPlayerSet.iterator().next();
+        if (this.currentPlayer == null) { //TODO Right?
+            return;
+        }
         this.currentPlayer.player.isDrawing = true;
         this.roundStartDate = Date.now();
         io.to(this.lobbyId).emit("gameTime", JSON.stringify([this.roundStartDate, this.roundDurationSec, this.currentPlayer.name]));
@@ -60,7 +63,7 @@ export class Game {
             }
 
             //End of one Turn
-            console.log("Time: " + (Date.now() - this.roundStartDate) / 100)
+            console.log("Time: " + (Date.now() - this.roundStartDate) / 1000)
             if ((Date.now() - this.roundStartDate) / 1000 > this.roundDurationSec){
                 if (this.currentPlayer != undefined){
                     if (this.currentPlayer == null) { //TODO Right?
