@@ -48,6 +48,11 @@ export class GameHandler implements HandlerInterface {
             CommunicationHandler.deployMessage(socket,null,"gameStarted", true, lobbys, io);
         })
 
+        socket.on("lateJoinGame", (name, lobbyID) => {
+
+
+        })
+
     }
 }
 

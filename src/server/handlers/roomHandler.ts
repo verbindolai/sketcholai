@@ -13,27 +13,38 @@ export class RoomHandler implements HandlerInterface {
         socket.on('createNewRoom', (name) => {
             let room = new GameLobby(GameLobby.randomString(), 20);
             let creator = new Connection(socket.id, name, room.lobbyID);
+
             allConnections.put(socket.id,creator);
             room.addPlayer(creator);
             lobbys.add(room);
             socket.join(room.lobbyID);
+
             socket.emit("created",JSON.stringify([RoomHandler.listToArr(room.connections), room.lobbyID]));
         });
 
 
         socket.on('joinRoom', (name, lobbyID) => {
             let lobby = RoomHandler.getLobbyByID(lobbyID, lobbys);
-            let selfEvent = lobby?.game?.hasStarted ? "joinedLate" : "joined";
-            let lobbyEvent = lobby?.game?.hasStarted ? "newPlayerJoinedLate" : "newPlayerJoined";
+            let selfEvent = "joined";
+            let lobbyEvent = "newPlayerJoined";
+
             if (lobby == undefined) {
                 return;
             }
+
             let player = new Connection(socket.id, name, lobby.lobbyID)
             lobby.addPlayer(player);
             socket.join(lobby.lobbyID);
             allConnections.put(socket.id,player);
-            socket.emit(selfEvent , JSON.stringify([RoomHandler.listToArr(lobby.connections), lobby.lobbyID]));
-            CommunicationHandler.deployMessage(socket, JSON.stringify([RoomHandler.listToArr(lobby.connections), lobby.lobbyID]), lobbyEvent,false ,lobbys, io);
+
+            if (lobby.game?.hasStarted) {
+                socket.emit("joinStartedGame" , JSON.stringify([RoomHandler.listToArr(lobby.connections), lobby.lobbyID]));
+                CommunicationHandler.deployMessage(socket, JSON.stringify([RoomHandler.listToArr(lobby.connections), lobby.lobbyID]), "newPlayerLateJoin",false ,lobbys, io);
+            }else {
+                socket.emit(selfEvent , JSON.stringify([RoomHandler.listToArr(lobby.connections), lobby.lobbyID]));
+                CommunicationHandler.deployMessage(socket, JSON.stringify([RoomHandler.listToArr(lobby.connections), lobby.lobbyID]), lobbyEvent,false ,lobbys, io);
+            }
+
             if (lobby.size() > 1) {
                 //socket.broadcast.to(lobby.connections.getFirst().socketID).emit('canvasStatus', true);
             }

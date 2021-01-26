@@ -10,6 +10,7 @@ let timerCont;
 let nameCont;
 let currentPlayerName;
 let currentPlayerID;
+let clientName;
 
 
 socket.on('chat', (data) => {
@@ -99,7 +100,7 @@ socket.on("joinedLate", (data) =>{
 })
 
 function joinGame() {
-   socket.emit("")
+   socket.emit("lateJoinGame")
 }
 
 
