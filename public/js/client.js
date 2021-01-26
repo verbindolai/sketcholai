@@ -5,6 +5,9 @@ let roundStartTime;
 let roundTime = 10;
 let timerTime = roundTime;
 let timer;
+let timerCont;
+let currentPlayerName;
+
 
 socket.on('chat', (data) => {
     let message = JSON.parse(data);
@@ -52,7 +55,14 @@ socket.on("canvasStatus", (data) => {
     }
 })
 
-socket.on("gameTime", (unixTime) => {  //TODO
+socket.on("gameTime", (args) => {  //TODO
+    let data = JSON.parse(args);
+    let unixTime = data[0];
+    let duration = data[1];
+    let name = data[2];
+    currentPlayerName = name;
+    document.querySelector("#nameContainer").innerHTML = "Current Player: " + currentPlayerName;
+    roundTime = duration;
     clearInterval(timer);
     let realUnix = Math.floor(unixTime / 1000);
     roundStartTime = realUnix;
@@ -69,7 +79,8 @@ socket.on("gameTime", (unixTime) => {  //TODO
 function updateTime() {
     let time = Math.floor(Date.now() / 1000) - roundStartTime;
     timerTime = roundTime - time;
-    console.log(timerTime);
+    //console.log(timerTime);
+    timerCont.innerHTML = "Time: " + timerTime;
     if (timerTime <= 0) {
         timerTime = 0;
         clearInterval(timer);
@@ -98,6 +109,7 @@ function sendChatMsg() {
 }
 
 function createNewRoom() {
+    console.log("crate")
     let nameInput = document.querySelector("#nameInput");
     let name = nameInput.value;
 
@@ -105,7 +117,9 @@ function createNewRoom() {
         name = randomString(6);
     }
     socket.emit('createNewRoom', name);
-    pageLoad("lobby");
+    pageLoad("lobby", () => {
+
+    });
 }
 
 function joinRoom() {
@@ -118,7 +132,9 @@ function joinRoom() {
         name = randomString(6);
     }
     socket.emit('joinRoom', name, roomID);
-    pageLoad("lobby");
+    pageLoad("lobby",()=>{
+
+    });
 }
 
 
@@ -127,15 +143,14 @@ function scrollDown() {
     chatDisplay.scrollTop = chatDisplay.scrollHeight - chatDisplay.clientHeight;
 }
 
-function pageLoad(name) {
+function pageLoad(name, onload) {
     const xhr = new XMLHttpRequest()
-    const container = document.body;
 
     xhr.onload = function () {
         if (this.status === 200) {
+            const container = document.body;
             container.innerHTML = xhr.responseText;
-            init();
-            displayRoomCode()
+            onload();
         } else {
             console.log("UPPS")
         }

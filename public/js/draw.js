@@ -188,6 +188,11 @@ function clearOldPosition() {
 
 function startGame() {
     socket.emit("startGame", JSON.stringify("start"));
+    pageLoad('game', ()=>{
+        init();
+        displayRoomCode()
+        timerCont = document.querySelector("#timerContainer");
+    })
 }
 
 //stackoverflow
