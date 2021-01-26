@@ -8,6 +8,7 @@ let timer;
 let timerCont;
 let nameCont;
 let currentPlayerName;
+let currentPlayerID;
 
 
 socket.on('chat', (data) => {
@@ -57,13 +58,16 @@ socket.on("canvasStatus", (data) => {
 })
 
 socket.on("joined", (data) =>{
-    let message = JSON.parse(data);
-    let msg = JSON.parse(message.msg)
+    let msg = JSON.parse(data);
     let connections = msg[0];
+    let lobbyID = msg[1];
 
     pageLoad("lobby2",()=>{
         let connectionContainer = document.querySelector("#connectedPlayerList");
+        let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
+
         connectionContainer.innerHTML = "";
+        lobbyRoomCode.innerHTML = lobbyID;
 
         for(let con of connections) {
             let li = document.createElement("li");
@@ -71,18 +75,34 @@ socket.on("joined", (data) =>{
             connectionContainer.appendChild(li);
         }
     });
+})
 
+socket.on("newPlayerJoined", (data) => {
+    let message = JSON.parse(data);
+    let msg = JSON.parse(message.msg)
+    let connections = msg[0];
+    let connectionContainer = document.querySelector("#connectedPlayerList");
+    connectionContainer.innerHTML = "";
+
+    for(let con of connections) {
+        let li = document.createElement("li");
+        li.appendChild(document.createTextNode(con._name));
+        connectionContainer.appendChild(li);
+    }
 })
 
 
 socket.on("created", (data) => {
-    let message = JSON.parse(data);
-    let msg = JSON.parse(message.msg)
+    let msg = JSON.parse(data);
     let connections = msg[0];
+    let lobbyID = msg[1];
 
     pageLoad("lobby", () => {
         let connectionContainer = document.querySelector("#connectedPlayerList");
+        let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
+
         connectionContainer.innerHTML = "";
+        lobbyRoomCode.innerHTML = lobbyID;
 
         for(let con of connections) {
             let li = document.createElement("li");
@@ -90,6 +110,20 @@ socket.on("created", (data) => {
             connectionContainer.appendChild(li);
         }
     });
+})
+socket.on("loadGame", (data)=>{
+
+    let message = JSON.parse(data);
+    lobbyID = message.msg;
+
+    pageLoad('game', ()=>{
+        init();
+        socket.emit("gameLoaded", true);
+    })
+})
+
+socket.on("gameStarted", (data) => {
+
 })
 
 socket.on("gameTime", (args) => {  //TODO
@@ -97,7 +131,11 @@ socket.on("gameTime", (args) => {  //TODO
     let unixTime = data[0];
     let duration = data[1];
     let name = data[2];
+    let id = data[3];
+
+    currentPlayerID = id;
     currentPlayerName = name;
+
     if(nameCont != undefined){
         nameCont.innerHTML = "Current Player: " + currentPlayerName;
     }

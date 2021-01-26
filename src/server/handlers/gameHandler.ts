@@ -32,7 +32,12 @@ export class GameHandler implements HandlerInterface {
             CommunicationHandler.deployMessage(socket, data, 'canvasUpdate', false, lobbys, io)
         })
 
-        socket.on('startGame', (data) => {  //TODO check data
+        socket.on('startGameInit', (data) => {  //TODO check data
+            let room = RoomHandler.getRoom(socket.id, lobbys);
+            CommunicationHandler.deployMessage(socket, room?.lobby.lobbyID, "loadGame", true, lobbys, io);
+        });
+
+        socket.on("gameLoaded", (data) => {
             let room = RoomHandler.getRoom(socket.id, lobbys);
             if (room != undefined) {
                 room.lobby.game = new Game(room.lobby.lobbyID, 10, 3, room.lobby.connections);
@@ -40,7 +45,9 @@ export class GameHandler implements HandlerInterface {
             } else {
                 console.error("room is undefined!");
             }
-        });
+            CommunicationHandler.deployMessage(socket,null,"gameStarted", true, lobbys, io);
+        })
+
     }
 }
 

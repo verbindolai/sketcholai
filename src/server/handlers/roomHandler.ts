@@ -17,8 +17,7 @@ export class RoomHandler implements HandlerInterface {
             room.addPlayer(creator);
             lobbys.add(room);
             socket.join(room.lobbyID);
-            socket.emit("roomID", room.lobbyID);
-            CommunicationHandler.deployMessage(socket,JSON.stringify([RoomHandler.listToArr(room.connections)]),"created", true, lobbys, io);
+            socket.emit("created",JSON.stringify([RoomHandler.listToArr(room.connections), room.lobbyID]));
         });
 
 
@@ -30,9 +29,9 @@ export class RoomHandler implements HandlerInterface {
             let player = new Connection(socket.id, name, lobby.lobbyID)
             lobby.addPlayer(player);
             socket.join(lobby.lobbyID);
-            socket.emit("roomID", lobby.lobbyID);
             allConnections.put(socket.id,player);
-            CommunicationHandler.deployMessage(socket,JSON.stringify([RoomHandler.listToArr(lobby.connections)]),"joined", true, lobbys, io);
+            socket.emit("joined", JSON.stringify([RoomHandler.listToArr(lobby.connections), lobby.lobbyID]));
+            CommunicationHandler.deployMessage(socket, JSON.stringify([RoomHandler.listToArr(lobby.connections), lobby.lobbyID]), "newPlayerJoined",false ,lobbys, io);
             if (lobby.size() > 1) {
                 //socket.broadcast.to(lobby.connections.getFirst().socketID).emit('canvasStatus', true);
             }

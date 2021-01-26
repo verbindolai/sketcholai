@@ -42,7 +42,7 @@ export class Game {
         }
         this.currentPlayer.player.isDrawing = true;
         this.roundStartDate = Date.now();
-        io.to(this.lobbyId).emit("gameTime", JSON.stringify([this.roundStartDate, this.roundDurationSec, this.currentPlayer.name]));
+        io.to(this.lobbyId).emit("gameTime", JSON.stringify([this.roundStartDate, this.roundDurationSec, this.currentPlayer.name, this.currentPlayer.socketID]));
         console.log("started Round: " + this.roundCount)
     }
 
@@ -86,7 +86,7 @@ export class Game {
                     }
                     this.currentPlayer.player.isDrawing = true;
                     this.roundStartDate = Date.now();
-                    io.to(this.lobbyId).emit("gameTime", JSON.stringify([this.roundStartDate, this.roundDurationSec , this.currentPlayer.name]));
+                    io.to(this.lobbyId).emit("gameTime", JSON.stringify([this.roundStartDate, this.roundDurationSec , this.currentPlayer.name, this.currentPlayer.socketID]));
                     console.log("Next Player choosen...")
                 }
 

@@ -115,8 +115,16 @@ function init() {
     canvas = document.querySelector('#canvas')
     context = canvas.getContext('2d');
     site = document.querySelector('html');
+    timerCont = document.querySelector("#timerContainer");
+    nameCont = document.querySelector("#nameContainer");
+    displayRoomCode();
 
     canvas.addEventListener('mousedown', (event) => {
+
+        if(socket.id !== currentPlayerID){
+            return;
+        }
+
         switch (currentTool) {
             case toolEnum.PEN:
                 ;
@@ -132,6 +140,10 @@ function init() {
     })
 
     site.addEventListener('mouseup', (event) => {
+        if(socket.id !== currentPlayerID){
+            return;
+        }
+
         if (currentTool === toolEnum.PEN || currentTool === toolEnum.ERASER) {
             drawing = false;
             const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
@@ -141,12 +153,20 @@ function init() {
     })
 
     canvas.addEventListener('mouseout', (event) => {
+        if(socket.id !== currentPlayerID){
+            return;
+        }
+
         const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
         socket.emit(drawEvent, JSON.stringify(pkg));
         clearOldPosition();
     })
 
     canvas.addEventListener('mousemove', (event) => {
+        if(socket.id !== currentPlayerID){
+            return;
+        }
+
         if (drawing) {
             const pos = getMousePos(canvas, event);
             switch (currentTool) {
@@ -186,14 +206,17 @@ function clearOldPosition() {
     oldPosition.y = -1;
 }
 
-function startGame() {
-    socket.emit("startGame", JSON.stringify("start"));
-    pageLoad('game', ()=>{
-        init();
-        displayRoomCode()
-        timerCont = document.querySelector("#timerContainer");
-        nameCont = document.querySelector("#nameContainer");
-    })
+function startGameInit() {
+    socket.emit("startGameInit", JSON.stringify("start"));
+
+    // pageLoad('game', ()=>{
+    //     init();
+    //     displayRoomCode()
+    //     timerCont = document.querySelector("#timerContainer");
+    //     nameCont = document.querySelector("#nameContainer");
+    // })
+
+
 }
 
 //stackoverflow
