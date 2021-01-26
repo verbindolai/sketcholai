@@ -35,8 +35,8 @@ export class GameHandler implements HandlerInterface {
         socket.on('startGame', (data) => {  //TODO check data
             let room = RoomHandler.getRoom(socket.id, lobbys);
             if (room != undefined) {
-                room.lobby.game = new Game(room.lobby.lobbyID, 10, 3,io, room.lobby.connections);
-                room.lobby.game.init();
+                room.lobby.game = new Game(room.lobby.lobbyID, 10, 3, room.lobby.connections);
+                room.lobby.game.init(io);
             } else {
                 console.error("room is undefined!");
             }

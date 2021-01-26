@@ -79,7 +79,6 @@ socket.on("gameTime", (args) => {  //TODO
 function updateTime() {
     let time = Math.floor(Date.now() / 1000) - roundStartTime;
     timerTime = roundTime - time;
-    //console.log(timerTime);
     timerCont.innerHTML = "Time: " + timerTime;
     if (timerTime <= 0) {
         timerTime = 0;

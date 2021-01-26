@@ -2,14 +2,11 @@ import {HashMap, HashSet, LinkedList} from "typescriptcollectionsframework";
 import {Connection} from "./connection";
 import {Server as SocketServer} from "socket.io";
 
-
 export class Game {
 
     private points: HashMap<string, number> = new HashMap<string, number>();
     private winner: Connection | undefined = undefined;
     private roundPlayerSet : HashSet<Connection> = new HashSet<Connection>();
-
-    private readonly server : SocketServer;
     private readonly players: LinkedList<Connection>;
     private readonly lobbyId: string;
 
@@ -18,25 +15,23 @@ export class Game {
     private roundStartDate: number;
     private readonly maxRoundCount : number;
 
-    private gameIntervall : NodeJS.Timeout | undefined;
     private currentPlayer : Connection | undefined;
 
-    constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, server : SocketServer, players: LinkedList<Connection>,) {
+    constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, players: LinkedList<Connection>,) {
         this.players = players;
         this.roundDurationSec = roundDuration;
         this.roundStartDate = 0;
         this.lobbyId = lobbyId;
         this.roundCount = 0;
         this.maxRoundCount = maxRoundCount;
-        this.server = server;
     }
 
     //Called on game initialization
-    public init() {
-        this.startGameLoop()
+    public init(io : SocketServer) {
+        this.startGameLoop(io)
     }
 
-    private startRound(){
+    private startRound(io : SocketServer){
         this.roundPlayerSet = new HashSet<Connection>();
         for(let player of this.players){
             this.roundPlayerSet.add(player);
@@ -44,20 +39,20 @@ export class Game {
         this.currentPlayer = this.roundPlayerSet.iterator().next();
         this.currentPlayer.player.isDrawing = true;
         this.roundStartDate = Date.now();
-        this.server.to(this.lobbyId).emit("gameTime", JSON.stringify([this.roundStartDate, this.roundDurationSec, this.currentPlayer.name]));
+        io.to(this.lobbyId).emit("gameTime", JSON.stringify([this.roundStartDate, this.roundDurationSec, this.currentPlayer.name]));
         console.log("started Round: " + this.roundCount)
     }
 
-    private startGameLoop(){
-        this.startRound();
+    private startGameLoop(io : SocketServer){
+        this.startRound(io);
 
-        this.gameIntervall = setInterval(() => {
-
+        let interval = setInterval(() => {
             //End of the Game
             if (this.roundCount > this.maxRoundCount){
-                if (this.gameIntervall != undefined){
-                    clearInterval(this.gameIntervall);
+                if (interval != null){
+                    clearInterval(interval);
                 }
+
                 //TODO send the Gamestate to Clients
                 this.resetGame()
                 console.log("Ending game...")
@@ -68,6 +63,9 @@ export class Game {
             console.log("Time: " + (Date.now() - this.roundStartDate) / 100)
             if ((Date.now() - this.roundStartDate) / 1000 > this.roundDurationSec){
                 if (this.currentPlayer != undefined){
+                    if (this.currentPlayer == null) { //TODO Right?
+                        return;
+                    }
                     this.currentPlayer.player.isDrawing = false;
                     this.roundPlayerSet.remove(this.currentPlayer);
                     console.log("Turn is over...")
@@ -76,13 +74,16 @@ export class Game {
                 //End of one Round
                 if(this.roundPlayerSet.size() == 0){
                     this.roundCount++;
-                    this.startRound();
+                    this.startRound(io);
                     console.log("Round is over, next Round starting...")
                 } else {
                     this.currentPlayer = this.roundPlayerSet.iterator().next();
+                    if (this.currentPlayer == null) { //TODO Right?
+                        return;
+                    }
                     this.currentPlayer.player.isDrawing = true;
                     this.roundStartDate = Date.now();
-                    this.server.to(this.lobbyId).emit("gameTime", JSON.stringify([this.roundStartDate, this.roundDurationSec , this.currentPlayer.name]));
+                    io.to(this.lobbyId).emit("gameTime", JSON.stringify([this.roundStartDate, this.roundDurationSec , this.currentPlayer.name]));
                     console.log("Next Player choosen...")
                 }
 
@@ -94,7 +95,6 @@ export class Game {
     private resetGame() {
         this.roundCount = 0;
         this.currentPlayer = undefined;
-        this.gameIntervall = undefined;
     }
 
 
