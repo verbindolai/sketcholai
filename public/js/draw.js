@@ -1,7 +1,9 @@
 "use strict"
 
-const drawEvent = 'draw';
-const fillEvent = 'fill';
+let drawing = false;
+let lineWidth = 2;
+const toolEnum = {"PEN": 1, "ERASER": 2, "BUCKET": 3};
+Object.freeze(toolEnum);
 
 const COL_WHITE = '#ffffff';
 const COL_BLACK = '#000000';
@@ -11,36 +13,12 @@ const COL_BLUE = '#1c37b5';
 const COL_YELLOW = '#e3cf19';
 const ERASER = COL_WHITE;
 
-const toolEnum = {"PEN": 1, "ERASER": 2, "BUCKET": 3};
-Object.freeze(toolEnum);
-
-
-let context;
-let canvas;
-let site;
-let drawing = false;
-let lineWidth = 2;
 let currentColor = COL_BLACK;
 let currentTool = toolEnum.PEN;
+
 let oldPosition = {
     x: -1,
     y: -1
-}
-
-class DrawInfoPackage {
-    x;
-    y;
-    width;
-    color;
-    drawing;
-
-    constructor(x, y, color, width, drawing) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.color = color;
-        this.drawing = drawing;
-    }
 }
 
 class Tool {
@@ -111,77 +89,60 @@ class Eraser extends Pen {
     }
 }
 
-function init() {
-    canvas = document.querySelector('#canvas')
-    context = canvas.getContext('2d');
-    site = document.querySelector('html');
-    timerCont = document.querySelector("#timerContainer");
-    nameCont = document.querySelector("#nameContainer");
-    displayRoomCode();
+class DrawInfoPackage {
+    x;
+    y;
+    width;
+    color;
+    drawing;
 
-    canvas.addEventListener('mousedown', (event) => {
-
-        if(socket.id !== currentPlayerID){
-            return;
-        }
-
-        switch (currentTool) {
-            case toolEnum.PEN:
-                ;
-            case toolEnum.ERASER:
-                drawing = true;
-                break;
-            case toolEnum.BUCKET:
-                const pos = getMousePos(canvas, event);
-                let bucket = new Bucket(context, canvas);
-                bucket.fill(pos.x, pos.y, 70, currentColor, true);
-                break;
-        }
-    })
-
-    site.addEventListener('mouseup', (event) => {
-        if(socket.id !== currentPlayerID){
-            return;
-        }
-
-        if (currentTool === toolEnum.PEN || currentTool === toolEnum.ERASER) {
-            drawing = false;
-            const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
-            socket.emit(drawEvent, JSON.stringify(pkg));
-            clearOldPosition();
-        }
-    })
-
-    canvas.addEventListener('mouseout', (event) => {
-        if(socket.id !== currentPlayerID){
-            return;
-        }
-
-        const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
-        socket.emit(drawEvent, JSON.stringify(pkg));
-        clearOldPosition();
-    })
-
-    canvas.addEventListener('mousemove', (event) => {
-        if(socket.id !== currentPlayerID){
-            return;
-        }
-
-        if (drawing) {
-            const pos = getMousePos(canvas, event);
-            switch (currentTool) {
-                case toolEnum.PEN:
-                    let pen = new Pen(3, context, canvas);
-                    pen.draw(pos.x, pos.y, currentColor, true);
-                    break;
-                case toolEnum.ERASER:
-                    let eraser = new Eraser(context, canvas);
-                    eraser.erase(pos.x, pos.y, true)
-                    break;
-            }
-        }
-    })
+    constructor(x, y, color, width, drawing) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.color = color;
+        this.drawing = drawing;
+    }
 }
+// <================================ Listener ================================>
+
+socket.on(drawEvent, (data) => {
+    const message = JSON.parse(data);
+    const msg = JSON.parse(message.msg);
+    let x = msg.x;
+    let y = msg.y;
+    let color = msg.color;
+    let width = msg.width;
+    let drawing = msg.drawing;
+    if (drawing) {
+        let pen = new Pen(width, context, canvas);
+        pen.draw(x, y, color, false);
+    } else {
+        oldPosition.x = -1;
+        oldPosition.y = -1;
+    }
+})
+
+socket.on(fillEvent, (data) => {
+    const message = JSON.parse(data);
+    let bucket = new Bucket(context, canvas);
+    bucket.fill(message.msg.x, message.msg.y, 70, message.msg.color, false)
+})
+
+socket.on("canvasStatus", (data) => {
+    if (data) {
+        const img = canvas.toDataURL();
+        socket.emit("canvasStatus", img);
+    }
+})
+
+socket.on('canvasUpdate', (data) => {
+    let message = JSON.parse(data);
+    drawDataURIOnCanvas(message.msg)
+})
+
+// <============================================================================>
+
 
 function switchTool(tool) {
     switch (tool) {
@@ -206,11 +167,6 @@ function clearOldPosition() {
     oldPosition.y = -1;
 }
 
-function startGameInit() {
-    socket.emit("startGameInit", JSON.stringify("start"));
-    selectedTime = document.querySelector("#drawTimeSelect").value;
-}
-
 //stackoverflow
 function getMousePos(canvas, evt) {
     const rect = canvas.getBoundingClientRect();
@@ -220,16 +176,12 @@ function getMousePos(canvas, evt) {
     };
 }
 
-function drawLine(x0, y0, x1, y1, color) {
-    context.beginPath();
-    context.moveTo(x0, y0);
-    context.lineTo(x1, y1);
-    context.strokeStyle = color;
-    context.lineWidth = lineWidth;
-    context.stroke();
-    context.closePath();
+function drawDataURIOnCanvas(strDataURI) {
+    let img = new window.Image();
+    img.addEventListener("load", function () {
+        context.drawImage(img, 0, 0);
+    });
+    img.setAttribute("src", strDataURI);
 }
-
-
 
 

@@ -46,7 +46,7 @@ export class Game {
         }
         this.currentPlayer.player.isDrawing = true;
         this.roundStartDate = Date.now();
-        io.to(this.lobbyId).emit("gameTime", JSON.stringify([this.roundStartDate, this.roundDurationSec, this.currentPlayer.name, this.currentPlayer.socketID]));
+        io.to(this.lobbyId).emit('updateGameState', JSON.stringify([this.roundStartDate, this.roundDurationSec, this.currentPlayer.name, this.currentPlayer.socketID]));
         console.log("started Round: " + this.roundCount)
     }
 
