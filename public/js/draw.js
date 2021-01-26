@@ -208,15 +208,7 @@ function clearOldPosition() {
 
 function startGameInit() {
     socket.emit("startGameInit", JSON.stringify("start"));
-
-    // pageLoad('game', ()=>{
-    //     init();
-    //     displayRoomCode()
-    //     timerCont = document.querySelector("#timerContainer");
-    //     nameCont = document.querySelector("#nameContainer");
-    // })
-
-
+    selectedTime = document.querySelector("#drawTimeSelect").value;
 }
 
 //stackoverflow

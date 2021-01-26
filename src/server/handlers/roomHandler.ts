@@ -23,6 +23,8 @@ export class RoomHandler implements HandlerInterface {
 
         socket.on('joinRoom', (name, lobbyID) => {
             let lobby = RoomHandler.getLobbyByID(lobbyID, lobbys);
+            let selfEvent = lobby?.game?.hasStarted ? "joinedLate" : "joined";
+            let lobbyEvent = lobby?.game?.hasStarted ? "newPlayerJoinedLate" : "newPlayerJoined";
             if (lobby == undefined) {
                 return;
             }
@@ -30,8 +32,8 @@ export class RoomHandler implements HandlerInterface {
             lobby.addPlayer(player);
             socket.join(lobby.lobbyID);
             allConnections.put(socket.id,player);
-            socket.emit("joined", JSON.stringify([RoomHandler.listToArr(lobby.connections), lobby.lobbyID]));
-            CommunicationHandler.deployMessage(socket, JSON.stringify([RoomHandler.listToArr(lobby.connections), lobby.lobbyID]), "newPlayerJoined",false ,lobbys, io);
+            socket.emit(selfEvent , JSON.stringify([RoomHandler.listToArr(lobby.connections), lobby.lobbyID]));
+            CommunicationHandler.deployMessage(socket, JSON.stringify([RoomHandler.listToArr(lobby.connections), lobby.lobbyID]), lobbyEvent,false ,lobbys, io);
             if (lobby.size() > 1) {
                 //socket.broadcast.to(lobby.connections.getFirst().socketID).emit('canvasStatus', true);
             }

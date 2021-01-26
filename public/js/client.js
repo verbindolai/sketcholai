@@ -3,6 +3,7 @@ let socket = io(`http://localhost:${port}`);
 let lobbyID;
 let roundStartTime;
 let roundTime = 10;
+let selectedTime;
 let timerTime = roundTime;
 let timer;
 let timerCont;
@@ -77,6 +78,31 @@ socket.on("joined", (data) =>{
     });
 })
 
+socket.on("joinedLate", (data) =>{
+    let msg = JSON.parse(data);
+    let connections = msg[0];
+    let lobbyID = msg[1];
+
+    pageLoad("lobbyLate",()=>{
+        let connectionContainer = document.querySelector("#connectedPlayerList");
+        let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
+
+        connectionContainer.innerHTML = "";
+        lobbyRoomCode.innerHTML = lobbyID;
+
+        for(let con of connections) {
+            let li = document.createElement("li");
+            li.appendChild(document.createTextNode(con._name));
+            connectionContainer.appendChild(li);
+        }
+    });
+})
+
+function joinGame() {
+   socket.emit("")
+}
+
+
 socket.on("newPlayerJoined", (data) => {
     let message = JSON.parse(data);
     let msg = JSON.parse(message.msg)
@@ -118,7 +144,7 @@ socket.on("loadGame", (data)=>{
 
     pageLoad('game', ()=>{
         init();
-        socket.emit("gameLoaded", true);
+        socket.emit("gameLoaded", selectedTime);
     })
 })
 

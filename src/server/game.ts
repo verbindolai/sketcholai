@@ -9,6 +9,7 @@ export class Game {
     private roundPlayerSet : HashSet<Connection> = new HashSet<Connection>();
     private readonly players: LinkedList<Connection>;
     private readonly lobbyId: string;
+    private _hasStarted : boolean;
 
     private roundCount : number;
     private readonly roundDurationSec: number;
@@ -17,6 +18,7 @@ export class Game {
 
     private currentPlayer : Connection | undefined;
 
+
     constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, players: LinkedList<Connection>,) {
         this.players = players;
         this.roundDurationSec = roundDuration;
@@ -24,11 +26,13 @@ export class Game {
         this.lobbyId = lobbyId;
         this.roundCount = 0;
         this.maxRoundCount = maxRoundCount;
+        this._hasStarted = false;
     }
 
     //Called on game initialization
     public init(io : SocketServer) {
         this.startGameLoop(io)
+        this._hasStarted = true;
     }
 
     private startRound(io : SocketServer){
@@ -136,6 +140,10 @@ export class Game {
         }, function (result: any) {
             console.log(result);
         });
+    }
+
+    get hasStarted(): boolean {
+        return this._hasStarted;
     }
 
 }
