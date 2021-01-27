@@ -46,11 +46,10 @@ export class RoomHandler implements HandlerInterface {
             if (lobby.game?.hasStarted === false || lobby.game == undefined){
                 socket.emit("roomJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID))
                 CommunicationHandler.deployMessage(socket, null,"updatePlayerList", true, lobby, connection, io);
-                console.log("client joins non started game")
             } else {
 
                 socket.emit("gameJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, lobby.game?.currentPlayer?.name));
-                console.log("Sending ID of Requester: " + socket.id);
+
                 //Sends a request to all other connections in the room to send the current canvas status to the server
                 //The recipients socket-id is send with, so the server later knows where to deploy the image-data to.
                 CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(socket.id), "sendCanvasStatus", false, lobby, connection, io);
@@ -59,6 +58,7 @@ export class RoomHandler implements HandlerInterface {
 
         socket.on("receiveCanvas", (clientPackage) =>{
             let data = JSON.parse(clientPackage);
+            console.log("data: "+data);
             let requesterSocketID = data[0];
             let imgData = data[1];
             let requesterConnection = allConnections.get(requesterSocketID);

@@ -34,15 +34,14 @@ export class CommunicationHandler implements HandlerInterface {
             return false;
         }
         if (include) {
-            io.to(lobby.lobbyID).emit(event, JSON.stringify(data))
+            io.to(lobby.lobbyID).emit(event, data)
         } else {
-            socket.broadcast.to(lobby.lobbyID).emit(event, JSON.stringify(data))
+            socket.broadcast.to(lobby.lobbyID).emit(event, data)
         }
         return true;
     }
 
     public static packData(...data : any){
-
         return JSON.stringify(data);
     }
 
