@@ -1,3 +1,4 @@
+let CHAT_HTML_TEXTAREA;
 
 /**
  * creates a new chat message in chat on channel "chat"
@@ -19,6 +20,10 @@ socket.on('chat', (serverPackage) => {
 function sendChatMsg() {
     let chatInput = document.getElementById("chatInput");
     let message = chatInput.value;
+
+    if(message == "" || message == undefined) {
+        return;
+    }
     socket.emit('chat', packData(message));
     chatInput.value = "";
     scrollDown();

@@ -22,10 +22,19 @@ function init(lobbyID, currentPlayerName) {
     timerCont = document.querySelector("#timerContainer");
     CURRENT_PLAYER_NAME_HTML_CONTAINER = document.querySelector("#nameContainer");
     LOBBY_ID_HTML_CONTAINER = document.querySelector("#roomCodeContainer");
+    CHAT_HTML_TEXTAREA = document.querySelector("#chatInput");
+
+    CHAT_HTML_TEXTAREA.onkeydown = function (e) {
+        if (e.keyCode == 13) {
+            sendChatMsg();
+        }
+    }
 
     LOBBY_ID_HTML_CONTAINER.innerHTML = lobbyID;
     CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = "Current Player: " + currentPlayerName;
 
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
     canvas.addEventListener('mousedown', (event) => {
 
@@ -94,13 +103,14 @@ function init(lobbyID, currentPlayerName) {
 /**
  * Receives game information for a new turn
  */
-//TODO Method is called before game state is loaded when player joins late --> ERROR in Time display
+
 socket.on('updateGameState', (serverPackage) => {  //TODO
     const data = JSON.parse(serverPackage);
     const unixTime = data[0];
-    const duration = data[1];
+    const drawDuration = data[1];
     const name = data[2];
     const id = data[3];
+
 
     currentPlayerID = id;
     currentPlayerName = name;
@@ -109,7 +119,10 @@ socket.on('updateGameState', (serverPackage) => {  //TODO
         CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = "Current Player: " + currentPlayerName;
     }
 
-    displayTime(duration, unixTime)
+    displayTime(drawDuration, unixTime);
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
 
 });
 

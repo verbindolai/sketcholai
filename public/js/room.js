@@ -83,9 +83,13 @@ socket.on("gameJoined", (serverPackage) => {
     let allConnections = data[0];
     let lobbyID = data[1];
     let currentPlayerName = data[2];
+    let unixTime = data[3];
+    let drawDuration = data[4];
+    let currentPlayerSocketID = data[5];
 
     pageLoad("game", () => {
         init(lobbyID, currentPlayerName);
+        displayTime(drawDuration, unixTime);
         //TODO
     });
 });
