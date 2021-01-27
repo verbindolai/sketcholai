@@ -37,23 +37,25 @@ export class RoomHandler implements HandlerInterface {
             if (lobby == undefined) {
                 return;
             }
-
+            let game = lobby.game;
             let connection = new Connection(socket.id, name, lobby.lobbyID)
             lobby.addConnection(connection);
             socket.join(lobby.lobbyID);
             allConnections.put(socket.id,connection);
 
 
-            if (lobby.game?.hasStarted === false || lobby.game == undefined){
+            if (game?.hasStarted === false || game == undefined){
                 socket.emit("roomJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID))
                 CommunicationHandler.deployMessage(socket, null,"updatePlayerList", true, lobby, connection, io);
             } else {
-
-                socket.emit("gameJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, lobby.game?.currentPlayer?.name));
+                socket.emit("gameJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name));
                 this.lateJoinedPlayers.add(socket.id)
                 //Sends a request to all other connections in the room to send the current canvas status to the server
                 //The recipients socket-id is send with, so the server later knows where to deploy the image-data to.
                 CommunicationHandler.deployMessage(socket,null, "sendCanvasStatus", false, lobby, connection, io);
+
+                //Needed for frontend Display of Information
+                socket.emit("updateGameState", CommunicationHandler.packData(game.roundStartDate, game.roundDurationSec, game.currentPlayer?.name, game.currentPlayer?.socketID))
             }
         });
 

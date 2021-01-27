@@ -55,7 +55,7 @@ class Pen extends Tool {
             this.drawLine(oldPosition.x, oldPosition.y, x, y, color)
             if (send) {
                 const pkg = new DrawInfoPackage(x, y, color, this.lineWidth, drawing)
-                socket.emit(drawEvent, JSON.stringify(pkg));
+                socket.emit(drawEvent, packData(pkg));
             }
         }
         oldPosition.x = x;
@@ -73,7 +73,8 @@ class Bucket extends Tool {
         this.context.fillStyle = color;
         this.context.fillFlood(x, y, tol);
         if (send) {
-            socket.emit(fillEvent, new DrawInfoPackage(x, y, currentColor, undefined));
+            const pkg = new DrawInfoPackage(x, y, currentColor, undefined)
+            socket.emit(fillEvent, packData(pkg));
         }
     }
 }
@@ -106,9 +107,12 @@ class DrawInfoPackage {
 }
 // <================================ Listener ================================>
 
-socket.on(drawEvent, (data) => {
-    // const message = JSON.parse(data);
-    const msg = JSON.parse(data);
+socket.on(drawEvent, (serverPackage) => {
+    const data = JSON.parse(serverPackage);
+    const msg = data[0];
+    console.log(data)
+    console.log(msg)
+
     let x = msg.x;
     let y = msg.y;
     let color = msg.color;
@@ -123,10 +127,12 @@ socket.on(drawEvent, (data) => {
     }
 })
 
-socket.on(fillEvent, (data) => {
-    const message = JSON.parse(data);
+socket.on(fillEvent, (serverPackage) => {
+    const data = JSON.parse(serverPackage);
+    const message = data[0];
+    console.log(message)
     let bucket = new Bucket(context, canvas);
-    bucket.fill(message.msg.x, message.msg.y, 70, message.msg.color, false)
+    bucket.fill(message.x, message.y, 70, message.color, false)
 })
 
 // <============================================================================>

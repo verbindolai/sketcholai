@@ -15,13 +15,17 @@ const fillEvent = 'fill';
 /**
  * inits the clients drawing lobby and adds eventlisteners
  */
-function init() {
+function init(lobbyID, currentPlayerName) {
     canvas = document.querySelector('#canvas')
     context = canvas.getContext('2d');
     site = document.querySelector('html');
     timerCont = document.querySelector("#timerContainer");
-    nameCont = document.querySelector("#nameContainer");
-    displayRoomCode();
+    CURRENT_PLAYER_NAME_HTML_CONTAINER = document.querySelector("#nameContainer");
+    LOBBY_ID_HTML_CONTAINER = document.querySelector("#roomCodeContainer");
+
+    LOBBY_ID_HTML_CONTAINER.innerHTML = lobbyID;
+    CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = "Current Player: " + currentPlayerName;
+
 
     canvas.addEventListener('mousedown', (event) => {
 
@@ -50,7 +54,7 @@ function init() {
         if (currentTool === toolEnum.PEN || currentTool === toolEnum.ERASER) {
             drawing = false;
             const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
-            socket.emit(drawEvent, JSON.stringify(pkg));
+            socket.emit(drawEvent, packData(pkg));
             clearOldPosition();
         }
     })
@@ -61,7 +65,7 @@ function init() {
         }
 
         const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
-        socket.emit(drawEvent, JSON.stringify(pkg));
+        socket.emit(drawEvent, packData(pkg));
         clearOldPosition();
     })
 
@@ -90,32 +94,42 @@ function init() {
 /**
  * Receives game information for a new turn
  */
-socket.on('updateGameState', (args) => {  //TODO
-    let data = JSON.parse(args);
-    let unixTime = data[0];
-    let duration = data[1];
-    let name = data[2];
-    let id = data[3];
+//TODO Method is called before game state is loaded when player joins late --> ERROR in Time display
+socket.on('updateGameState', (serverPackage) => {  //TODO
+    const data = JSON.parse(serverPackage);
+    const unixTime = data[0];
+    const duration = data[1];
+    const name = data[2];
+    const id = data[3];
 
     currentPlayerID = id;
     currentPlayerName = name;
 
-    if(nameCont != undefined){
-        nameCont.innerHTML = "Current Player: " + currentPlayerName;
+    if(CURRENT_PLAYER_NAME_HTML_CONTAINER != undefined){
+        CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = "Current Player: " + currentPlayerName;
     }
-    roundTime = duration;
+
+    displayTime(duration, unixTime)
+
+});
+
+function displayTime(duration, unixTime) {
     clearInterval(timer);
+
     let realUnix = Math.floor(unixTime / 1000);
-    roundStartTime = realUnix;
     let time = new Date(realUnix * 1000);
     let hours = time.getHours();
     let minutes = time.getMinutes();
     let seconds = time.getSeconds();
+
+    roundTime = duration;
+    roundStartTime = realUnix;
+
+    updateTime()
     timer = setInterval(() => {
         updateTime();
-    }, 1000)
-    console.log(hours + ":" + minutes + ":" + seconds);
-});
+    }, 1000);
+}
 
 function updateTime() {
     let time = Math.floor(Date.now() / 1000) - roundStartTime;

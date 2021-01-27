@@ -1,20 +1,21 @@
 import {HashMap, HashSet, LinkedList} from "typescriptcollectionsframework";
 import {Connection} from "./connection";
 import {Server as SocketServer} from "socket.io";
+import {CommunicationHandler} from "./handlers/communicationHandler";
 
 export class Game {
 
-    private points: HashMap<string, number> = new HashMap<string, number>();
-    private winner: Connection | undefined = undefined;
-    private roundPlayerSet : HashSet<Connection> = new HashSet<Connection>();
-    private readonly players: LinkedList<Connection>;
-    private readonly lobbyId: string;
+    private _points: HashMap<string, number> = new HashMap<string, number>();
+    private _winner: Connection | undefined = undefined;
+    private _roundPlayerSet : HashSet<Connection> = new HashSet<Connection>();
+    private readonly _players: LinkedList<Connection>;
+    private readonly _lobbyId: string;
     private _hasStarted : boolean;
 
-    private roundCount : number;
-    private readonly roundDurationSec: number;
-    private roundStartDate: number;
-    private readonly maxRoundCount : number;
+    private _roundCount : number;
+    private readonly _roundDurationSec: number;
+    private _roundStartDate: number;
+    private readonly _maxRoundCount : number;
 
     private _currentPlayer : Connection | undefined;
 
@@ -22,12 +23,12 @@ export class Game {
 
 
     constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, players: LinkedList<Connection>,) {
-        this.players = players;
-        this.roundDurationSec = roundDuration;
-        this.roundStartDate = 0;
-        this.lobbyId = lobbyId;
-        this.roundCount = 0;
-        this.maxRoundCount = maxRoundCount;
+        this._players = players;
+        this._roundDurationSec = roundDuration;
+        this._roundStartDate = 0;
+        this._lobbyId = lobbyId;
+        this._roundCount = 0;
+        this._maxRoundCount = maxRoundCount;
         this._hasStarted = false;
     }
 
@@ -38,18 +39,21 @@ export class Game {
     }
 
     private startRound(io : SocketServer){
-        this.roundPlayerSet = new HashSet<Connection>();
-        for(let player of this.players){
-            this.roundPlayerSet.add(player);
+        this._roundPlayerSet = new HashSet<Connection>();
+        console.log("All Player in this Round: ")
+        for(let player of this._players){
+            this._roundPlayerSet.add(player);
+            console.log(player.name)
         }
-        this._currentPlayer = this.roundPlayerSet.iterator().next();
+        this._currentPlayer = this._roundPlayerSet.iterator().next();
         if (this._currentPlayer == null) { //TODO Right?
             return;
         }
         this._currentPlayer.player.isDrawing = true;
-        this.roundStartDate = Date.now();
-        io.to(this.lobbyId).emit('updateGameState', JSON.stringify([this.roundStartDate, this.roundDurationSec, this._currentPlayer.name, this._currentPlayer.socketID]));
-        console.log("started Round: " + this.roundCount)
+        this._roundStartDate = Date.now();
+
+        io.to(this._lobbyId).emit('updateGameState', CommunicationHandler.packData(this._roundStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID));
+        console.log("started Round: " + this._roundCount)
     }
 
     private startGameLoop(io : SocketServer){
@@ -57,7 +61,7 @@ export class Game {
 
         let interval = setInterval(() => {
             //End of the Game
-            if (this.roundCount > this.maxRoundCount){
+            if (this._roundCount > this._maxRoundCount){
                 if (interval != null){
                     clearInterval(interval);
                 }
@@ -69,31 +73,30 @@ export class Game {
             }
 
             //End of one Turn
-            console.log("Time: " + (Date.now() - this.roundStartDate) / 1000)
-            if ((Date.now() - this.roundStartDate) / 1000 > this.roundDurationSec){
+            if ((Date.now() - this._roundStartDate) / 1000 > this._roundDurationSec){
                 if (this._currentPlayer != undefined){
                     if (this._currentPlayer == null) { //TODO Right?
                         return;
                     }
                     this._currentPlayer.player.isDrawing = false;
-                    this.roundPlayerSet.remove(this._currentPlayer);
+                    this._roundPlayerSet.remove(this._currentPlayer);
                     console.log("Turn is over...")
                 }
 
                 //End of one Round
-                if(this.roundPlayerSet.size() == 0){
-                    this.roundCount++;
+                if(this._roundPlayerSet.size() == 0){
+                    this._roundCount++;
                     this.startRound(io);
                     console.log("Round is over, next Round starting...")
                 } else {
-                    this._currentPlayer = this.roundPlayerSet.iterator().next();
+                    this._currentPlayer = this._roundPlayerSet.iterator().next();
                     if (this._currentPlayer == null) { //TODO Right?
                         return;
                     }
                     this._currentPlayer.player.isDrawing = true;
-                    this.roundStartDate = Date.now();
-                    io.to(this.lobbyId).emit("gameTime", JSON.stringify([this.roundStartDate, this.roundDurationSec , this._currentPlayer.name, this._currentPlayer.socketID]));
-                    console.log("Next Player choosen...")
+                    this._roundStartDate = Date.now();
+                    io.to(this._lobbyId).emit('updateGameState', CommunicationHandler.packData(this._roundStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID));
+                    console.log("Next Player choosen: " + this.currentPlayer?.name)
                 }
 
             }
@@ -102,7 +105,10 @@ export class Game {
     }
 
     private resetGame() {
-        this.roundCount = 0;
+        this._roundCount = 0;
+        if (this.currentPlayer != undefined) {
+            this.currentPlayer.player.isDrawing = false;
+        }
         this._currentPlayer = undefined;
     }
 
@@ -150,6 +156,43 @@ export class Game {
 
     get currentPlayer(): Connection | undefined {
         return this._currentPlayer;
+    }
+
+
+    get points(): HashMap<string, number> {
+        return this._points;
+    }
+
+    get winner(): Connection | undefined {
+        return this._winner;
+    }
+
+    get roundPlayerSet(): HashSet<Connection> {
+        return this._roundPlayerSet;
+    }
+
+    get players(): LinkedList<Connection> {
+        return this._players;
+    }
+
+    get lobbyId(): string {
+        return this._lobbyId;
+    }
+
+    get roundCount(): number {
+        return this._roundCount;
+    }
+
+    get roundDurationSec(): number {
+        return this._roundDurationSec;
+    }
+
+    get roundStartDate(): number {
+        return this._roundStartDate;
+    }
+
+    get maxRoundCount(): number {
+        return this._maxRoundCount;
     }
 }
 

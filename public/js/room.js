@@ -1,4 +1,4 @@
-let lobbyID;
+let globalLobbyID;
 
 /**
  * Sends the given player name on the 'createNewRoom' channel to create a new room
@@ -80,11 +80,12 @@ socket.on("roomJoined", (serverPackage) =>{
 
 socket.on("gameJoined", (serverPackage) => {
     let data = JSON.parse(serverPackage);
-    let lobbyID = data[0];
-    let imgURL = data[1];
+    let allConnections = data[0];
+    let lobbyID = data[1];
+    let currentPlayerName = data[2];
 
     pageLoad("game", () => {
-        init();
+        init(lobbyID, currentPlayerName);
         //TODO
     });
 });
@@ -100,9 +101,11 @@ socket.on("getCanvasStatus", (serverPackage) => {
     drawDataURIOnCanvas(imgData)
 })
 
-function displayRoomCode() {
-    let idContainer = document.querySelector("#roomCodeContainer");
-    idContainer.innerHTML += lobbyID;
+function sendReady () {
+
 }
+
+
+
 
 

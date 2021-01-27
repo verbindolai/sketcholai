@@ -2,10 +2,13 @@
 /**
  * creates a new chat message in chat on channel "chat"
  */
-socket.on('chat', (data) => {
-    let message = JSON.parse(data);
+socket.on('chat', (serverPackage) => {
+    let data = JSON.parse(serverPackage);
+    let message = data[0];
+    let name = data[1];
+
     let li = document.createElement("li");
-    li.appendChild(document.createTextNode(message.author._name + ": " + message.msg));
+    li.appendChild(document.createTextNode(name + ": " + message));
     document.querySelector("#chatList").appendChild(li);
     scrollDown();
 })
@@ -16,7 +19,7 @@ socket.on('chat', (data) => {
 function sendChatMsg() {
     let chatInput = document.getElementById("chatInput");
     let message = chatInput.value;
-    socket.emit('chat', message);
+    socket.emit('chat', packData(message));
     chatInput.value = "";
     scrollDown();
 }

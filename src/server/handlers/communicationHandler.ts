@@ -8,10 +8,14 @@ import {Connection} from "../connection";
 export class CommunicationHandler implements HandlerInterface {
 
     handle(socket: Socket, lobbyHashMap: HashMap<string, GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>) {
-        socket.on('chat', (data) => {
+        socket.on('chat', (clientPackage) => {
+            let data = JSON.parse(clientPackage);
+            let message = data[0];
+
             let connection = allConnections.get(socket.id);
             let lobby = lobbyHashMap.get(connection.lobbyID);
-            if (!CommunicationHandler.deployMessage(socket, data, 'chat', true, lobby, connection, io)) {
+
+            if (!CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(message, connection.name), 'chat', true, lobby, connection, io)) {
                 console.error("Couldn't deploy Message.")
             }
         });

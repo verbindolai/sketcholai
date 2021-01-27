@@ -1,9 +1,8 @@
 import {HandlerInterface} from "./handlerInterface";
 import {Server as SocketServer, Socket} from "socket.io";
-import {HashMap, LinkedList} from "typescriptcollectionsframework";
+import {HashMap} from "typescriptcollectionsframework";
 import {GameLobby} from "../gameLobby";
 import {CommunicationHandler} from "./communicationHandler";
-import {RoomHandler} from "./roomHandler";
 import {Game} from "../game";
 import {Connection} from "../connection";
 
@@ -14,7 +13,9 @@ export class GameHandler implements HandlerInterface {
 
     handle(socket: Socket, lobbyHashMap: HashMap<string, GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>) {
 
-        socket.on(this.drawEvent, (data) => {
+        socket.on(this.drawEvent, (clientPackage) => {
+            const data = JSON.parse(clientPackage);
+            const drawInfoPackage = data[0];
             const connection = allConnections.get(socket.id);
             if(connection == undefined) {
                 return;
@@ -23,12 +24,14 @@ export class GameHandler implements HandlerInterface {
             if(lobby == undefined) {
                 return;
             }
-            if (connection.player.isDrawing && !CommunicationHandler.deployMessage(socket, data, this.drawEvent, false, lobby, connection, io)) {
+            if (connection.player.isDrawing && !CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(drawInfoPackage), this.drawEvent, false, lobby, connection, io)) {
                 console.error("Couldn't deploy draw Message.")
             }
         })
 
-        socket.on(this.fillEvent, (data) => {
+        socket.on(this.fillEvent, (clientPackage) => {
+            const data = JSON.parse(clientPackage);
+            const drawInfoPackage = data[0];
             const connection = allConnections.get(socket.id);
             if(connection == undefined) {
                 return;
@@ -37,7 +40,7 @@ export class GameHandler implements HandlerInterface {
             if(lobby == undefined) {
                 return;
             }
-            if (connection.player.isDrawing && !CommunicationHandler.deployMessage(socket, data, this.fillEvent, false, lobby, connection, io)) {
+            if (connection.player.isDrawing && !CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(drawInfoPackage), this.fillEvent, false, lobby, connection, io)) {
                 console.error("Couldn't deploy fill Message.")
             }
         })
@@ -56,7 +59,7 @@ export class GameHandler implements HandlerInterface {
             }
 
             lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections);
-            CommunicationHandler.deployMessage(socket, null, "loadGame", true, lobby, connection, io);
+            CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(lobby.lobbyID, lobby.game.currentPlayer?.name), "loadGame", true, lobby, connection, io);
         })
 
         socket.on('startGame', (clientPackage) => {
