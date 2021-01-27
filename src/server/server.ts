@@ -21,6 +21,8 @@ export class SketchServer {
     private readonly handlerObjects: LinkedList<HandlerInterface>
     private lobbies: HashMap<string, GameLobby> = new HashMap<string, GameLobby>();
     private allConnections : HashMap<string, Connection> = new HashMap<string, Connection>();
+    private lateJoinedPlayers : HashMap<string, string> = new HashMap<string, string>();
+
 
 
     constructor(port: number) {

@@ -107,8 +107,8 @@ class DrawInfoPackage {
 // <================================ Listener ================================>
 
 socket.on(drawEvent, (data) => {
-    const message = JSON.parse(data);
-    const msg = JSON.parse(message.msg);
+    // const message = JSON.parse(data);
+    const msg = JSON.parse(data);
     let x = msg.x;
     let y = msg.y;
     let color = msg.color;

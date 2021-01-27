@@ -7,6 +7,7 @@ import {CommunicationHandler} from "./communicationHandler";
 
 
 export class RoomHandler implements HandlerInterface {
+    private lateJoinedPlayers : LinkedList<string> = new LinkedList<string>();
 
     handle(socket: Socket, lobbyHashMap: HashMap<string, GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>): void {
 
@@ -49,25 +50,30 @@ export class RoomHandler implements HandlerInterface {
             } else {
 
                 socket.emit("gameJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, lobby.game?.currentPlayer?.name));
-
+                this.lateJoinedPlayers.add(socket.id)
                 //Sends a request to all other connections in the room to send the current canvas status to the server
                 //The recipients socket-id is send with, so the server later knows where to deploy the image-data to.
-                CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(socket.id), "sendCanvasStatus", false, lobby, connection, io);
+                CommunicationHandler.deployMessage(socket,null, "sendCanvasStatus", false, lobby, connection, io);
             }
         });
 
         socket.on("receiveCanvas", (clientPackage) =>{
-            let data = JSON.parse(clientPackage);
-            console.log("data: "+data);
-            let requesterSocketID = data[0];
-            let imgData = data[1];
-            let requesterConnection = allConnections.get(requesterSocketID);
-
-            console.log("Receiving requester ID: " + requesterSocketID);
-            if (requesterConnection.receivedCanvas === false) {
-                io.to(requesterSocketID).emit("getCanvasStatus", CommunicationHandler.packData(imgData));
-                requesterConnection.receivedCanvas = true;
+            if(this.lateJoinedPlayers.isEmpty()){
+                return;
             }
+            let data = JSON.parse(clientPackage);
+            let imgData = data[0];
+            for(let socketId of this.lateJoinedPlayers){
+                io.to(socketId).emit("getCanvasStatus", CommunicationHandler.packData(imgData));
+            }
+            this.lateJoinedPlayers.clear();
+            // let requesterConnection = allConnections.get(requesterSocketID);
+            //
+            // console.log("Receiving requester ID: " + requesterSocketID);
+            // if (requesterConnection.receivedCanvas === false) {
+            //     io.to(requesterSocketID).emit("getCanvasStatus", CommunicationHandler.packData(imgData));
+            //     requesterConnection.receivedCanvas = true;
+            // }
         })
 
     }

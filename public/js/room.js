@@ -90,10 +90,8 @@ socket.on("gameJoined", (serverPackage) => {
 });
 
 socket.on("sendCanvasStatus", (serverPackage) => {
-    let data = JSON.parse(serverPackage);
-    let socketID = data[0];
     const img = canvas.toDataURL();
-    socket.emit("receiveCanvas", packData(socketID, img));
+    socket.emit("receiveCanvas", packData(img));
 })
 
 socket.on("getCanvasStatus", (serverPackage) => {
