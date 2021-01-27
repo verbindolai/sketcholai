@@ -12,48 +12,64 @@ export class GameHandler implements HandlerInterface {
     private readonly drawEvent: string = "draw";
     private readonly fillEvent: string = "fill";
 
-    handle(socket: Socket, lobbys: LinkedList<GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>) {
+    handle(socket: Socket, lobbyHashMap: HashMap<string, GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>) {
 
         socket.on(this.drawEvent, (data) => {
             const connection = allConnections.get(socket.id);
-            if (connection.player.isDrawing && !CommunicationHandler.deployMessage(socket, data, this.drawEvent, false, lobbys, io)) {
+            if(connection == undefined) {
+                return;
+            }
+            const lobby = lobbyHashMap.get(connection.lobbyID)
+            if(lobby == undefined) {
+                return;
+            }
+            if (connection.player.isDrawing && !CommunicationHandler.deployMessage(socket, data, this.drawEvent, false, lobby, connection, io)) {
                 console.error("Couldn't deploy draw Message.")
             }
         })
 
         socket.on(this.fillEvent, (data) => {
             const connection = allConnections.get(socket.id);
-            if (connection.player.isDrawing && !CommunicationHandler.deployMessage(socket, data, this.fillEvent, false, lobbys, io)) {
+            if(connection == undefined) {
+                return;
+            }
+            const lobby = lobbyHashMap.get(connection.lobbyID)
+            if(lobby == undefined) {
+                return;
+            }
+            if (connection.player.isDrawing && !CommunicationHandler.deployMessage(socket, data, this.fillEvent, false, lobby, connection, io)) {
                 console.error("Couldn't deploy fill Message.")
             }
         })
 
-        socket.on('canvasStatus', (data) => {
-            CommunicationHandler.deployMessage(socket, data, 'canvasUpdate', false, lobbys, io)
-        })
+        socket.on('initGame', (clientPackage) => {
+            let data = JSON.parse(clientPackage);
+            let drawTime = data[0];
+            let roundNum = data[1];
+            //TODO check rdy status
+            let connection = allConnections.get(socket.id);
+            let lobby = lobbyHashMap.get(connection.lobbyID);
 
-        socket.on('startGameInit', (data) => {  //TODO check data
-            let room = RoomHandler.getRoom(socket.id, lobbys);
-            CommunicationHandler.deployMessage(socket, JSON.stringify([room?.lobby.lobbyID, socket.id]), "loadGame", true, lobbys, io);
-        });
-
-        socket.on("gameLoaded", (time) => {
-            let room = RoomHandler.getRoom(socket.id, lobbys);
-            if (room != undefined) {
-                room.lobby.game = new Game(room.lobby.lobbyID, time, 3, room.lobby.connections);
-                room.lobby.game.init(io);
-                console.log("Game-Created!");
-            } else {
-                console.error("room is undefined!");
+            if (connection == undefined || lobby == undefined){
+                console.error("Cant init Game, connection or lobby is undefined.")
+                return;
             }
-            CommunicationHandler.deployMessage(socket,null,"gameStarted", true, lobbys, io);
+
+            lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections);
+            CommunicationHandler.deployMessage(socket, null, "loadGame", true, lobby, connection, io);
         })
 
-        socket.on("lateJoinGame", (name, lobbyID) => {
+        socket.on('startGame', (clientPackage) => {
+            let data = JSON.parse(clientPackage);
+            let statusCode = data[0];
+            let connection = allConnections.get(socket.id);
+            let lobby = lobbyHashMap.get(connection.lobbyID);
 
+            if (lobby.game?.hasStarted === false){
+                lobby.game.init(io);
+            }
 
-        })
-
+        });
     }
 }
 

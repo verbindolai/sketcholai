@@ -17,9 +17,9 @@ export class SketchServer {
 
     private app: Express;
     private readonly _port: number;
-    private io: SocketServer;
-    private lobbys: LinkedList<GameLobby> = new LinkedList<GameLobby>();
-    private handlerObjects: LinkedList<HandlerInterface>
+    private readonly io: SocketServer;
+    private readonly handlerObjects: LinkedList<HandlerInterface>
+    private lobbies: HashMap<string, GameLobby> = new HashMap<string, GameLobby>();
     private allConnections : HashMap<string, Connection> = new HashMap<string, Connection>();
 
 
@@ -94,16 +94,21 @@ export class SketchServer {
 
     private handleDisconnect(socket: Socket): void {
         socket.on('disconnect', (data) => {
-            let room = RoomHandler.getRoom(socket.id, this.lobbys);
-            let player = room?.connection;
-            let lobby = room?.lobby;
+            let player = this.allConnections.get(socket.id);
 
-            if (player == undefined || lobby == undefined) {
-                console.error("Disconnect Error, Lobby or Player is undefined.")
+            if (player == undefined) {
+                console.error("Disconnect Error, Player is undefined.")
                 return;
             }
 
-            if (!RoomHandler.removePlayer(socket, this.lobbys, this.allConnections)) {
+            let lobby = this.lobbies.get(player.lobbyID);
+
+            if (lobby == undefined) {
+                console.error("Disconnect Error, lobby is undefined.")
+                return;
+            }
+
+            if (!RoomHandler.removePlayer(socket, this.lobbies, this.allConnections)) {
                 console.error("Couldn't delete Lobby.")
             }
         })
@@ -111,7 +116,7 @@ export class SketchServer {
 
     private startHandlers(socket: Socket): void {
         for (const handler of this.handlerObjects) {
-            handler.handle(socket, this.lobbys, this.io, this.allConnections)
+            handler.handle(socket, this.lobbies, this.io, this.allConnections)
         }
     }
 

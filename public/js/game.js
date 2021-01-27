@@ -9,37 +9,30 @@ let currentPlayerName;
 let currentPlayerID;
 let clientName;
 
+
+
+
+function initGame() {
+    let drawTime;
+    let roundNumber;
+
+    drawTime = document.querySelector("#drawTimeSelect").value;
+    roundNumber = document.querySelector("#roundNumSelect").value;
+
+
+    socket.emit("initGame", packData(drawTime, roundNumber))
+}
 /**
  * loads the game Page and informs the Server that the game can be started.
  */
-socket.on("loadGame", (data)=>{
+socket.on("loadGame", (serverPackage)=>{
 
-    let message = JSON.parse(data);
-    lobbyID = message.msg[0];
-    let socketID = message.msg[1]
-    console.log("From server: " + socketID)
-    console.log("client: "+ socket.id)
-    pageLoad('game', ()=>{
+    pageLoad("game", () => {
         init();
-        if(socket.id == socketID){ //TODO
-            socket.emit("gameLoaded", selectedTime);
-        }
-    })
-})
+        socket.emit("startGame", packData(200))
+    });
+});
 
-socket.on("gameStarted", (data) => {
 
-})
 
-/**
- * Joins a game directly. Used when the game has already started and the client joins late.
- */
-function joinGame() {
-    socket.emit("lateJoinGame")
-}
-
-function startGameInit() {
-    socket.emit( "startGameInit", JSON.stringify("start"));
-    selectedTime = document.querySelector("#drawTimeSelect").value;
-}
 

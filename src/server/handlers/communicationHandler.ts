@@ -1,15 +1,17 @@
 import {HandlerInterface} from "./handlerInterface";
 import {Server as SocketServer, Socket} from "socket.io";
-import {HashMap, LinkedList} from "typescriptcollectionsframework";
+import {HashMap} from "typescriptcollectionsframework";
 import {GameLobby} from "../gameLobby";
-import {RoomHandler} from "./roomHandler";
 import {Connection} from "../connection";
+
 
 export class CommunicationHandler implements HandlerInterface {
 
-    handle(socket: Socket, lobbys: LinkedList<GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>) {
+    handle(socket: Socket, lobbyHashMap: HashMap<string, GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>) {
         socket.on('chat', (data) => {
-            if (!CommunicationHandler.deployMessage(socket, data, 'chat', true, lobbys, io)) {
+            let connection = allConnections.get(socket.id);
+            let lobby = lobbyHashMap.get(connection.lobbyID);
+            if (!CommunicationHandler.deployMessage(socket, data, 'chat', true, lobby, connection, io)) {
                 console.error("Couldn't deploy Message.")
             }
         });
@@ -21,38 +23,29 @@ export class CommunicationHandler implements HandlerInterface {
      * @param data
      * @param event
      * @param include -> wether or not the Author should be included
-     * @param lobbys
+     * @param lobbyHashMap
      * @param io
      * @private
      */
 
-    public static deployMessage(socket: Socket, data: any, event: string, include: boolean, lobbys: LinkedList<GameLobby>, io: SocketServer): boolean {
-        let room = RoomHandler.getRoom(socket.id, lobbys);
-        let author = room?.connection;
-        let lobby = room?.lobby;
+    public static deployMessage(socket : Socket, data: any, event: string, include: boolean, lobby : GameLobby, connection : Connection, io: SocketServer): boolean {
 
-        if (author == undefined || lobby == undefined) {
+        if (connection == undefined || lobby == undefined) {
             return false;
         }
-        let message = new Message<any>(author, data)
         if (include) {
-            io.to(lobby.lobbyID).emit(event, JSON.stringify(message))
+            io.to(lobby.lobbyID).emit(event, JSON.stringify(data))
         } else {
-            socket.broadcast.to(lobby.lobbyID).emit(event, JSON.stringify(message))
+            socket.broadcast.to(lobby.lobbyID).emit(event, JSON.stringify(data))
         }
         return true;
     }
-}
 
-class Message<T> {
+    public static packData(...data : any){
 
-    author: Connection;
-    msg: T;
-
-    constructor(author: Connection, msg: T) {
-        this.author = author;
-        this.msg = msg;
+        return JSON.stringify(data);
     }
+
 }
 
 export let handler = new CommunicationHandler();

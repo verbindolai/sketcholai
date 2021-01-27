@@ -12,6 +12,7 @@ export class Connection {
     private _isInRoom: boolean;
     private _lobbyID: string;
     private _player: Player;
+    private _receivedCanvas : boolean;
 
     constructor(id: string, name: string, lobbyID: string) {
         this._socketID = id;
@@ -19,8 +20,17 @@ export class Connection {
         this._isInRoom = false;
         this._lobbyID = lobbyID;
         this._player = new Player();
+        this._receivedCanvas = false;
     }
 
+
+    get receivedCanvas(): boolean {
+        return this._receivedCanvas;
+    }
+
+    set receivedCanvas(value: boolean) {
+        this._receivedCanvas = value;
+    }
 
     get socketID(): string {
         return this._socketID;

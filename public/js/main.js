@@ -150,5 +150,10 @@ function randomString(length) {
     for (let i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
+
     return result;
+}
+
+function packData(...data){
+    return JSON.stringify(data)
 }

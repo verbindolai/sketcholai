@@ -16,7 +16,9 @@ export class Game {
     private roundStartDate: number;
     private readonly maxRoundCount : number;
 
-    private currentPlayer : Connection | undefined;
+    private _currentPlayer : Connection | undefined;
+
+
 
 
     constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, players: LinkedList<Connection>,) {
@@ -40,13 +42,13 @@ export class Game {
         for(let player of this.players){
             this.roundPlayerSet.add(player);
         }
-        this.currentPlayer = this.roundPlayerSet.iterator().next();
-        if (this.currentPlayer == null) { //TODO Right?
+        this._currentPlayer = this.roundPlayerSet.iterator().next();
+        if (this._currentPlayer == null) { //TODO Right?
             return;
         }
-        this.currentPlayer.player.isDrawing = true;
+        this._currentPlayer.player.isDrawing = true;
         this.roundStartDate = Date.now();
-        io.to(this.lobbyId).emit('updateGameState', JSON.stringify([this.roundStartDate, this.roundDurationSec, this.currentPlayer.name, this.currentPlayer.socketID]));
+        io.to(this.lobbyId).emit('updateGameState', JSON.stringify([this.roundStartDate, this.roundDurationSec, this._currentPlayer.name, this._currentPlayer.socketID]));
         console.log("started Round: " + this.roundCount)
     }
 
@@ -69,12 +71,12 @@ export class Game {
             //End of one Turn
             console.log("Time: " + (Date.now() - this.roundStartDate) / 1000)
             if ((Date.now() - this.roundStartDate) / 1000 > this.roundDurationSec){
-                if (this.currentPlayer != undefined){
-                    if (this.currentPlayer == null) { //TODO Right?
+                if (this._currentPlayer != undefined){
+                    if (this._currentPlayer == null) { //TODO Right?
                         return;
                     }
-                    this.currentPlayer.player.isDrawing = false;
-                    this.roundPlayerSet.remove(this.currentPlayer);
+                    this._currentPlayer.player.isDrawing = false;
+                    this.roundPlayerSet.remove(this._currentPlayer);
                     console.log("Turn is over...")
                 }
 
@@ -84,13 +86,13 @@ export class Game {
                     this.startRound(io);
                     console.log("Round is over, next Round starting...")
                 } else {
-                    this.currentPlayer = this.roundPlayerSet.iterator().next();
-                    if (this.currentPlayer == null) { //TODO Right?
+                    this._currentPlayer = this.roundPlayerSet.iterator().next();
+                    if (this._currentPlayer == null) { //TODO Right?
                         return;
                     }
-                    this.currentPlayer.player.isDrawing = true;
+                    this._currentPlayer.player.isDrawing = true;
                     this.roundStartDate = Date.now();
-                    io.to(this.lobbyId).emit("gameTime", JSON.stringify([this.roundStartDate, this.roundDurationSec , this.currentPlayer.name, this.currentPlayer.socketID]));
+                    io.to(this.lobbyId).emit("gameTime", JSON.stringify([this.roundStartDate, this.roundDurationSec , this._currentPlayer.name, this._currentPlayer.socketID]));
                     console.log("Next Player choosen...")
                 }
 
@@ -101,7 +103,7 @@ export class Game {
 
     private resetGame() {
         this.roundCount = 0;
-        this.currentPlayer = undefined;
+        this._currentPlayer = undefined;
     }
 
 
@@ -146,6 +148,9 @@ export class Game {
         return this._hasStarted;
     }
 
+    get currentPlayer(): Connection | undefined {
+        return this._currentPlayer;
+    }
 }
 
 

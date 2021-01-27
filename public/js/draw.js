@@ -129,18 +129,6 @@ socket.on(fillEvent, (data) => {
     bucket.fill(message.msg.x, message.msg.y, 70, message.msg.color, false)
 })
 
-socket.on("canvasStatus", (data) => {
-    if (data) {
-        const img = canvas.toDataURL();
-        socket.emit("canvasStatus", img);
-    }
-})
-
-socket.on('canvasUpdate', (data) => {
-    let message = JSON.parse(data);
-    drawDataURIOnCanvas(message.msg)
-})
-
 // <============================================================================>
 
 

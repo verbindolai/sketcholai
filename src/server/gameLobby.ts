@@ -19,7 +19,7 @@ export class GameLobby {
         this.limit = limit;
     }
 
-    public addPlayer(connection: Connection): boolean {
+    public addConnection(connection: Connection): boolean {
         if (this._connections.size() < this.limit) {
             this._connections.add(connection);
             connection.isInRoom = true;
@@ -36,7 +36,7 @@ export class GameLobby {
         return this._connections.size()
     }
 
-    public removePlayer(connection: Connection): boolean {
+    public removeConnection(connection: Connection): boolean {
         return this._connections.remove(connection);
     }
 
