@@ -8,11 +8,14 @@
     </div>
 
     <!-- Main =======================-->
-    <div class=" px-4 m-auto flex flex-row ">
+    <div class=" px-4 m-auto flex flex-row shadow-xl bg-blue-600 rounded">
         <!--Points-->
         <div class="flex flex-col justify-center items-center bg-blue-600 p-10 rounded-l">
-            <label class="p-2 mb-2 font-bold text-xl">Connected Players: </label>
-            <ul id="connectedPlayerList" class="font-bold text-sm"></ul>
+            <div class="flex flex-col justify-center items-center p-4 bg-blue-700 h-full rounded">
+                <label class="p-2 mb-2 font-bold text-xl">Connected Players: </label>
+                <ul id="connectedPlayerList" class="font-bold text-sm"></ul>
+            </div>
+
         </div>
         <!--Game-Area-->
         <div class="flex flex-col">
@@ -33,10 +36,10 @@
             </div>
             <!--Canvas-->
             <div id="canvasContainer">
-                <canvas id="canvas" width="1000" height="600" class="bg-white"></canvas>
+                <canvas id="canvas" width="1000" height="600" class="bg-white rounded"></canvas>
             </div>
             <!--Tools-->
-            <div class="flex flex-row p-2 bg-blue-600 items-center">
+            <div class="flex flex-row p-4 bg-blue-600 items-center">
                 <div class="">
                     <button id="btnColRed" onclick="changeColor(this),highlightColor(this)" value="#ff0000" class="p-4 bg-red-700 rounded"></button>
                     <button id="btnColBlue" onclick="changeColor(this),highlightColor(this)" value="#1c37b5" class="p-4 bg-blue-700 rounded"></button>
@@ -45,12 +48,12 @@
                     <button id="btnColBlack" onclick="changeColor(this),highlightColor(this)" value="#000000" class="p-4 bg-black rounded"></button>
                     <button id="btnColYellow" onclick="changeColor(this),highlightColor(this)" value="#e3cf19" class="p-4 bg-yellow-700 rounded"></button>
                 </div>
-                <div class="flex flex-row justify-center items-center ml-8">
+                <div class="flex flex-row justify-center items-center ml-16">
                     <button id="btnToolBucket" onclick="switchTool(this.value),highlightTool(this)" value="BUCKET" class="rounded"><img src="https://cdn0.iconfinder.com/data/icons/graphic-design-solid-1/88/paint_bucket_color_art_design-256.png" alt="Bucket" width="35"></button>
                     <button id="btnToolEraser" onclick="switchTool(this.value),highlightTool(this)" value="ERASER" class="rounded"><img src="https://cdn4.iconfinder.com/data/icons/graphic-design-72/32/Graphic_Design_eraser-256.png" alt="Eraser" width="35"></button>
                     <button id="btnToolPen" onclick="switchTool(this.value),highlightTool(this)" value="PEN" class="rounded"><img src="https://cdn4.iconfinder.com/data/icons/basic-user-interface-elements/700/edit-change-pencil-256.png" alt="Pen" width="35"></button>
                 </div>
-                <div class="flex flex-row justify-center items-center ml-8">
+                <div class="flex flex-row justify-center items-center ml-16">
                     <button id="btnPenThin" onclick="setLineWidth(this.value),highlightPenSize(this)" value="2" class="rounded-full p-2 bg-black"></button>
                     <button id="btnPenNormal" onclick="setLineWidth(this.value),highlightPenSize(this)" value="4" class="rounded-full p-3 bg-black"></button>
                     <button id="btnPenThick" onclick="setLineWidth(this.value),highlightPenSize(this)" value="6" class="rounded-full p-4 bg-black"></button>
@@ -58,18 +61,21 @@
             </div>
         </div>
         <!--Chat-->
-        <div class="flex flex-col justify-center items-center bg-blue-600 p-10 rounded-r">
-            <!--Display-->
-            <div id="chatDisplay" class="bg-white h-500 w-52 p-4 rounded-t overflow-y-auto overflow-x-hidden border-8 border-white">
-                <ul id="chatList" class="text-sm h-full">
+        <div class="bg-blue-600 p-10 rounded-r ">
+            <div class="flex flex-col justify-center items-center rounded bg-blue-800 p-4 h-full">
+                <!--Display-->
+                <div id="chatDisplay" class="bg-blue-800 h-500 w-52 p-2 rounded-t overflow-y-auto overflow-x-hidden border-8 border-blue-800 text-blue-200">
+                    <ul id="chatList" class="text-sm h-full">
 
-                </ul>
+                    </ul>
+                </div>
+                <!--Input-->
+                <div class="flex flex-col">
+                    <textarea name="" placeholder="Send a Message..." id="chatInput" class="w-52 rounded p-2 bg-blue-700 text-blue-300 text-sm font-semibold resize-none outline-none h-10 focus:h-16 focus:ring-2 focus:ring-blue-900 overflow-hidden"></textarea>
+                    <button id="sendButton" onclick="sendChatMsg()" class="text-yellow-900 bg-yellow-500 p-1 mt-1 rounded hover:bg-yellow-600 transition duration-200 ease-in-out outline-none w-1/4">Send</button>
+                </div>
             </div>
-            <!--Input-->
-            <div class="flex flex-col">
-                <textarea name="" id="chatInput" class="w-52 rounded-b border-t-2 border-blue-700 p-4 text-sm font-semibold resize-none"></textarea>
-                <button id="sendButton" onclick="sendChatMsg()" class="text-yellow-900 bg-yellow-500 p-1 mt-1 rounded hover:bg-yellow-600 transition duration-200 ease-in-out">Send</button>
-            </div>
+
         </div>
     </div>
 
