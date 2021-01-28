@@ -18,10 +18,11 @@ function initChatListening(){
         chatNameCont.style.color = color;
         chatNameCont.classList.add("font-bold", "mr-1")
         chatMsgCont.classList.add("font-semibold", "break-all")
+
         chatNameCont.appendChild(document.createTextNode(name + ":"))
         chatMsgCont.appendChild(document.createTextNode(message))
         chatListNode.append(chatNameCont, chatMsgCont);
-        chatListNode.classList.add("px-1","rounded","hover:bg-gray-200")
+        chatListNode.classList.add("px-1","rounded","hover:bg-blue-700")
         document.querySelector("#chatList").appendChild(chatListNode);
         scrollDown();
     })
@@ -34,9 +35,6 @@ function sendChatMsg() {
     let chatInput = document.getElementById("chatInput");
     let message = chatInput.value;
 
-    if(message == "" || message == undefined) {
-        return;
-    }
     socket.emit('chat', packData(message));
     chatInput.value = "";
     scrollDown();
@@ -46,6 +44,8 @@ function sendChatMsg() {
  * scrolls down the chat
  */
 function scrollDown() {
-    let chatDisplay = document.querySelector('#chatDisplay ');
+    let chatDisplay = document.querySelector('#chatDisplay .simplebar-content-wrapper');
     chatDisplay.scrollTop = chatDisplay.scrollHeight - chatDisplay.clientHeight;
+
+
 }

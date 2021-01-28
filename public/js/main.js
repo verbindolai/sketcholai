@@ -28,6 +28,7 @@ function init(lobbyID, currentPlayerName) {
     highlightedPenSize = document.querySelector("#btnPenNormal");
     connections_html_container = document.querySelector("#connectedPlayerList");
 
+
     highlightTool(highlightedTool);
     highlightColor(highlightedColor);
     highlightPenSize(highlightedPenSize);
@@ -35,6 +36,9 @@ function init(lobbyID, currentPlayerName) {
     CHAT_HTML_TEXTAREA.onkeydown = function (e) {
         if (e.keyCode == 13) {
             sendChatMsg();
+            if(e.preventDefault) {
+                e.preventDefault();
+            }
         }
     }
 

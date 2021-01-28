@@ -22,8 +22,6 @@ export class SketchServer {
     private readonly handlerObjects: LinkedList<HandlerInterface>
     private lobbies: HashMap<string, GameLobby> = new HashMap<string, GameLobby>();
     private allConnections : HashMap<string, Connection> = new HashMap<string, Connection>();
-    private lateJoinedPlayers : HashMap<string, string> = new HashMap<string, string>();
-
 
 
     constructor(port: number) {
@@ -114,7 +112,6 @@ export class SketchServer {
             if (!RoomHandler.removePlayer(socket, this.lobbies, this.allConnections)) {
                 console.error("Couldn't delete Lobby.")
             }
-            console.log("Disconnecting, send updated list")
             CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, this.io);
         })
     }
