@@ -20,7 +20,7 @@ function initGame() {
     roundNumber = document.querySelector("#roundNumSelect").value;
 
 
-    socket.emit("initGame", packData(10, roundNumber))//TODO drawTime!
+    socket.emit("initGame", packData(drawTime, roundNumber))
 }
 /**
  * loads the game Page and informs the Server that the game can be started.

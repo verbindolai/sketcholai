@@ -1,7 +1,6 @@
 "use strict"
 
 let drawing = false;
-let lineWidth = 2;
 const toolEnum = {"PEN": 1, "ERASER": 2, "BUCKET": 3};
 Object.freeze(toolEnum);
 
@@ -12,6 +11,10 @@ const COL_GREEN = '#2cb323';
 const COL_BLUE = '#1c37b5';
 const COL_YELLOW = '#e3cf19';
 const ERASER = COL_WHITE;
+
+const LINE_WIDTH_NORMAL = 4;
+let lineWidth = LINE_WIDTH_NORMAL;
+
 
 const FILL_BUCKET_TOLERANCE = 0;
 
@@ -38,32 +41,27 @@ class Pen extends Tool {
     lineWidth;
     EXTEND = 0.5;
 
-    constructor(lineWidth, context, canvas) {
+    constructor(width,context, canvas) {
         super(context, canvas);
-        this.lineWidth = lineWidth;
+        this.lineWidth = width;
     }
 
     drawLine(x0, y0, x1, y1, color) {
         this.context.beginPath();
         this.context.moveTo(x0, y0);
         //Extend line
-        const slope = (y1 - y0) / (x1 - x0);
-        const b = y0 - slope * x0;
         let newX;
         if(x1-x0 > 0){
             newX = x1 + this.EXTEND;
         }else{
             newX = x1 - this.EXTEND;
         }
-        // const newY = slope * newX + b;
-
         let newY;
         if(y1-y0 > 0){
             newY = y1 + this.EXTEND;
         }else{
             newY = y1 - this.EXTEND;
         }
-
         this.context.lineTo(newX, newY);
         this.context.strokeStyle = color;
         this.context.lineWidth = this.lineWidth;
@@ -139,7 +137,7 @@ function initDrawListening(){
         let width = msg.width;
         let drawing = msg.drawing;
         if (drawing) {
-            let pen = new Pen(width, context, canvas);
+            let pen = new Pen(width,context, canvas);
             pen.draw(x, y, color, false);
         } else {
             oldPosition.x = -1;
