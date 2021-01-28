@@ -90,21 +90,22 @@ socket.on("gameJoined", (serverPackage) => {
     pageLoad("game", () => {
         init(lobbyID, currentPlayerName);
         displayTime(drawDuration, unixTime);
-        updateGameState()
         //TODO
     });
 });
 
-socket.on("sendCanvasStatus", (serverPackage) => {
-    const img = canvas.toDataURL();
-    socket.emit("receiveCanvas", packData(img));
-})
+function initCanvasListening(){
+    socket.on("sendCanvasStatus", (serverPackage) => {
+        const img = canvas.toDataURL();
+        socket.emit("receiveCanvas", packData(img));
+    })
 
-socket.on("getCanvasStatus", (serverPackage) => {
-    let data = JSON.parse(serverPackage);
-    let imgData = data[0];
-    drawDataURIOnCanvas(imgData)
-})
+    socket.on("getCanvasStatus", (serverPackage) => {
+        let data = JSON.parse(serverPackage);
+        let imgData = data[0];
+        drawDataURIOnCanvas(imgData)
+    })
+}
 
 function sendReady () {
 

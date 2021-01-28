@@ -7,7 +7,7 @@ import {CommunicationHandler} from "./communicationHandler";
 
 
 export class RoomHandler implements HandlerInterface {
-    private lateJoinedPlayers : LinkedList<string> = new LinkedList<string>();
+    private lateJoinedPlayers : HashMap<string, LinkedList<string>> = new HashMap<string, LinkedList<string>>();
 
     handle(socket: Socket, lobbyHashMap: HashMap<string, GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>): void {
 
@@ -49,9 +49,14 @@ export class RoomHandler implements HandlerInterface {
                 CommunicationHandler.deployMessage(socket, null,"updatePlayerList", true, lobby, connection, io);
             } else {
                 socket.emit("gameJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, game.roundStartDate, game.roundDurationSec, game.currentPlayer?.socketID));
-                this.lateJoinedPlayers.add(socket.id)
+                if(this.lateJoinedPlayers.containsKey(lobbyID)){
+                    this.lateJoinedPlayers.get(lobbyID).add(socket.id);
+                }else{
+                    const newSocketIdList = new LinkedList<string>();
+                    newSocketIdList.add(socket.id);
+                    this.lateJoinedPlayers.put(lobbyID,newSocketIdList);
+                }
                 //Sends a request to all other connections in the room to send the current canvas status to the server
-                //The recipients socket-id is send with, so the server later knows where to deploy the image-data to.
                 CommunicationHandler.deployMessage(socket,null, "sendCanvasStatus", false, lobby, connection, io);
             }
         });
@@ -62,17 +67,18 @@ export class RoomHandler implements HandlerInterface {
             }
             let data = JSON.parse(clientPackage);
             let imgData = data[0];
-            for(let socketId of this.lateJoinedPlayers){
+            let connection = allConnections.get(socket.id);
+            let lobbyLateJoinedPlayers = this.lateJoinedPlayers.get(connection.lobbyID);
+
+            if(lobbyLateJoinedPlayers == undefined){
+                console.error("no late joiners for this lobby!");
+                return;
+            }
+
+            for(let socketId of lobbyLateJoinedPlayers){
                 io.to(socketId).emit("getCanvasStatus", CommunicationHandler.packData(imgData));
             }
-            this.lateJoinedPlayers.clear();
-            // let requesterConnection = allConnections.get(requesterSocketID);
-            //
-            // console.log("Receiving requester ID: " + requesterSocketID);
-            // if (requesterConnection.receivedCanvas === false) {
-            //     io.to(requesterSocketID).emit("getCanvasStatus", CommunicationHandler.packData(imgData));
-            //     requesterConnection.receivedCanvas = true;
-            // }
+            this.lateJoinedPlayers.remove(connection.lobbyID);
         })
 
     }

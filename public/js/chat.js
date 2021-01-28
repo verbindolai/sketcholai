@@ -1,18 +1,21 @@
 let CHAT_HTML_TEXTAREA;
 
+
 /**
  * creates a new chat message in chat on channel "chat"
  */
-socket.on('chat', (serverPackage) => {
-    let data = JSON.parse(serverPackage);
-    let message = data[0];
-    let name = data[1];
+function initChatListening(){
+    socket.on('chat', (serverPackage) => {
+        let data = JSON.parse(serverPackage);
+        let message = data[0];
+        let name = data[1];
 
-    let li = document.createElement("li");
-    li.appendChild(document.createTextNode(name + ": " + message));
-    document.querySelector("#chatList").appendChild(li);
-    scrollDown();
-})
+        let li = document.createElement("li");
+        li.appendChild(document.createTextNode(name + ": " + message));
+        document.querySelector("#chatList").appendChild(li);
+        scrollDown();
+    })
+}
 
 /**
  * sends the value of the chatInput on channel "chat"

@@ -105,37 +105,36 @@ class DrawInfoPackage {
         this.drawing = drawing;
     }
 }
-// <================================ Listener ================================>
 
-socket.on(drawEvent, (serverPackage) => {
-    const data = JSON.parse(serverPackage);
-    const msg = data[0];
-    console.log(data)
-    console.log(msg)
+function initDrawListening(){
+    socket.on(drawEvent, (serverPackage) => {
+        const data = JSON.parse(serverPackage);
+        const msg = data[0];
+        console.log(data)
+        console.log(msg)
 
-    let x = msg.x;
-    let y = msg.y;
-    let color = msg.color;
-    let width = msg.width;
-    let drawing = msg.drawing;
-    if (drawing) {
-        let pen = new Pen(width, context, canvas);
-        pen.draw(x, y, color, false);
-    } else {
-        oldPosition.x = -1;
-        oldPosition.y = -1;
-    }
-})
+        let x = msg.x;
+        let y = msg.y;
+        let color = msg.color;
+        let width = msg.width;
+        let drawing = msg.drawing;
+        if (drawing) {
+            let pen = new Pen(width, context, canvas);
+            pen.draw(x, y, color, false);
+        } else {
+            oldPosition.x = -1;
+            oldPosition.y = -1;
+        }
+    })
 
-socket.on(fillEvent, (serverPackage) => {
-    const data = JSON.parse(serverPackage);
-    const message = data[0];
-    console.log(message)
-    let bucket = new Bucket(context, canvas);
-    bucket.fill(message.x, message.y, 70, message.color, false)
-})
-
-// <============================================================================>
+    socket.on(fillEvent, (serverPackage) => {
+        const data = JSON.parse(serverPackage);
+        const message = data[0];
+        console.log(message)
+        let bucket = new Bucket(context, canvas);
+        bucket.fill(message.x, message.y, 70, message.color, false)
+    })
+}
 
 
 function switchTool(tool) {

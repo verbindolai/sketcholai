@@ -98,12 +98,18 @@ function init(lobbyID, currentPlayerName) {
         }
     })
 
+    //Start listeners
+    initGameStateListening();
+    initCanvasListening();
+    initChatListening();
+    initDrawListening();
+    initGameStateListening();
 }
 
 /**
  * Receives game information for a new turn
  */
-function updateGameState() {
+function initGameStateListening() {
     socket.on('updateGameState', (serverPackage) => {  //TODO
         const data = JSON.parse(serverPackage);
         const unixTime = data[0];
