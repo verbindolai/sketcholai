@@ -9,10 +9,19 @@ function initChatListening(){
         let data = JSON.parse(serverPackage);
         let message = data[0];
         let name = data[1];
+        let color = data[2];
 
-        let li = document.createElement("li");
-        li.appendChild(document.createTextNode(name + ": " + message));
-        document.querySelector("#chatList").appendChild(li);
+        let chatListNode = document.createElement("li");
+        let chatNameCont = document.createElement("div");
+        let chatMsgCont = document.createElement("div");
+        chatListNode.classList.add("flex", "flex-row")
+        chatNameCont.style.color = color;
+        chatNameCont.classList.add("font-bold", "mr-1")
+        chatNameCont.appendChild(document.createTextNode(name + ":"))
+        chatMsgCont.appendChild(document.createTextNode(message))
+        chatListNode.append(chatNameCont, chatMsgCont);
+
+        document.querySelector("#chatList").appendChild(chatListNode);
         scrollDown();
     })
 }

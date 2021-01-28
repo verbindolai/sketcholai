@@ -38,7 +38,7 @@ function init(lobbyID, currentPlayerName) {
     }
 
     LOBBY_ID_HTML_CONTAINER.innerHTML = lobbyID;
-    CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = "Current Player: " + currentPlayerName;
+    CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = currentPlayerName;
 
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -128,7 +128,7 @@ function initGameStateListening() {
         currentPlayerName = name;
 
         if(CURRENT_PLAYER_NAME_HTML_CONTAINER != undefined){
-            CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = "Current Player: " + currentPlayerName;
+            CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = currentPlayerName;
         }
 
         displayTime(drawDuration, unixTime);
@@ -159,7 +159,7 @@ function displayTime(duration, unixTime) {
 function updateTime() {
     let time = Math.floor(Date.now() / 1000) - roundStartTime;
     timerTime = roundTime - time;
-    timerCont.innerHTML = "Time: " + timerTime;
+    timerCont.innerHTML = timerTime;
     if (timerTime <= 0) {
         timerTime = 0;
         clearInterval(timer);
