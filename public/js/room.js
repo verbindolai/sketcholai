@@ -90,6 +90,7 @@ socket.on("gameJoined", (serverPackage) => {
     pageLoad("game", () => {
         init(lobbyID, currentPlayerName);
         displayTime(drawDuration, unixTime);
+        updateGameState()
         //TODO
     });
 });

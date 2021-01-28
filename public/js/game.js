@@ -33,6 +33,7 @@ socket.on("loadGame", (serverPackage)=>{
     pageLoad("game", () => {
         init(lobbyID, currentPlayerName);
         socket.emit("startGame", packData(200))
+        updateGameState();
     });
 });
 

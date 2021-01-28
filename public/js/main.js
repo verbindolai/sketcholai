@@ -103,28 +103,27 @@ function init(lobbyID, currentPlayerName) {
 /**
  * Receives game information for a new turn
  */
+function updateGameState() {
+    socket.on('updateGameState', (serverPackage) => {  //TODO
+        const data = JSON.parse(serverPackage);
+        const unixTime = data[0];
+        const drawDuration = data[1];
+        const name = data[2];
+        const id = data[3];
 
-socket.on('updateGameState', (serverPackage) => {  //TODO
-    const data = JSON.parse(serverPackage);
-    const unixTime = data[0];
-    const drawDuration = data[1];
-    const name = data[2];
-    const id = data[3];
+        currentPlayerID = id;
+        currentPlayerName = name;
 
+        if(CURRENT_PLAYER_NAME_HTML_CONTAINER != undefined){
+            CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = "Current Player: " + currentPlayerName;
+        }
 
-    currentPlayerID = id;
-    currentPlayerName = name;
+        displayTime(drawDuration, unixTime);
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+    });
+}
 
-    if(CURRENT_PLAYER_NAME_HTML_CONTAINER != undefined){
-        CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = "Current Player: " + currentPlayerName;
-    }
-
-    displayTime(drawDuration, unixTime);
-    context.fillStyle = '#ffffff';
-    context.fillRect(0, 0, canvas.width, canvas.height);
-
-
-});
 
 function displayTime(duration, unixTime) {
     clearInterval(timer);
