@@ -1,7 +1,9 @@
 "use strict"
 
-const drawEvent = 'draw';
-const fillEvent = 'fill';
+let drawing = false;
+let lineWidth = 2;
+const toolEnum = {"PEN": 1, "ERASER": 2, "BUCKET": 3};
+Object.freeze(toolEnum);
 
 const COL_WHITE = '#ffffff';
 const COL_BLACK = '#000000';
@@ -11,36 +13,12 @@ const COL_BLUE = '#1c37b5';
 const COL_YELLOW = '#e3cf19';
 const ERASER = COL_WHITE;
 
-const toolEnum = {"PEN":1, "ERASER":2, "BUCKET":3};
-Object.freeze(toolEnum);
-
-
-let context;
-let canvas;
-let site;
-let drawing = false;
-let lineWidth = 2;
 let currentColor = COL_BLACK;
-let isFloodFill = false;
 let currentTool = toolEnum.PEN;
+
 let oldPosition = {
     x: -1,
     y: -1
-}
-
-class DrawInfoPackage {
-    x;
-    y;
-    width;
-    color;
-    drawing;
-    constructor(x,y,color,width, drawing) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.color = color;
-        this.drawing = drawing;
-    }
 }
 
 class Tool {
@@ -53,7 +31,7 @@ class Tool {
     }
 }
 
-class Pen extends Tool{
+class Pen extends Tool {
 
     lineWidth;
 
@@ -73,11 +51,11 @@ class Pen extends Tool{
     }
 
     draw(x, y, color, send) {
-        if(oldPosition.x > 0 && oldPosition.y > 0){
-            this.drawLine(oldPosition.x,oldPosition.y, x, y, color)
+        if (oldPosition.x > 0 && oldPosition.y > 0) {
+            this.drawLine(oldPosition.x, oldPosition.y, x, y, color)
             if (send) {
                 const pkg = new DrawInfoPackage(x, y, color, this.lineWidth, drawing)
-                socket.emit(drawEvent, JSON.stringify(pkg));
+                socket.emit(drawEvent, packData(pkg));
             }
         }
         oldPosition.x = x;
@@ -93,9 +71,10 @@ class Bucket extends Tool {
 
     fill(x, y, tol, color, send) {
         this.context.fillStyle = color;
-        this.context.fillFlood(x,y,tol);
+        this.context.fillFlood(x, y, tol);
         if (send) {
-            socket.emit(fillEvent,new DrawInfoPackage(x,y,currentColor,undefined));
+            const pkg = new DrawInfoPackage(x, y, currentColor, undefined)
+            socket.emit(fillEvent, packData(pkg));
         }
     }
 }
@@ -107,63 +86,58 @@ class Eraser extends Pen {
     }
 
     erase(x, y, send) {
-        super.draw(x,y,"#ffffff", send)
+        super.draw(x, y, "#ffffff", send)
     }
 }
 
-function init(){
-    canvas = document.querySelector('#canvas')
-    context = canvas.getContext('2d');
-    site = document.querySelector('html');
+class DrawInfoPackage {
+    x;
+    y;
+    width;
+    color;
+    drawing;
 
-    canvas.addEventListener('mousedown', (event) => {
-        switch(currentTool) {
-            case toolEnum.PEN:
-            case toolEnum.ERASER:
-                drawing = true;
-                break;
-            case toolEnum.BUCKET:
-                const pos = getMousePos(canvas,event);
-                let bucket = new Bucket(context, canvas);
-                bucket.fill(pos.x, pos.y, 128, currentColor, true);
-                break;
+    constructor(x, y, color, width, drawing) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.color = color;
+        this.drawing = drawing;
+    }
+}
+
+function initDrawListening(){
+    socket.on(drawEvent, (serverPackage) => {
+        const data = JSON.parse(serverPackage);
+        const msg = data[0];
+        console.log(data)
+        console.log(msg)
+
+        let x = msg.x;
+        let y = msg.y;
+        let color = msg.color;
+        let width = msg.width;
+        let drawing = msg.drawing;
+        if (drawing) {
+            let pen = new Pen(width, context, canvas);
+            pen.draw(x, y, color, false);
+        } else {
+            oldPosition.x = -1;
+            oldPosition.y = -1;
         }
     })
 
-    site.addEventListener('mouseup', (event) => {
-        if(currentTool === toolEnum.PEN || currentTool === toolEnum.ERASER){
-            drawing = false;
-            const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
-            socket.emit(drawEvent, JSON.stringify(pkg));
-            clearOldPosition();
-        }
-    })
-
-    canvas.addEventListener('mouseout', (event) => {
-        const pkg = new DrawInfoPackage(undefined, undefined, undefined, undefined, drawing)
-        socket.emit(drawEvent, JSON.stringify(pkg));
-        clearOldPosition();
-    })
-
-    canvas.addEventListener('mousemove', (event) => {
-        if(drawing){
-            const pos = getMousePos(canvas,event);
-            switch (currentTool) {
-                case toolEnum.PEN:
-                    let pen = new Pen(3, context, canvas);
-                    pen.draw(pos.x, pos.y, currentColor, true);
-                    break;
-                case toolEnum.ERASER:
-                    let eraser = new Eraser(context, canvas);
-                    eraser.erase(pos.x, pos.y, true)
-                    break;
-            }
-        }
+    socket.on(fillEvent, (serverPackage) => {
+        const data = JSON.parse(serverPackage);
+        const message = data[0];
+        console.log(message)
+        let bucket = new Bucket(context, canvas);
+        bucket.fill(message.x, message.y, 70, message.color, false)
     })
 }
 
-function switchTool(tool){
 
+function switchTool(tool) {
     switch (tool) {
         case "PEN":
             currentTool = toolEnum.PEN;
@@ -175,15 +149,13 @@ function switchTool(tool){
             currentTool = toolEnum.ERASER;
             break;
     }
-
-
 }
 
-function changeColor(button){
+function changeColor(button) {
     currentColor = button.value;
 }
 
-function clearOldPosition(){
+function clearOldPosition() {
     oldPosition.x = -1;
     oldPosition.y = -1;
 }
@@ -197,16 +169,12 @@ function getMousePos(canvas, evt) {
     };
 }
 
-function drawLine(x0, y0, x1, y1, color) {
-    context.beginPath();
-    context.moveTo(x0, y0);
-    context.lineTo(x1, y1);
-    context.strokeStyle = color;
-    context.lineWidth = lineWidth;
-    context.stroke();
-    context.closePath();
+function drawDataURIOnCanvas(strDataURI) {
+    let img = new window.Image();
+    img.addEventListener("load", function () {
+        context.drawImage(img, 0, 0);
+    });
+    img.setAttribute("src", strDataURI);
 }
-
-
 
 

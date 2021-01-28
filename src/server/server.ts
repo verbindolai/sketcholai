@@ -2,10 +2,11 @@ import express, {Express, Request, Response} from "express";
 import {Server as SocketServer, Socket} from "socket.io";
 import {Server as HTTPServer} from "http"
 import {GameLobby} from "./gameLobby"
-import {LinkedList} from "typescriptcollectionsframework";
+import {HashMap, LinkedList} from "typescriptcollectionsframework";
 import {RoomHandler} from "./handlers/roomHandler";
 import {HandlerInterface} from "./handlers/handlerInterface";
 import * as fs from "fs";
+import {Connection} from "./connection";
 
 /**
  * Represents the Sketch-Server
@@ -16,9 +17,12 @@ export class SketchServer {
 
     private app: Express;
     private readonly _port: number;
-    private io: SocketServer;
-    private lobbys: LinkedList<GameLobby> = new LinkedList<GameLobby>();
-    private handlerObjects : LinkedList<HandlerInterface>
+    private readonly io: SocketServer;
+    private readonly handlerObjects: LinkedList<HandlerInterface>
+    private lobbies: HashMap<string, GameLobby> = new HashMap<string, GameLobby>();
+    private allConnections : HashMap<string, Connection> = new HashMap<string, Connection>();
+    private lateJoinedPlayers : HashMap<string, string> = new HashMap<string, string>();
+
 
 
     constructor(port: number) {
@@ -45,6 +49,7 @@ export class SketchServer {
     private startServer(port: number): HTTPServer {
         console.log(`Listening on Port ${port} ...`)
         return this.app.listen(port);
+
     }
 
     /**
@@ -91,34 +96,37 @@ export class SketchServer {
 
     private handleDisconnect(socket: Socket): void {
         socket.on('disconnect', (data) => {
-            let room = RoomHandler.getRoom(socket.id, this.lobbys);
-            let player = room?.player;
-            let lobby = room?.lobby;
+            let player = this.allConnections.get(socket.id);
 
-            if (player == undefined || lobby == undefined){
-                console.error("Disconnect Error, Lobby or Player is undefined.")
+            if (player == undefined) {
+                console.error("Disconnect Error, Player is undefined.")
                 return;
             }
 
-            if(!RoomHandler.removePlayer(socket, this.lobbys)) {
+            let lobby = this.lobbies.get(player.lobbyID);
+
+            if (lobby == undefined) {
+                console.error("Disconnect Error, lobby is undefined.")
+                return;
+            }
+
+            if (!RoomHandler.removePlayer(socket, this.lobbies, this.allConnections)) {
                 console.error("Couldn't delete Lobby.")
             }
         })
     }
 
-    private startHandlers(socket : Socket) : void{
+    private startHandlers(socket: Socket): void {
         for (const handler of this.handlerObjects) {
-            handler.handle(socket, this.lobbys, this.io)
+            handler.handle(socket, this.lobbies, this.io, this.allConnections)
         }
     }
 
 
-
-
-    private addHandlers() : void{
+    private addHandlers(): void {
         const handlerFiles = fs.readdirSync('src/server/handlers').filter(file => file.endsWith('.ts') && file !== 'handlerInterface.ts');
         for (const file of handlerFiles) {
-            const fileWithoutTS = file.replace(".ts","");
+            const fileWithoutTS = file.replace(".ts", "");
             let command = require(`./handlers/${fileWithoutTS}`);
             this.handlerObjects.add(command.handler)
         }

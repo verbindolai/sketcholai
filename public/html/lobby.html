@@ -1,50 +1,40 @@
-    <div class="outer-grid-container">
-        <div class="grid-header grid-item">Sketcholai</div>
-        <div class="grid-left grid-item"></div>
-        <div class="grid-item" id="mainItem" >
-            <div class="grid-main inner-grid-container" id="mainContainer">
-                <div class="grid-header grid-item inner-grid-item">
-                    <div id="roomCodeContainer">Roomcode:
-                    </div>
-                </div>
-                <div class="grid-left grid-item inner-grid-item">
-                    <div>
-                    </div>
-                </div>
-                <div class="grid-main grid-item inner-grid-item" id="mainGridContainer">
-                    <div id="canvasContainer">
-                        <canvas id="canvas" width="1000" height="750">
-                        </canvas>
-                    </div>
-                </div>
-                <div class="grid-right grid-item inner-grid-item" id="chatCotainer">
-                    <div class="chat-window" id="chat">
-                        <div id="chatDisplay">
-                            <ul id="chatList"></ul>
-                        </div>
-                        <div id="chatInputContainer">
-                            <input type="text" id="chatInput">
-                            <button id="sendButton" onclick="sendChatMsg()">send</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="grid-footer grid-item inner-grid-item">
-                    <div id="toolBox">
-                        <div id="colorContainer">
-                            <button value="#ffffff" onclick="changeColor(this)">WHITE</button>
-                            <button value="#000000" onclick="changeColor(this)">BLACK</button>
-                            <button value="#2cb323" onclick="changeColor(this)">GREEN</button>
-                            <button value="#ff0000" onclick="changeColor(this)">RED</button>
-                            <button value="#e3cf19" onclick="changeColor(this)">YELLOW</button>
-                            <button value="#1c37b5" onclick="changeColor(this)">BLUE</button>
-                            <button value="ERASER" onclick="switchTool(this.value)">ERASER</button>
-                            <button value="BUCKET" onclick="switchTool(this.value)">BUCKET</button>
-                            <button value="PEN" onclick="switchTool(this.value)">PEN</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="grid-right grid-item"></div>
-        <div class="grid-footer grid-item"></div>
+
+  <!-- Header =======================-->
+  <div class="text-blue-900  min-h-screen flex flex-col p-5">
+    <div class="flex flex-row justify-between p-3 items-center">
+      <a href="#">News</a>
+      <a href="#" class="font-bold text-3xl">Sketcholai</a>
+      <a href="#">About</a>
     </div>
+
+    <!-- Main =======================-->
+    <div class="bg-blue-600 p-10 m-auto flex flex-row justify-center items-center rounded-xl shadow-lg">
+      <div class=" flex flex-col p-16">
+        <div id="lobbyRoomCode">Room-Code: </div>
+        <button onclick="initGame()" class="text-gray-600 bg-gray-500 py-4 px-10 rounded mt-4">Start</button>
+        <select name="drawTime" id="drawTimeSelect" class="p-2 mt-2">
+          <option value="30">30 seconds</option>
+          <option value="60">60 seconds</option>
+          <option value="90">90 seconds</option>
+        </select>
+        <select name="roundNum" id="roundNumSelect" class="p-2 mt-2">
+          <option value="2">2 rounds</option>
+          <option value="3">3 rounds</option>
+          <option value="4">4 rounds</option>
+        </select>
+      </div>
+      <div class="flex flex-col p-8 justify-center items-center border-l-4  border-blue-800 ">
+        <span class="font-bold text-2xl p-4 mb-4">Connected Players:</span>
+        <ul id="connectedPlayerList" class="font-semibold text-lg">
+
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Footer =======================-->
+    <div class="bg-blue-500 p-5">
+
+    </div>
+
+  </div>

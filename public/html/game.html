@@ -1,0 +1,65 @@
+
+  <!-- Header =======================-->
+  <div class="text-blue-900  min-h-screen flex flex-col p-5">
+    <div class="flex flex-row justify-between p-3 items-center">
+      <a href="#">News</a>
+      <a href="#" class="font-bold text-3xl">Sketcholai</a>
+      <a href="#">About</a>
+    </div>
+
+    <!-- Main =======================-->
+    <div class=" px-4 m-auto flex flex-row ">
+        <!--Points-->
+        <div class="flex flex-col justify-center items-center bg-blue-600 p-10 rounded-l">
+
+        </div>
+        <!--Game-Area-->
+        <div class="flex flex-col">
+            <div class="p-2 bg-blue-600 flex flex-row">
+                <div id="roomCodeContainer" class="p-2 mr-2">Roomcode: </div>
+                <div id="timerContainer" class="p-2 mr-2">Time: </div>
+                <div id="nameContainer" class="p-2">Current Player: </div>
+            </div>
+            <!--Canvas-->
+            <div id="canvasContainer">
+                <canvas id="canvas" width="1000" height="600" class="bg-white"></canvas>
+            </div>
+            <!--Tools-->
+            <div class="flex flex-row p-2 bg-blue-600  items-center">
+                <div>
+                    <button onclick="changeColor(this)" value="#ff0000" class="p-4 bg-red-700 rounded"></button>
+                    <button onclick="changeColor(this)" value="#1c37b5" class="p-4 bg-blue-700 rounded"></button>
+                    <button onclick="changeColor(this)" value="#2cb323" class="p-4 bg-green-700 rounded"></button>
+                    <button onclick="changeColor(this)" value="#ffffff" class="p-4 bg-white rounded"></button>
+                    <button onclick="changeColor(this)" value="#000000" class="p-4 bg-black rounded"></button>
+                    <button onclick="changeColor(this)" value="#e3cf19" class="p-4 bg-yellow-700 rounded"></button>
+                </div>
+                <div class="flex flex-row justify-center items-center ml-2">
+                    <button onclick="switchTool(this.value)" value="BUCKET" class="rounded"><img src="https://cdn0.iconfinder.com/data/icons/graphic-design-solid-1/88/paint_bucket_color_art_design-256.png" alt="Bucket" width="35"></button>
+                    <button onclick="switchTool(this.value)" value="ERASER" class="rounded"><img src="https://cdn4.iconfinder.com/data/icons/graphic-design-72/32/Graphic_Design_eraser-256.png" alt="Eraser" width="35"></button>
+                    <button onclick="switchTool(this.value)" value="PEN" class="rounded"><img src="https://cdn4.iconfinder.com/data/icons/basic-user-interface-elements/700/edit-change-pencil-256.png" alt="Pen" width="35"></button>
+                </div>
+            </div>
+        </div>
+        <!--Chat-->
+        <div class="flex flex-col justify-center items-center bg-blue-600 p-10 rounded-r">
+            <!--Display-->
+            <div id="chatDisplay" class="bg-white h-full w-52 p-4 rounded-t">
+                <ul id="chatList">
+
+                </ul>
+            </div>
+            <!--Input-->
+            <div class="flex flex-col">
+                <textarea name="" id="chatInput" class="w-52 rounded-b border-t-2 border-blue-700"></textarea>
+                <button id="sendButton" onclick="sendChatMsg()" class="text-yellow-900 bg-yellow-500 p-1 mt-1 rounded">send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer =======================-->
+    <div class="bg-blue-500 p-5">
+
+    </div>
+
+  </div>

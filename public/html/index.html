@@ -1,31 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Sketcholai</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/index.css">
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Reenie+Beanie&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&display=swap" rel="stylesheet">
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="js/draw.js"></script>
+  <!-- ... -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="../css/twstyles.css" rel="stylesheet">
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/main.js"></script>
 </head>
-<body>
-<div class="outer-grid-container">
-    <div class="grid-header grid-item" id="headLine">Sketcholai</div>
-    <div class="grid-left grid-item"></div>
-    <div class="grid-item" id="mainItem">
-        <div id="connectionContainer">
-            <input id="nameInput" class="user-input-field"  placeholder="Nickname">
-            <button onclick="createNewRoom();" class="input-button">Create Room</button>
-            <input id="roomInput" class="user-input-field"  placeholder="Room-ID">
-            <button onclick="joinRoom();" class="input-button">Join Room</button></div>
-        </div>
-    <div class="grid-right grid-item"></div>
-    <div class="grid-footer grid-item"></div>
-</div>
+<body class="bg-blue-500">
+  <!-- Header =======================-->
+  <div class="text-blue-900  min-h-screen flex flex-col p-5">
+    <div class="flex flex-row justify-between p-3 items-center">
+      <a href="#">News</a>
+      <a href="#" class="font-bold text-3xl">Sketcholai</a>
+      <a href="#">About</a>
+    </div>
+
+    <!-- Main =======================-->
+    <div class="bg-blue-600 p-10 m-auto flex flex-col justify-center items-center rounded-xl shadow-lg">
+      <div class="mb-20">
+        <input type="text" name="" id="nameInput" placeholder="Name" class="p-3 rounded">
+      </div>
+
+      <div class="flex flex-col justify-center items-center  p-5 rounded">
+          <button onclick="createRoom()" class="text-yellow-900 bg-yellow-500 p-2 rounded mt-4">Create Room</button>
+          <span class="font-bold text-xl p-1 my-4">OR</span>
+          <input type="text" placeholder="Room-ID" id="roomInput" class="p-3 rounded">
+          <button onclick="joinGame()" class="text-yellow-900 bg-yellow-500 p-2 rounded mt-4">Join Room</button>
+      </div>
+
+    </div>
+
+    <!-- Footer =======================-->
+    <div class="bg-blue-500 p-5">
+
+    </div>
+
+  </div>
 </body>
 <script type="text/javascript" src="js/floodfill.js"></script>
-<script src="/js/client.js"></script>
+<script src="/js/chat.js"></script>
+<script src="/js/draw.js"></script>
+<script src="/js/game.js"></script>
+<script src="/js/room.js"></script>
+
 </html>
