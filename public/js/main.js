@@ -50,7 +50,7 @@ function init(lobbyID, currentPlayerName) {
             case toolEnum.BUCKET:
                 const pos = getMousePos(canvas, event);
                 let bucket = new Bucket(context, canvas);
-                bucket.fill(pos.x, pos.y, 70, currentColor, true);
+                bucket.fill(pos.x, pos.y, FILL_BUCKET_TOLERANCE, currentColor, true);
                 break;
         }
     })

@@ -13,6 +13,8 @@ const COL_BLUE = '#1c37b5';
 const COL_YELLOW = '#e3cf19';
 const ERASER = COL_WHITE;
 
+const FILL_BUCKET_TOLERANCE = 0;
+
 let currentColor = COL_BLACK;
 let currentTool = toolEnum.PEN;
 
@@ -34,6 +36,7 @@ class Tool {
 class Pen extends Tool {
 
     lineWidth;
+    EXTEND = 0.5;
 
     constructor(lineWidth, context, canvas) {
         super(context, canvas);
@@ -43,7 +46,25 @@ class Pen extends Tool {
     drawLine(x0, y0, x1, y1, color) {
         this.context.beginPath();
         this.context.moveTo(x0, y0);
-        this.context.lineTo(x1, y1);
+        //Extend line
+        const slope = (y1 - y0) / (x1 - x0);
+        const b = y0 - slope * x0;
+        let newX;
+        if(x1-x0 > 0){
+            newX = x1 + this.EXTEND;
+        }else{
+            newX = x1 - this.EXTEND;
+        }
+        // const newY = slope * newX + b;
+
+        let newY;
+        if(y1-y0 > 0){
+            newY = y1 + this.EXTEND;
+        }else{
+            newY = y1 - this.EXTEND;
+        }
+
+        this.context.lineTo(newX, newY);
         this.context.strokeStyle = color;
         this.context.lineWidth = this.lineWidth;
         this.context.stroke();
@@ -53,10 +74,11 @@ class Pen extends Tool {
     draw(x, y, color, send) {
         if (oldPosition.x > 0 && oldPosition.y > 0) {
             this.drawLine(oldPosition.x, oldPosition.y, x, y, color)
-            if (send) {
-                const pkg = new DrawInfoPackage(x, y, color, this.lineWidth, drawing)
-                socket.emit(drawEvent, packData(pkg));
-            }
+            console.log("oldPos: " + oldPosition.x + " | " + oldPosition.y);
+        }
+        if (send) {
+            const pkg = new DrawInfoPackage(x, y, color, this.lineWidth, drawing)
+            socket.emit(drawEvent, packData(pkg));
         }
         oldPosition.x = x;
         oldPosition.y = y;
@@ -110,8 +132,6 @@ function initDrawListening(){
     socket.on(drawEvent, (serverPackage) => {
         const data = JSON.parse(serverPackage);
         const msg = data[0];
-        console.log(data)
-        console.log(msg)
 
         let x = msg.x;
         let y = msg.y;
@@ -130,9 +150,8 @@ function initDrawListening(){
     socket.on(fillEvent, (serverPackage) => {
         const data = JSON.parse(serverPackage);
         const message = data[0];
-        console.log(message)
         let bucket = new Bucket(context, canvas);
-        bucket.fill(message.x, message.y, 70, message.color, false)
+        bucket.fill(message.x, message.y, FILL_BUCKET_TOLERANCE, message.color, false)
     })
 }
 
