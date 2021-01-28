@@ -17,10 +17,11 @@ function initChatListening(){
         chatListNode.classList.add("flex", "flex-row")
         chatNameCont.style.color = color;
         chatNameCont.classList.add("font-bold", "mr-1")
+        chatMsgCont.classList.add("font-semibold", "break-all")
         chatNameCont.appendChild(document.createTextNode(name + ":"))
         chatMsgCont.appendChild(document.createTextNode(message))
         chatListNode.append(chatNameCont, chatMsgCont);
-
+        chatListNode.classList.add("px-1","rounded","hover:bg-gray-200")
         document.querySelector("#chatList").appendChild(chatListNode);
         scrollDown();
     })

@@ -26,6 +26,7 @@ function init(lobbyID, currentPlayerName) {
     highlightedColor = document.querySelector("#btnColBlack");
     highlightedTool = document.querySelector("#btnToolPen");
     highlightedPenSize = document.querySelector("#btnPenNormal");
+    connections_html_container = document.querySelector("#connectedPlayerList");
 
     highlightTool(highlightedTool);
     highlightColor(highlightedColor);
@@ -112,6 +113,17 @@ function init(lobbyID, currentPlayerName) {
     initDrawListening();
     initGameStateListening();
 }
+
+function initUpdatePlayerListListening() {
+    socket.on("updatePlayerList", (serverPackage) => {
+        const data = JSON.parse(serverPackage);
+        const connectionArr = data[0];
+        const connectionContainer = document.querySelector("#connectedPlayerList");
+
+        listDisplayer(connectionArr, connectionContainer);
+    })
+}
+
 
 /**
  * Receives game information for a new turn

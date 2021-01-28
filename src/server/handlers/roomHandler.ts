@@ -46,9 +46,11 @@ export class RoomHandler implements HandlerInterface {
 
             if (game?.hasStarted === false || game == undefined){
                 socket.emit("roomJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID))
-                CommunicationHandler.deployMessage(socket, null,"updatePlayerList", true, lobby, connection, io);
+                CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
             } else {
                 socket.emit("gameJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, game.roundStartDate, game.roundDurationSec, game.currentPlayer?.socketID));
+
+                CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
                 if(this.lateJoinedPlayers.containsKey(lobbyID)){
                     this.lateJoinedPlayers.get(lobbyID).add(socket.id);
                 }else{
@@ -58,6 +60,7 @@ export class RoomHandler implements HandlerInterface {
                 }
                 //Sends a request to all other connections in the room to send the current canvas status to the server
                 CommunicationHandler.deployMessage(socket,null, "sendCanvasStatus", false, lobby, connection, io);
+
             }
         });
 

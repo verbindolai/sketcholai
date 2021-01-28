@@ -7,6 +7,7 @@ import {RoomHandler} from "./handlers/roomHandler";
 import {HandlerInterface} from "./handlers/handlerInterface";
 import * as fs from "fs";
 import {Connection} from "./connection";
+import {CommunicationHandler} from "./handlers/communicationHandler";
 
 /**
  * Represents the Sketch-Server
@@ -96,14 +97,14 @@ export class SketchServer {
 
     private handleDisconnect(socket: Socket): void {
         socket.on('disconnect', (data) => {
-            let player = this.allConnections.get(socket.id);
+            let connection = this.allConnections.get(socket.id);
 
-            if (player == undefined) {
+            if (connection == undefined) {
                 console.error("Disconnect Error, Player is undefined.")
                 return;
             }
 
-            let lobby = this.lobbies.get(player.lobbyID);
+            let lobby = this.lobbies.get(connection.lobbyID);
 
             if (lobby == undefined) {
                 console.error("Disconnect Error, lobby is undefined.")
@@ -113,6 +114,8 @@ export class SketchServer {
             if (!RoomHandler.removePlayer(socket, this.lobbies, this.allConnections)) {
                 console.error("Couldn't delete Lobby.")
             }
+            console.log("Disconnecting, send updated list")
+            CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, this.io);
         })
     }
 

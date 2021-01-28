@@ -1,4 +1,14 @@
 let globalLobbyID;
+let connections_html_container;
+
+
+function roomInit(){
+    connections_html_container = document.querySelector("#connectedPlayerList");
+    initLoadGameListening();
+    initUpdatePlayerListListening();
+}
+
+
 
 /**
  * Sends the given player name on the 'createNewRoom' channel to create a new room
@@ -22,17 +32,13 @@ socket.on("roomCreated", (serverPackage) => {
     let lobbyID = data[1];
 
     pageLoad("lobby", () => {
-        let connectionContainer = document.querySelector("#connectedPlayerList");
+        roomInit();
         let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
 
-        connectionContainer.innerHTML = "";
         lobbyRoomCode.innerHTML = lobbyID;
 
-        for(let con of connections) {
-            let li = document.createElement("li");
-            li.appendChild(document.createTextNode(con._name));
-            connectionContainer.appendChild(li);
-        }
+        listDisplayer(connections, connections_html_container)
+
     });
 })
 
@@ -64,17 +70,12 @@ socket.on("roomJoined", (serverPackage) =>{
     let lobbyID = data[1];
 
     pageLoad("lobby2",()=>{
-        let connectionContainer = document.querySelector("#connectedPlayerList");
+        roomInit();
         let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
-
-        connectionContainer.innerHTML = "";
         lobbyRoomCode.innerHTML = lobbyID;
 
-        for(let con of connections) {
-            let li = document.createElement("li");
-            li.appendChild(document.createTextNode(con._name));
-            connectionContainer.appendChild(li);
-        }
+        listDisplayer(connections, connections_html_container);
+
     });
 })
 
@@ -90,6 +91,8 @@ socket.on("gameJoined", (serverPackage) => {
     pageLoad("game", () => {
         init(lobbyID, currentPlayerName);
         displayTime(drawDuration, unixTime);
+        initUpdatePlayerListListening();
+        listDisplayer(allConnections, connections_html_container);
         //TODO
     });
 });
@@ -106,6 +109,20 @@ function initCanvasListening(){
         drawDataURIOnCanvas(imgData)
     })
 }
+
+function listDisplayer(list, node) {
+
+    node.innerHTML = "";
+
+    for(let con of list) {
+        let li = document.createElement("li");
+        li.appendChild(document.createTextNode(con._name));
+        node.appendChild(li);
+    }
+
+
+}
+
 
 function sendReady () {
 

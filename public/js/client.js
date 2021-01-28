@@ -3,7 +3,7 @@ let highlightedColor;
 let highlightedPenSize;
 
 const highlightPadding = "p-3";
-const highlightBorderThickness = "border-4";
+const highlightBorderThickness = "border-2";
 const highlightBorderColor = "border-blue-300";
 
 function highlightTool(button){
