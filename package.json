@@ -35,6 +35,7 @@
     "typescriptcollectionsframework": "^4.4.13"
   },
   "devDependencies": {
-    "simple-scrollbar": "^0.4.0"
+    "simple-scrollbar": "^0.4.0",
+    "tailwindcss-hyphens": "^0.1.0"
   }
 }

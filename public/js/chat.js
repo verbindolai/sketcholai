@@ -16,13 +16,13 @@ function initChatListening(){
         let chatMsgCont = document.createElement("div");
         chatListNode.classList.add("flex", "flex-row")
         chatNameCont.style.color = color;
-        chatNameCont.classList.add("font-bold", "mr-1")
-        chatMsgCont.classList.add("font-semibold", "break-all")
+        chatNameCont.classList.add("font-bold", "mr-1");
+        chatMsgCont.classList.add("font-semibold", "break-all");
 
-        chatNameCont.appendChild(document.createTextNode(name + ":"))
-        chatMsgCont.appendChild(document.createTextNode(message))
+        chatNameCont.appendChild(document.createTextNode(name + ":"));
+        chatMsgCont.appendChild(document.createTextNode(message));
         chatListNode.append(chatNameCont, chatMsgCont);
-        chatListNode.classList.add("px-1","rounded","hover:bg-blue-700")
+        chatListNode.classList.add("px-1","rounded","hover:bg-blue-700");
         document.querySelector("#chatList").appendChild(chatListNode);
         scrollDown();
     })
@@ -34,6 +34,11 @@ function initChatListening(){
 function sendChatMsg() {
     let chatInput = document.getElementById("chatInput");
     let message = chatInput.value;
+
+    if (message == "" || undefined || message.replace(/\s/g, '').length == 0) {
+        chatInput.value = "";
+        return;
+    }
 
     socket.emit('chat', packData(message));
     chatInput.value = "";

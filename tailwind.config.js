@@ -4,6 +4,12 @@ module.exports = {
   theme: {
     extend: {},
   },
-  variants: {},
-  plugins: [],
+  variants: {
+    extend: {
+      height: ['focus'],
+    }
+  },
+  plugins: [
+    require("tailwindcss-hyphens")
+  ],
 }
