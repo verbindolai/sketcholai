@@ -27,17 +27,22 @@
             <!--Tools-->
             <div class="flex flex-row p-2 bg-blue-600  items-center">
                 <div>
-                    <button onclick="changeColor(this)" value="#ff0000" class="p-4 bg-red-700 rounded"></button>
-                    <button onclick="changeColor(this)" value="#1c37b5" class="p-4 bg-blue-700 rounded"></button>
-                    <button onclick="changeColor(this)" value="#2cb323" class="p-4 bg-green-700 rounded"></button>
-                    <button onclick="changeColor(this)" value="#ffffff" class="p-4 bg-white rounded"></button>
-                    <button onclick="changeColor(this)" value="#000000" class="p-4 bg-black rounded"></button>
-                    <button onclick="changeColor(this)" value="#e3cf19" class="p-4 bg-yellow-700 rounded"></button>
+                    <button id="btnColRed" onclick="changeColor(this),highlightColor(this)" value="#ff0000" class="p-4 bg-red-700 rounded"></button>
+                    <button id="btnColBlue" onclick="changeColor(this),highlightColor(this)" value="#1c37b5" class="p-4 bg-blue-700 rounded"></button>
+                    <button id="btnColGreen" onclick="changeColor(this),highlightColor(this)" value="#2cb323" class="p-4 bg-green-700 rounded"></button>
+                    <button id="btnColWhite" onclick="changeColor(this),highlightColor(this)" value="#ffffff" class="p-4 bg-white rounded"></button>
+                    <button id="btnColBlack" onclick="changeColor(this),highlightColor(this)" value="#000000" class="p-4 bg-black rounded"></button>
+                    <button id="btnColYellow" onclick="changeColor(this),highlightColor(this)" value="#e3cf19" class="p-4 bg-yellow-700 rounded"></button>
                 </div>
                 <div class="flex flex-row justify-center items-center ml-2">
-                    <button onclick="switchTool(this.value)" value="BUCKET" class="rounded"><img src="https://cdn0.iconfinder.com/data/icons/graphic-design-solid-1/88/paint_bucket_color_art_design-256.png" alt="Bucket" width="35"></button>
-                    <button onclick="switchTool(this.value)" value="ERASER" class="rounded"><img src="https://cdn4.iconfinder.com/data/icons/graphic-design-72/32/Graphic_Design_eraser-256.png" alt="Eraser" width="35"></button>
-                    <button onclick="switchTool(this.value)" value="PEN" class="rounded"><img src="https://cdn4.iconfinder.com/data/icons/basic-user-interface-elements/700/edit-change-pencil-256.png" alt="Pen" width="35"></button>
+                    <button id="btnToolBucket" onclick="switchTool(this.value),highlightTool(this)" value="BUCKET" class="rounded"><img src="https://cdn0.iconfinder.com/data/icons/graphic-design-solid-1/88/paint_bucket_color_art_design-256.png" alt="Bucket" width="35"></button>
+                    <button id="btnToolEraser" onclick="switchTool(this.value),highlightTool(this)" value="ERASER" class="rounded"><img src="https://cdn4.iconfinder.com/data/icons/graphic-design-72/32/Graphic_Design_eraser-256.png" alt="Eraser" width="35"></button>
+                    <button id="btnToolPen" onclick="switchTool(this.value),highlightTool(this)" value="PEN" class="rounded"><img src="https://cdn4.iconfinder.com/data/icons/basic-user-interface-elements/700/edit-change-pencil-256.png" alt="Pen" width="35"></button>
+                </div>
+                <div class="flex flex-row justify-center items-center ml-2">
+                    <button id="btnPenThin" onclick="setLineWidth(this.value),highlightPenSize(this)" value="2" class="rounded-full p-2 bg-black"></button>
+                    <button id="btnPenNormal" onclick="setLineWidth(this.value),highlightPenSize(this)" value="4" class="rounded-full p-4 bg-black"></button>
+                    <button id="btnPenThick" onclick="setLineWidth(this.value),highlightPenSize(this)" value="6" class="rounded-full p-6 bg-black"></button>
                 </div>
             </div>
         </div>

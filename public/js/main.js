@@ -23,6 +23,13 @@ function init(lobbyID, currentPlayerName) {
     CURRENT_PLAYER_NAME_HTML_CONTAINER = document.querySelector("#nameContainer");
     LOBBY_ID_HTML_CONTAINER = document.querySelector("#roomCodeContainer");
     CHAT_HTML_TEXTAREA = document.querySelector("#chatInput");
+    highlightedColor = document.querySelector("#btnColBlack");
+    highlightedTool = document.querySelector("#btnToolPen");
+    highlightedPenSize = document.querySelector("#btnPenNormal");
+
+    highlightTool(highlightedTool);
+    highlightColor(highlightedColor);
+    highlightPenSize(highlightedPenSize);
 
     CHAT_HTML_TEXTAREA.onkeydown = function (e) {
         if (e.keyCode == 13) {
@@ -50,7 +57,7 @@ function init(lobbyID, currentPlayerName) {
             case toolEnum.BUCKET:
                 const pos = getMousePos(canvas, event);
                 let bucket = new Bucket(context, canvas);
-                bucket.fill(pos.x, pos.y, 70, currentColor, true);
+                bucket.fill(pos.x, pos.y, FILL_BUCKET_TOLERANCE, currentColor, true);
                 break;
         }
     })
@@ -87,7 +94,7 @@ function init(lobbyID, currentPlayerName) {
             const pos = getMousePos(canvas, event);
             switch (currentTool) {
                 case toolEnum.PEN:
-                    let pen = new Pen(3, context, canvas);
+                    let pen = new Pen(lineWidth,context, canvas);
                     pen.draw(pos.x, pos.y, currentColor, true);
                     break;
                 case toolEnum.ERASER:

@@ -60,17 +60,6 @@ export class Game {
         this.startRound(io);
 
         let interval = setInterval(() => {
-            //End of the Game
-            if (this._roundCount > this._maxRoundCount){
-                if (interval != null){
-                    clearInterval(interval);
-                }
-
-                //TODO send the Gamestate to Clients
-                this.resetGame()
-                console.log("Ending game...")
-                return;
-            }
 
             //End of one Turn
             if ((Date.now() - this._roundStartDate) / 1000 > this._roundDurationSec){
@@ -86,6 +75,17 @@ export class Game {
                 //End of one Round
                 if(this._roundPlayerSet.size() == 0){
                     this._roundCount++;
+                    //End of the Game
+                    if (this._roundCount >= this._maxRoundCount){
+                        if (interval != null){
+                            clearInterval(interval);
+                        }
+
+                        //TODO send the Gamestate to Clients
+                        this.resetGame()
+                        console.log("Ending game...")
+                        return;
+                    }
                     this.startRound(io);
                     console.log("Round is over, next Round starting...")
                 } else {
@@ -98,7 +98,6 @@ export class Game {
                     io.to(this._lobbyId).emit('updateGameState', CommunicationHandler.packData(this._roundStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID));
                     console.log("Next Player choosen: " + this.currentPlayer?.name)
                 }
-
             }
 
         }, 500)
