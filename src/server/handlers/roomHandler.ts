@@ -49,7 +49,7 @@ export class RoomHandler implements HandlerInterface {
                 CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
             } else {
                 socket.emit("gameJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, game.turnStartDate, game.roundDurationSec, game.currentPlayer?.socketID));
-
+                CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(CommunicationHandler.JOIN_MESSAGE, connection.name, CommunicationHandler.SERVER_MSG_COLOR, true), 'chat', true, lobby, connection, io)
                 CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
                 if(this.lateJoinedPlayers.containsKey(lobbyID)){
                     this.lateJoinedPlayers.get(lobbyID).add(socket.id);

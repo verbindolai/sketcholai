@@ -135,6 +135,9 @@ function initUpdatePlayerListListening() {
  */
 function initGameStateListening() {
     socket.on('updateGameState', (serverPackage) => {  //TODO
+        console.log("receive")
+
+
         const data = JSON.parse(serverPackage);
         const unixTime = data[0];
         const drawDuration = data[1];

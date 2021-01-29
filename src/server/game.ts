@@ -6,8 +6,10 @@ import {CommunicationHandler} from "./handlers/communicationHandler";
 export class Game {
 
 
-    private readonly _PAUSE_DURATION_SEC : number = 15;
-    private readonly _WORD_SUGGESTION_NUM : number = 3;
+    public readonly PAUSE_DURATION_SEC : number = 15;
+    public readonly WORD_SUGGESTION_NUM : number = 3;
+    public readonly START_POINT_MULTIPLICATOR : number = 4;
+    public readonly GUESS_RIGHT_POINTS : number = 100;
 
     private _points: HashMap<string, number> = new HashMap<string, number>();
     private _winner: Connection | undefined = undefined;
@@ -27,6 +29,7 @@ export class Game {
 
     private _currentPlayer : Connection | undefined;
     private _currentGameState : GameState;
+    private _pointMultiplicator : number;
 
 
 
@@ -40,6 +43,7 @@ export class Game {
         this._hasStarted = false;
         this._words = words;
         this._currentGameState = GameState.NOT_STARTED;
+        this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
     }
 
     //Called on game initialization
@@ -71,6 +75,7 @@ export class Game {
                                 return;
                             }
                             this._currentWord = "";
+                            this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
                             this._currentPlayer.player.isDrawing = false;
                             this._roundPlayerSet.remove(this._currentPlayer);
                             console.log("Turn is over...")
@@ -126,16 +131,17 @@ export class Game {
         }
         this._currentGameState = GameState.PAUSED;
         //Get word suggestions
-        this._wordSuggestions = this.randomWordArr(this._WORD_SUGGESTION_NUM);
+        this._wordSuggestions = this.randomWordArr(this.WORD_SUGGESTION_NUM);
         console.log("word Suggs: ")
         console.log(this._wordSuggestions)
         //Send word suggestions, current player and pause duration to clients
-        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommunicationHandler.packData(Date.now(), this._PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord))
-        io.to(this._currentPlayer.socketID).emit('updateGameState', CommunicationHandler.packData(Date.now(), this._PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, this._wordSuggestions, this._currentWord))
+        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommunicationHandler.packData(Date.now(), this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord))
+        io.to(this._currentPlayer.socketID).emit('updateGameState', CommunicationHandler.packData(Date.now(), this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, this._wordSuggestions, this._currentWord))
+        io.in(this._lobbyId).emit("chat",CommunicationHandler.packData(CommunicationHandler.DRAW_MESSAGE, this._currentPlayer.name, CommunicationHandler.SERVER_MSG_COLOR, true) )
 
         setTimeout(() => {
             //Already started by "chooseWord" in gameHandler
-            if(this._currentGameState = GameState.RUNNING) {
+            if(this._currentGameState == GameState.RUNNING) {
                 return;
             }
 
@@ -156,7 +162,7 @@ export class Game {
             this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommunicationHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER"))
             io.to(this._currentPlayer.socketID).emit('updateGameState', CommunicationHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord));
             console.log("Next Player choosen: " + this.currentPlayer?.name)
-        },(this._PAUSE_DURATION_SEC * 1000))
+        },(this.PAUSE_DURATION_SEC * 1000))
 
 
 
@@ -170,6 +176,8 @@ export class Game {
         }
         this._currentPlayer = undefined;
         this._currentGameState = GameState.NOT_STARTED;
+        this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
+
     }
 
 
@@ -195,6 +203,11 @@ export class Game {
         }
     }
 
+    public decrementPointMult(){
+        if (this._pointMultiplicator - 1 >= 1){
+            this._pointMultiplicator--;
+        }
+    }
     // getRandomWord(): Promise<string> {
     //     const fetch = require('node-fetch');
     //     let url = "https://random-word-api.herokuapp.com/word?number=1";
@@ -298,15 +311,6 @@ export class Game {
         this._currentWord = value;
     }
 
-
-    get PAUSE_DURATION_SEC(): number {
-        return this._PAUSE_DURATION_SEC;
-    }
-
-    get WORD_SUGGESTION_NUM(): number {
-        return this._WORD_SUGGESTION_NUM;
-    }
-
     get words(): string[] {
         return this._words;
     }
@@ -322,6 +326,15 @@ export class Game {
     set currentGameState(value: GameState) {
         this._currentGameState = value;
     }
+
+    get pointMultiplicator(): number {
+        return this._pointMultiplicator;
+    }
+
+    set pointMultiplicator(value: number) {
+        this._pointMultiplicator = value;
+    }
+
 }
 
 export enum GameState{

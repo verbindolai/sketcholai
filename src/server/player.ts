@@ -1,4 +1,7 @@
 export class Player {
+    set points(value: number) {
+        this._points = value;
+    }
     private _isDrawing: boolean;
     private _points: number;
 
