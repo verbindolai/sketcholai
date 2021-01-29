@@ -4,6 +4,7 @@ let socket = io(`http://localhost:${port}`);
 let context;
 let canvas;
 let site;
+let WORD_HTML_CONTAINER
 
 /**
  * Events
@@ -27,7 +28,7 @@ function init(lobbyID, currentPlayerName) {
     highlightedTool = document.querySelector("#btnToolPen");
     highlightedPenSize = document.querySelector("#btnPenNormal");
     connections_html_container = document.querySelector("#connectedPlayerList");
-
+    WORD_HTML_CONTAINER = document.querySelector("#wordContainer");
 
     highlightTool(highlightedTool);
     highlightColor(highlightedColor);
@@ -139,13 +140,39 @@ function initGameStateListening() {
         const drawDuration = data[1];
         const name = data[2];
         const id = data[3];
-        const currentWord = data[4];
-        console.log("Current word: " + currentWord);
+        const gameState = data[4];
+        const words = data[5];
+        const currentWord = data[6];
+
+        console.log("My ID : "+socket.id)
+        console.log("Draw ID : "+id)
+        console.log("State: " + gameState)
+        if (socket.id === id && gameState === 1){
+            canvas.classList.add("hidden");
+            WORD_HTML_CONTAINER.classList.remove("hidden")
+            for (let i = 0; i < 3; i++){
+                let button = document.createElement('button');
+                let word = words[i];
+                button.classList.add("p-2","bg-yellow-600","text-yellow-800")
+                button.appendChild(document.createTextNode(word))
+                button.onclick = () => {
+                    socket.emit("chooseWord", packData(word))
+                }
+                WORD_HTML_CONTAINER.appendChild(button);
+            }
+        } else if(socket.id === id && gameState === 0) {
+            WORD_HTML_CONTAINER.innerHTML ="";
+            WORD_HTML_CONTAINER.classList.add("hidden")
+            canvas.classList.remove("hidden");
+        }
+
+        console.log("CurrentWord ist: "+currentWord)
         currentPlayerID = id;
         currentPlayerName = name;
 
         if(CURRENT_PLAYER_NAME_HTML_CONTAINER != undefined){
             CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = currentPlayerName;
+
         }
 
         displayTime(drawDuration, unixTime);

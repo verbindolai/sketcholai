@@ -91,6 +91,18 @@ export class GameHandler implements HandlerInterface {
             }
 
         });
+
+        socket.on("chooseWord",(clientPackage) => {
+            let data = JSON.parse(clientPackage);
+            let connection = allConnections.get(socket.id);
+            let lobby = lobbyHashMap.get(connection.lobbyID);
+            let word = data[0];
+
+            if (lobby.game == undefined || lobby.game.hasStarted === false) {
+                return;
+            }
+            lobby.game.currentWord = word;
+        })
     }
 }
 
