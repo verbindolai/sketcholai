@@ -9,10 +9,21 @@ function initChatListening(){
         let data = JSON.parse(serverPackage);
         let message = data[0];
         let name = data[1];
+        let color = data[2];
 
-        let li = document.createElement("li");
-        li.appendChild(document.createTextNode(name + ": " + message));
-        document.querySelector("#chatList").appendChild(li);
+        let chatListNode = document.createElement("li");
+        let chatNameCont = document.createElement("div");
+        let chatMsgCont = document.createElement("div");
+        chatListNode.classList.add("flex", "flex-row")
+        chatNameCont.style.color = color;
+        chatNameCont.classList.add("font-bold", "mr-1");
+        chatMsgCont.classList.add("font-semibold", "break-all");
+
+        chatNameCont.appendChild(document.createTextNode(name + ":"));
+        chatMsgCont.appendChild(document.createTextNode(message));
+        chatListNode.append(chatNameCont, chatMsgCont);
+        chatListNode.classList.add("px-1","rounded","hover:bg-blue-700");
+        document.querySelector("#chatList").appendChild(chatListNode);
         scrollDown();
     })
 }
@@ -24,9 +35,11 @@ function sendChatMsg() {
     let chatInput = document.getElementById("chatInput");
     let message = chatInput.value;
 
-    if(message == "" || message == undefined) {
+    if (message == "" || undefined || message.replace(/\s/g, '').length == 0) {
+        chatInput.value = "";
         return;
     }
+
     socket.emit('chat', packData(message));
     chatInput.value = "";
     scrollDown();
@@ -36,6 +49,8 @@ function sendChatMsg() {
  * scrolls down the chat
  */
 function scrollDown() {
-    let chatDisplay = document.querySelector('#chatDisplay ');
+    let chatDisplay = document.querySelector('#chatDisplay .simplebar-content-wrapper');
     chatDisplay.scrollTop = chatDisplay.scrollHeight - chatDisplay.clientHeight;
+
+
 }

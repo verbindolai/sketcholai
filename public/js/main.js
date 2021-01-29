@@ -26,6 +26,8 @@ function init(lobbyID, currentPlayerName) {
     highlightedColor = document.querySelector("#btnColBlack");
     highlightedTool = document.querySelector("#btnToolPen");
     highlightedPenSize = document.querySelector("#btnPenNormal");
+    connections_html_container = document.querySelector("#connectedPlayerList");
+
 
     highlightTool(highlightedTool);
     highlightColor(highlightedColor);
@@ -34,11 +36,14 @@ function init(lobbyID, currentPlayerName) {
     CHAT_HTML_TEXTAREA.onkeydown = function (e) {
         if (e.keyCode == 13) {
             sendChatMsg();
+            if(e.preventDefault) {
+                e.preventDefault();
+            }
         }
     }
 
     LOBBY_ID_HTML_CONTAINER.innerHTML = lobbyID;
-    CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = "Current Player: " + currentPlayerName;
+    CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = currentPlayerName;
 
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -113,6 +118,17 @@ function init(lobbyID, currentPlayerName) {
     initGameStateListening();
 }
 
+function initUpdatePlayerListListening() {
+    socket.on("updatePlayerList", (serverPackage) => {
+        const data = JSON.parse(serverPackage);
+        const connectionArr = data[0];
+        const connectionContainer = document.querySelector("#connectedPlayerList");
+
+        listDisplayer(connectionArr, connectionContainer);
+    })
+}
+
+
 /**
  * Receives game information for a new turn
  */
@@ -128,7 +144,7 @@ function initGameStateListening() {
         currentPlayerName = name;
 
         if(CURRENT_PLAYER_NAME_HTML_CONTAINER != undefined){
-            CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = "Current Player: " + currentPlayerName;
+            CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = currentPlayerName;
         }
 
         displayTime(drawDuration, unixTime);
@@ -159,7 +175,7 @@ function displayTime(duration, unixTime) {
 function updateTime() {
     let time = Math.floor(Date.now() / 1000) - roundStartTime;
     timerTime = roundTime - time;
-    timerCont.innerHTML = "Time: " + timerTime;
+    timerCont.innerHTML = timerTime;
     if (timerTime <= 0) {
         timerTime = 0;
         clearInterval(timer);

@@ -33,5 +33,9 @@
     "socket.io-client": "^3.0.4",
     "tailwindcss": "^2.0.2",
     "typescriptcollectionsframework": "^4.4.13"
+  },
+  "devDependencies": {
+    "simple-scrollbar": "^0.4.0",
+    "tailwindcss-hyphens": "^0.1.0"
   }
 }

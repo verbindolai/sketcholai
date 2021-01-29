@@ -5,6 +5,7 @@ import {GameLobby} from "../gameLobby";
 import {CommunicationHandler} from "./communicationHandler";
 import {Game} from "../game";
 import {Connection} from "../connection";
+import {RoomHandler} from "./roomHandler";
 
 export class GameHandler implements HandlerInterface {
 
@@ -59,7 +60,7 @@ export class GameHandler implements HandlerInterface {
             }
 
             lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections);
-            CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(lobby.lobbyID, lobby.game.currentPlayer?.name), "loadGame", true, lobby, connection, io);
+            CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(lobby.lobbyID, lobby.game.currentPlayer?.name, RoomHandler.listToArr(lobby.connections)), "loadGame", true, lobby, connection, io);
         })
 
         socket.on('startGame', (clientPackage) => {

@@ -15,7 +15,7 @@ export class CommunicationHandler implements HandlerInterface {
             let connection = allConnections.get(socket.id);
             let lobby = lobbyHashMap.get(connection.lobbyID);
 
-            if (!CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(message, connection.name), 'chat', true, lobby, connection, io)) {
+            if (!CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(message, connection.name, connection.chatColor), 'chat', true, lobby, connection, io)) {
                 console.error("Couldn't deploy Message.")
             }
         });

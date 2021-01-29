@@ -3,12 +3,12 @@ let highlightedColor;
 let highlightedPenSize;
 
 const highlightPadding = "p-3";
-const highlightBorderThickness = "border-4";
-const highlightBorderColor = "border-blue-200";
+const highlightBorderThickness = "border-2";
+const highlightBorderColor = "border-blue-300";
 
 function highlightTool(button){
-    highlightedTool.classList.remove(highlightPadding, highlightBorderThickness ,highlightBorderColor)
-    button.classList.add(highlightPadding, highlightBorderThickness ,highlightBorderColor)
+    highlightedTool.classList.remove(highlightBorderThickness ,highlightBorderColor)
+    button.classList.add(highlightBorderThickness ,highlightBorderColor)
     highlightedTool = button;
 }
 
@@ -19,8 +19,8 @@ function highlightColor(button){
 }
 
 function highlightPenSize(button){
-    highlightedPenSize.classList.remove(highlightPadding, highlightBorderThickness ,highlightBorderColor)
-    button.classList.add(highlightPadding, highlightBorderThickness ,highlightBorderColor)
+    highlightedPenSize.classList.remove(highlightBorderThickness ,highlightBorderColor)
+    button.classList.add(highlightBorderThickness ,highlightBorderColor)
     highlightedPenSize = button;
 }
 

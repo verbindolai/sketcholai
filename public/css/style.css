@@ -1,0 +1,10 @@
+.hyphen {
+    -webkit-hyphens: auto; !important;
+    -ms-hyphens: auto; !important;
+    hyphens: auto; !important;
+}
+
+.growH:focus {
+    height: 4rem;
+    transition: height 0.10s ease-in;
+}
