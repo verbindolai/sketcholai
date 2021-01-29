@@ -29,6 +29,7 @@ function init(lobbyID, currentPlayerName) {
     highlightedPenSize = document.querySelector("#btnPenNormal");
     connections_html_container = document.querySelector("#connectedPlayerList");
     WORD_HTML_CONTAINER = document.querySelector("#wordContainer");
+    CURRENT_WORD_HTML_CONTAINER = document.querySelector("#currentWordContainer");
 
     highlightTool(highlightedTool);
     highlightColor(highlightedColor);
@@ -116,7 +117,6 @@ function init(lobbyID, currentPlayerName) {
     initCanvasListening();
     initChatListening();
     initDrawListening();
-    initGameStateListening();
 }
 
 function initUpdatePlayerListListening() {
@@ -144,29 +144,14 @@ function initGameStateListening() {
         const words = data[5];
         const currentWord = data[6];
 
-        console.log("My ID : "+socket.id)
-        console.log("Draw ID : "+id)
-        console.log("State: " + gameState)
         if (socket.id === id && gameState === 1){
-            canvas.classList.add("hidden");
-            WORD_HTML_CONTAINER.classList.remove("hidden")
-            for (let i = 0; i < 3; i++){
-                let button = document.createElement('button');
-                let word = words[i];
-                button.classList.add("p-2","bg-yellow-600","text-yellow-800")
-                button.appendChild(document.createTextNode(word))
-                button.onclick = () => {
-                    socket.emit("chooseWord", packData(word))
-                }
-                WORD_HTML_CONTAINER.appendChild(button);
-            }
+           displayWordSuggestions(words)
         } else if(socket.id === id && gameState === 0) {
-            WORD_HTML_CONTAINER.innerHTML ="";
+            WORD_HTML_CONTAINER.children[0].innerHTML ="";
             WORD_HTML_CONTAINER.classList.add("hidden")
             canvas.classList.remove("hidden");
         }
 
-        console.log("CurrentWord ist: "+currentWord)
         currentPlayerID = id;
         currentPlayerName = name;
 
@@ -175,10 +160,27 @@ function initGameStateListening() {
 
         }
 
+        CURRENT_WORD_HTML_CONTAINER.innerHTML = currentWord;
+
         displayTime(drawDuration, unixTime);
         context.fillStyle = '#ffffff';
         context.fillRect(0, 0, canvas.width, canvas.height);
     });
+}
+
+function displayWordSuggestions(words) {
+    canvas.classList.add("hidden");
+    WORD_HTML_CONTAINER.classList.remove("hidden")
+    for (let i = 0; i < 3; i++){
+        let button = document.createElement('button');
+        let word = words[i];
+        button.classList.add("p-4","bg-yellow-500","text-yellow-700", "rounded" , "mr-2")
+        button.appendChild(document.createTextNode(word))
+        button.onclick = () => {
+            socket.emit("chooseWord", packData(word))
+        }
+        WORD_HTML_CONTAINER.children[0].appendChild(button)
+    }
 }
 
 

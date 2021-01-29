@@ -19,12 +19,12 @@
         </div>
         <!--Game-Area-->
         <div class="flex flex-col">
+            <!--Game-Bar-->
             <div class="p-2 bg-blue-600 flex flex-row justify-between items-center">
                 <div class="flex flex-row justify-center items-center">
                     <img src="https://cdn4.iconfinder.com/data/icons/business-and-finance-colorful-free-hand-drawn-set/100/stopwatch-256.png" width="50">
                     <div id="timerContainer" class="p-1 font-bold text-xl"></div>
                 </div>
-
                 <div class="flex flex-row justify-center items-center p-2">
                     <label class="font-bold text-xl mr-2">Current Player:</label>
                     <div id="nameContainer" class=""> </div>
@@ -33,12 +33,18 @@
                     <label class="font-bold text-xl mr-2">Roomcode:</label>
                     <div id="roomCodeContainer"></div>
                 </div>
+                <div class="flex flex-row justify-center items-center p-2 mr-2">
+                    <label class="font-bold text-xl mr-2">Word:</label>
+                    <div id="currentWordContainer"></div>
+                </div>
             </div>
             <!--Canvas-->
             <div id="canvasContainer">
                 <canvas id="canvas" width="1000" height="600" class="bg-white rounded"></canvas>
-                <div class="flex flex-row h-full justify-center items-center">
-                    <div id="wordContainer" class="bg-gray-300 hidden wordCont flex flex-row justify-center align-center"></div>
+                <div class="flex flex-row justify-center items-center bg-white rounded">
+                    <div id="wordContainer" class="bg-black bg-opacity-50 hidden wordCont flex flex-row justify-center align-center rounded">
+                        <div class="flex flex-row justify-center items-center"></div>
+                    </div>
                 </div>
             </div>
             <!--Tools-->

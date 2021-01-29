@@ -6,14 +6,16 @@ import {CommunicationHandler} from "./handlers/communicationHandler";
 export class Game {
 
 
-    private readonly PAUSE_DURATION_SEC : number = 15;
-    private readonly WORD_SUGGESTION_NUM : number = 3;
+    private readonly _PAUSE_DURATION_SEC : number = 15;
+    private readonly _WORD_SUGGESTION_NUM : number = 3;
 
     private _points: HashMap<string, number> = new HashMap<string, number>();
     private _winner: Connection | undefined = undefined;
     private _roundPlayerSet : HashSet<Connection> = new HashSet<Connection>();
     private readonly _connections: LinkedList<Connection>;
     private readonly _words: string[] = [];
+    private _wordSuggestions: string[] = [];
+
     private readonly _lobbyId: string;
     private _hasStarted : boolean;
 
@@ -24,7 +26,7 @@ export class Game {
     private _currentWord : string = "";
 
     private _currentPlayer : Connection | undefined;
-    private currentGameState : GameState;
+    private _currentGameState : GameState;
 
 
 
@@ -37,7 +39,7 @@ export class Game {
         this._maxRoundCount = maxRoundCount;
         this._hasStarted = false;
         this._words = words;
-        this.currentGameState = GameState.NOT_STARTED;
+        this._currentGameState = GameState.NOT_STARTED;
     }
 
     //Called on game initialization
@@ -60,8 +62,7 @@ export class Game {
         this.startRound(io);
 
         let interval = setInterval(() => {
-            console.log("------- " + this.currentGameState)
-            switch (this.currentGameState){
+            switch (this._currentGameState){
                 case GameState.RUNNING: {
                     //End of one Turn
                     if ((Date.now() - this._turnStartDate) / 1000 > this._roundDurationSec){
@@ -69,6 +70,7 @@ export class Game {
                             if (this._currentPlayer == null) { //TODO Right?
                                 return;
                             }
+                            this._currentWord = "";
                             this._currentPlayer.player.isDrawing = false;
                             this._roundPlayerSet.remove(this._currentPlayer);
                             console.log("Turn is over...")
@@ -122,18 +124,26 @@ export class Game {
         if (this._currentPlayer == null) { //TODO Right?
             return;
         }
-        this.currentGameState = GameState.PAUSED;
+        this._currentGameState = GameState.PAUSED;
         //Get word suggestions
-        const words : string[] = this.randomWordArr(this.WORD_SUGGESTION_NUM);
-        console.log(words);
+        this._wordSuggestions = this.randomWordArr(this._WORD_SUGGESTION_NUM);
+        console.log("word Suggs: ")
+        console.log(this._wordSuggestions)
         //Send word suggestions, current player and pause duration to clients
-        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommunicationHandler.packData(Date.now(), this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this.currentGameState, [], this._currentWord))
-        io.to(this._currentPlayer.socketID).emit('updateGameState', CommunicationHandler.packData(Date.now(), this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this.currentGameState, words, this._currentWord))
+        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommunicationHandler.packData(Date.now(), this._PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord))
+        io.to(this._currentPlayer.socketID).emit('updateGameState', CommunicationHandler.packData(Date.now(), this._PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, this._wordSuggestions, this._currentWord))
 
         setTimeout(() => {
+            //Already started by "chooseWord" in gameHandler
+            if(this._currentGameState = GameState.RUNNING) {
+                return;
+            }
+
             //If word not choosen after wait durtation, select randomly
             if (this._currentWord === ""){
-                this._currentWord = this.randomWordArr(1)[0];
+                let randomIndex =  Math.floor(Math.random() * this.WORD_SUGGESTION_NUM);
+                this._currentWord = this._wordSuggestions[randomIndex];
+                console.log("not choosen, random sugg: " + this.currentWord)
             }
 
             if (this._currentPlayer == undefined){
@@ -142,11 +152,11 @@ export class Game {
 
             this._currentPlayer.player.isDrawing = true;
             this._turnStartDate = Date.now();
-            this.currentGameState = GameState.RUNNING;
-            this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommunicationHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this.currentGameState, [], "PLACEHOLDER"))
-            io.to(this._currentPlayer.socketID).emit('updateGameState', CommunicationHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this.currentGameState, [], this._currentWord));
+            this._currentGameState = GameState.RUNNING;
+            this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommunicationHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER"))
+            io.to(this._currentPlayer.socketID).emit('updateGameState', CommunicationHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord));
             console.log("Next Player choosen: " + this.currentPlayer?.name)
-        },(this.PAUSE_DURATION_SEC * 1000))
+        },(this._PAUSE_DURATION_SEC * 1000))
 
 
 
@@ -159,7 +169,7 @@ export class Game {
             this.currentPlayer.player.isDrawing = false;
         }
         this._currentPlayer = undefined;
-        this.currentGameState = GameState.NOT_STARTED;
+        this._currentGameState = GameState.NOT_STARTED;
     }
 
 
@@ -177,7 +187,7 @@ export class Game {
         return words;
     }
 
-    private sendToAllExcl(io :SocketServer, socketID :string , ev : string, data : any) {
+    public sendToAllExcl(io :SocketServer, socketID :string , ev : string, data : any) {
         for(let connection of this.connections){
             if (connection.socketID !== socketID){
                 io.to(connection.socketID).emit(ev, data);
@@ -258,6 +268,27 @@ export class Game {
         return this._turnStartDate;
     }
 
+
+    set points(value: HashMap<string, number>) {
+        this._points = value;
+    }
+
+    set winner(value: Connection | undefined) {
+        this._winner = value;
+    }
+
+    set hasStarted(value: boolean) {
+        this._hasStarted = value;
+    }
+
+    set turnStartDate(value: number) {
+        this._turnStartDate = value;
+    }
+
+    set currentPlayer(value: Connection | undefined) {
+        this._currentPlayer = value;
+    }
+
     get maxRoundCount(): number {
         return this._maxRoundCount;
     }
@@ -266,9 +297,34 @@ export class Game {
     set currentWord(value: string) {
         this._currentWord = value;
     }
+
+
+    get PAUSE_DURATION_SEC(): number {
+        return this._PAUSE_DURATION_SEC;
+    }
+
+    get WORD_SUGGESTION_NUM(): number {
+        return this._WORD_SUGGESTION_NUM;
+    }
+
+    get words(): string[] {
+        return this._words;
+    }
+
+    get currentWord(): string {
+        return this._currentWord;
+    }
+
+    get currentGameState(): GameState {
+        return this._currentGameState;
+    }
+
+    set currentGameState(value: GameState) {
+        this._currentGameState = value;
+    }
 }
 
-enum GameState{
+export enum GameState{
     RUNNING,
     PAUSED,
     ENDED,

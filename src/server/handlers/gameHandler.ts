@@ -3,7 +3,7 @@ import {Server as SocketServer, Socket} from "socket.io";
 import {HashMap} from "typescriptcollectionsframework";
 import {GameLobby} from "../gameLobby";
 import {CommunicationHandler} from "./communicationHandler";
-import {Game} from "../game";
+import {Game, GameState} from "../game";
 import {Connection} from "../connection";
 import {RoomHandler} from "./roomHandler";
 import * as fs from "fs";
@@ -97,11 +97,19 @@ export class GameHandler implements HandlerInterface {
             let connection = allConnections.get(socket.id);
             let lobby = lobbyHashMap.get(connection.lobbyID);
             let word = data[0];
-
-            if (lobby.game == undefined || lobby.game.hasStarted === false) {
+            let game = lobby.game;
+            if (game == undefined || game.hasStarted === false) {
                 return;
             }
-            lobby.game.currentWord = word;
+
+            if(socket.id === game.currentPlayer?.socketID){
+                game.currentWord = word;
+                game.currentGameState = GameState.RUNNING;
+                game.currentPlayer.player.isDrawing = true;
+                game.turnStartDate = Date.now();
+                CommunicationHandler.deployMessage(socket,CommunicationHandler.packData(game.turnStartDate, game.roundDurationSec, game.currentPlayer.name,game.currentPlayer.socketID, game.currentGameState, [], "PLACEHOLDER" ),"updateGameState", false, lobby,connection, io)
+                socket.emit("updateGameState",CommunicationHandler.packData(game.turnStartDate, game.roundDurationSec, game.currentPlayer.name,game.currentPlayer.socketID, game.currentGameState, [], game.currentWord))
+            }
         })
     }
 }

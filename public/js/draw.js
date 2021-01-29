@@ -72,7 +72,6 @@ class Pen extends Tool {
     draw(x, y, color, send) {
         if (oldPosition.x > 0 && oldPosition.y > 0) {
             this.drawLine(oldPosition.x, oldPosition.y, x, y, color)
-            console.log("oldPos: " + oldPosition.x + " | " + oldPosition.y);
         }
         if (send) {
             const pkg = new DrawInfoPackage(x, y, color, this.lineWidth, drawing)

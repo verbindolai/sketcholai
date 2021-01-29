@@ -9,7 +9,7 @@ let currentPlayerName;
 let currentPlayerID;
 let clientName;
 let LOBBY_ID_HTML_CONTAINER
-
+let CURRENT_WORD_HTML_CONTAINER;
 
 
 function initGame() {
