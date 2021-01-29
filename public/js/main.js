@@ -139,7 +139,8 @@ function initGameStateListening() {
         const drawDuration = data[1];
         const name = data[2];
         const id = data[3];
-
+        const currentWord = data[4];
+        console.log("Current word: " + currentWord);
         currentPlayerID = id;
         currentPlayerName = name;
 

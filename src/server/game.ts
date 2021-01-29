@@ -9,27 +9,30 @@ export class Game {
     private _winner: Connection | undefined = undefined;
     private _roundPlayerSet : HashSet<Connection> = new HashSet<Connection>();
     private readonly _players: LinkedList<Connection>;
+    private readonly _words: string[] = [];
     private readonly _lobbyId: string;
     private _hasStarted : boolean;
 
     private _roundCount : number;
     private readonly _roundDurationSec: number;
-    private _roundStartDate: number;
+    private _turnStartDate: number;
     private readonly _maxRoundCount : number;
+    private _currentWord : string = "TEST";
 
     private _currentPlayer : Connection | undefined;
 
 
 
 
-    constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, players: LinkedList<Connection>,) {
+    constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, players: LinkedList<Connection>, words : string[]) {
         this._players = players;
         this._roundDurationSec = roundDuration;
-        this._roundStartDate = 0;
+        this._turnStartDate = 0;
         this._lobbyId = lobbyId;
         this._roundCount = 0;
         this._maxRoundCount = maxRoundCount;
         this._hasStarted = false;
+        this._words = words;
     }
 
     //Called on game initialization
@@ -50,9 +53,10 @@ export class Game {
             return;
         }
         this._currentPlayer.player.isDrawing = true;
-        this._roundStartDate = Date.now();
+        this._turnStartDate = Date.now();
 
-        io.to(this._lobbyId).emit('updateGameState', CommunicationHandler.packData(this._roundStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID));
+        //TODO check word logic
+        io.to(this._lobbyId).emit('updateGameState', CommunicationHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentWord));
         console.log("started Round: " + this._roundCount)
     }
 
@@ -62,7 +66,7 @@ export class Game {
         let interval = setInterval(() => {
 
             //End of one Turn
-            if ((Date.now() - this._roundStartDate) / 1000 > this._roundDurationSec){
+            if ((Date.now() - this._turnStartDate) / 1000 > this._roundDurationSec){
                 if (this._currentPlayer != undefined){
                     if (this._currentPlayer == null) { //TODO Right?
                         return;
@@ -94,8 +98,8 @@ export class Game {
                         return;
                     }
                     this._currentPlayer.player.isDrawing = true;
-                    this._roundStartDate = Date.now();
-                    io.to(this._lobbyId).emit('updateGameState', CommunicationHandler.packData(this._roundStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID));
+                    this._turnStartDate = Date.now();
+                    io.to(this._lobbyId).emit('updateGameState', CommunicationHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID));
                     console.log("Next Player choosen: " + this.currentPlayer?.name)
                 }
             }
@@ -186,8 +190,8 @@ export class Game {
         return this._roundDurationSec;
     }
 
-    get roundStartDate(): number {
-        return this._roundStartDate;
+    get turnStartDate(): number {
+        return this._turnStartDate;
     }
 
     get maxRoundCount(): number {

@@ -49,6 +49,9 @@ export class CommunicationHandler implements HandlerInterface {
         return JSON.stringify(data);
     }
 
+    init(): void {
+    }
+
 }
 
 export let handler = new CommunicationHandler();

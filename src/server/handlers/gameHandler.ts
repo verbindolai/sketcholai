@@ -6,11 +6,28 @@ import {CommunicationHandler} from "./communicationHandler";
 import {Game} from "../game";
 import {Connection} from "../connection";
 import {RoomHandler} from "./roomHandler";
+import * as fs from "fs";
 
 export class GameHandler implements HandlerInterface {
 
     private readonly drawEvent: string = "draw";
     private readonly fillEvent: string = "fill";
+    private _words : string[] = [];
+
+    init(){
+        let rawData = fs.readFileSync("./src/server/handlers/words.txt","utf8");
+        this._words = rawData.split("\n");
+    }
+
+
+    // private jsonToTxt(){
+    //     let rawData = fs.readFileSync("./src/server/handlers/words.json","utf16le").substr(1);
+    //     const list = JSON.parse(rawData);
+    //     for(let word in list){
+    //         fs.appendFileSync("./src/server/handlers/words.txt",word + "\n");
+    //     }
+    //     console.log("feddich");
+    // }
 
     handle(socket: Socket, lobbyHashMap: HashMap<string, GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>) {
 
@@ -59,7 +76,7 @@ export class GameHandler implements HandlerInterface {
                 return;
             }
 
-            lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections);
+            lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections, this._words);
             CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(lobby.lobbyID, lobby.game.currentPlayer?.name, RoomHandler.listToArr(lobby.connections)), "loadGame", true, lobby, connection, io);
         })
 

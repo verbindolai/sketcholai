@@ -48,7 +48,7 @@ export class RoomHandler implements HandlerInterface {
                 socket.emit("roomJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID))
                 CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
             } else {
-                socket.emit("gameJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, game.roundStartDate, game.roundDurationSec, game.currentPlayer?.socketID));
+                socket.emit("gameJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, game.turnStartDate, game.roundDurationSec, game.currentPlayer?.socketID));
 
                 CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
                 if(this.lateJoinedPlayers.containsKey(lobbyID)){
@@ -140,6 +140,7 @@ export class RoomHandler implements HandlerInterface {
         return result;
     }
 
+    init(): void {}
 }
 
 export let handler = new RoomHandler();

@@ -8,6 +8,7 @@ import {HandlerInterface} from "./handlers/handlerInterface";
 import * as fs from "fs";
 import {Connection} from "./connection";
 import {CommunicationHandler} from "./handlers/communicationHandler";
+import {GameHandler} from "./handlers/gameHandler";
 
 /**
  * Represents the Sketch-Server
@@ -22,6 +23,7 @@ export class SketchServer {
     private readonly handlerObjects: LinkedList<HandlerInterface>
     private lobbies: HashMap<string, GameLobby> = new HashMap<string, GameLobby>();
     private allConnections : HashMap<string, Connection> = new HashMap<string, Connection>();
+
 
 
     constructor(port: number) {
@@ -58,6 +60,9 @@ export class SketchServer {
     private init(): void {
         this.addHandlers();
         this.app.use(express.static('./public'));
+        for(let handler of this.handlerObjects){
+            handler.init();
+        }
     }
 
     /**
@@ -127,8 +132,8 @@ export class SketchServer {
         const handlerFiles = fs.readdirSync('src/server/handlers').filter(file => file.endsWith('.ts') && file !== 'handlerInterface.ts');
         for (const file of handlerFiles) {
             const fileWithoutTS = file.replace(".ts", "");
-            let command = require(`./handlers/${fileWithoutTS}`);
-            this.handlerObjects.add(command.handler)
+            let handler = require(`./handlers/${fileWithoutTS}`);
+            this.handlerObjects.add(handler.handler)
         }
     }
 
