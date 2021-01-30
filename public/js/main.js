@@ -44,6 +44,7 @@ function init(lobbyID, currentPlayerName) {
         }
     }
 
+
     LOBBY_ID_HTML_CONTAINER.innerHTML = lobbyID;
     CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = currentPlayerName;
 
@@ -135,9 +136,6 @@ function initUpdatePlayerListListening() {
  */
 function initGameStateListening() {
     socket.on('updateGameState', (serverPackage) => {  //TODO
-        console.log("receive")
-
-
         const data = JSON.parse(serverPackage);
         const unixTime = data[0];
         const drawDuration = data[1];
@@ -155,20 +153,33 @@ function initGameStateListening() {
             canvas.classList.remove("hidden");
         }
 
-        currentPlayerID = id;
-        currentPlayerName = name;
+        if (gameState == 2){
+            displayEndScreen();
+        } else {
+            currentPlayerID = id;
+            currentPlayerName = name;
+            if(CURRENT_PLAYER_NAME_HTML_CONTAINER != undefined){
+                CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = currentPlayerName;
 
-        if(CURRENT_PLAYER_NAME_HTML_CONTAINER != undefined){
-            CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = currentPlayerName;
-
+            }
+            CURRENT_WORD_HTML_CONTAINER.innerHTML = currentWord;
+            displayTime(drawDuration, unixTime);
         }
 
-        CURRENT_WORD_HTML_CONTAINER.innerHTML = currentWord;
 
-        displayTime(drawDuration, unixTime);
         context.fillStyle = '#ffffff';
         context.fillRect(0, 0, canvas.width, canvas.height);
     });
+}
+
+function displayEndScreen(){
+    canvas.classList.add("hidden");
+    WORD_HTML_CONTAINER.classList.remove("hidden")
+    WORD_HTML_CONTAINER.children[0].classList.add("flex","flex-col","justify-center","items-center");
+    let text = document.createElement("div")
+    text.classList.add("text-5xl","text-black" ,"font-bold");
+    text.appendChild(document.createTextNode("Game Ended!"))
+    WORD_HTML_CONTAINER.children[0].appendChild(text)
 }
 
 function displayWordSuggestions(words) {

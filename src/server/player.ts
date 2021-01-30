@@ -6,6 +6,7 @@ export class Player {
     private _points: number;
     private _guessedCorrectly : boolean;
 
+
     constructor() {
         this._isDrawing = false;
         this._points = 0;

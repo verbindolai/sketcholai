@@ -29,23 +29,45 @@ export class CommHandler implements HandlerInterface {
 
             let currentWord = game.currentWord.trim();
 
+
             if (connection.player.guessedCorrectly){
+                //Send message only to players who have guessed the word too.
                 for (let conn of game.connections){
                     if (conn.player.guessedCorrectly){
-                        io.to(conn.socketID).emit("chat", CommHandler.packData(message, connection.name, connection.chatColor, MessageType.CLIENT_MESSAGE, ChatType.GUESSED_CHAT));
+                        io.to(conn.socketID).emit("chat", CommHandler.packData(message, connection, connection.chatColor, MessageType.CLIENT_MESSAGE, ChatType.GUESSED_CHAT));
                     }
                 }
             } else if (message == currentWord){
+                if(game.currentPlayer != undefined){
+                    game.currentPlayer.player.points += game.DRAW_POINTS;
+                }
                 connection.player.points += game.GUESS_RIGHT_POINTS * game.pointMultiplicator;
                 connection.player.guessedCorrectly = true;
+                //First guesses give more points
                 game.decrementPointMult();
-                if (!CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.RIGHT_GUESS_MESSAGE, connection.name, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
+
+                //TODO
+
+                // let allGuessedRight = true;
+                // for (let conn of game.connections){
+                //     if (!conn.player.guessedCorrectly) {
+                //         allGuessedRight = false;
+                //         break;
+                //     }
+                // }
+                // if(allGuessedRight){
+                //    game.turnEnded = true;
+                // }
+
+                //SERVER-MESSAGE
+                if (!CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.RIGHT_GUESS_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
                     console.error("Couldn't deploy Message.")
                 }
+                //Update list so the points will be displayed
                 CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", true, lobby, connection, io);
 
             } else {
-                if (!CommHandler.deployMessage(socket, CommHandler.packData(message, connection.name, connection.chatColor, MessageType.CLIENT_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
+                if (!CommHandler.deployMessage(socket, CommHandler.packData(message, connection, connection.chatColor, MessageType.CLIENT_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
                     console.error("Couldn't deploy Message.")
                 }
             }

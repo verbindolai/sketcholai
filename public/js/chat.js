@@ -8,13 +8,23 @@ function initChatListening(){
     socket.on('chat', (serverPackage) => {
         let data = JSON.parse(serverPackage);
         let message = data[0];
-        let name = data[1];
+        let conn = data[1];
+        let name = conn._name;
         let color = data[2];
         let serverMSG = data[3];
         let chatType = data[4];
 
         let chatListNode = document.createElement("li");
         chatListNode.classList.add("flex", "flex-row","px-1","rounded","hover:bg-blue-700")
+
+        if (conn._isWizzard){
+            let hat = document.createElement("img")
+            hat.src = "https://cdn4.iconfinder.com/data/icons/halloween-01/128/Witch_Hat-2-256.png"
+            hat.width = 20;
+            hat.height = 20;
+            hat.classList.add("mr-1");
+            chatListNode.appendChild(hat)
+        }
 
 
         let chatMsgCont = document.createElement("div");
@@ -58,6 +68,8 @@ function sendChatMsg() {
     chatInput.value = "";
     scrollDown();
 }
+
+
 
 /**
  * scrolls down the chat

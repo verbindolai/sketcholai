@@ -15,6 +15,11 @@ export class Connection {
     private _receivedCanvas : boolean;
     private _chatColor : string;
 
+    //TODO Make Role Enum and Role Arr
+    private _istHost : boolean;
+    private _isWizzard : boolean;
+
+
     constructor(id: string, name: string, lobbyID: string) {
         this._socketID = id;
         this._name = name;
@@ -23,7 +28,11 @@ export class Connection {
         this._player = new Player();
         this._receivedCanvas = false;
         this._chatColor = this.randomColor();
+        this._istHost = false;
+        this._isWizzard = false;
     }
+
+
 
 
     get receivedCanvas(): boolean {
@@ -73,6 +82,26 @@ export class Connection {
     }
 
 
+    get istHost(): boolean {
+        return this._istHost;
+    }
+
+    set istHost(value: boolean) {
+        this._istHost = value;
+    }
+
+    set name(value: string) {
+        this._name = value;
+    }
+
+    set isWizzard(value: boolean) {
+        this._isWizzard = value;
+    }
+
+
+    get isWizzard(): boolean {
+        return this._isWizzard;
+    }
 
     public toString(): string {
         return "name: " + this._name + "\n" +

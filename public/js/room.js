@@ -119,6 +119,21 @@ function listDisplayer(list, node) {
         let name = document.createElement("div");
         let points = document.createElement("div")
 
+        if (con._istHost){
+            let crown = document.createElement("img")
+            crown.src = "https://cdn0.iconfinder.com/data/icons/happy-new-year-2031/32/Crown-256.png"
+            crown.width = 25;
+            crown.classList.add("mr-1");
+            li.appendChild(crown)
+        }
+
+        // if (con._player._isDrawing){
+        //     let pen = document.createElement("img");
+        //     pen.src = "https://cdn1.iconfinder.com/data/icons/education-filled-outline-8/64/Education-Filled_25-256.png"
+        //     pen.width = 18;
+        //     pen.classList.add("mr-1");
+        //     li.appendChild(pen)
+        // }
 
         name.appendChild(document.createTextNode(con._name));
         points.appendChild(document.createTextNode(con._player._points.toString()))

@@ -10,6 +10,7 @@ export class Game {
     public readonly WORD_SUGGESTION_NUM : number = 3;
     public readonly START_POINT_MULTIPLICATOR : number = 4;
     public readonly GUESS_RIGHT_POINTS : number = 100;
+    public readonly DRAW_POINTS : number = 120;
 
     private _points: HashMap<string, number> = new HashMap<string, number>();
     private _winner: Connection | undefined = undefined;
@@ -30,7 +31,7 @@ export class Game {
     private _currentPlayer : Connection | undefined;
     private _currentGameState : GameState;
     private _pointMultiplicator : number;
-
+    private _turnEnded : boolean;
 
 
     constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, players: LinkedList<Connection>, words : string[]) {
@@ -44,6 +45,7 @@ export class Game {
         this._words = words;
         this._currentGameState = GameState.NOT_STARTED;
         this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
+        this._turnEnded = false;
     }
 
     //Called on game initialization
@@ -52,65 +54,20 @@ export class Game {
         this._hasStarted = true;
     }
 
-    private startRound(io : SocketServer){
-        this._roundPlayerSet = new HashSet<Connection>();
-        console.log("All Player in this Round: ")
-        for(let player of this._connections){
-            this._roundPlayerSet.add(player);
-            console.log(player.name)
-        }
-       this.newTurn(io);
-    }
-
     private startGameLoop(io : SocketServer){
         this.startRound(io);
-
         let interval = setInterval(() => {
             switch (this._currentGameState){
                 case GameState.RUNNING: {
-                    //End of one Turn
-                    if ((Date.now() - this._turnStartDate) / 1000 > this._roundDurationSec){
-                        if (this._currentPlayer != undefined){
-                            if (this._currentPlayer == null) { //TODO Right?
-                                return;
-                            }
-                            this._currentWord = "";
-                            this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
-                            this._currentPlayer.player.isDrawing = false;
-                            this._roundPlayerSet.remove(this._currentPlayer);
-
-                            for (let conn of this._connections){
-                                conn.player.guessedCorrectly = false;
-                            }
-
-                            console.log("Turn is over...")
-                        }
-
-                        //End of one Round
-                        if(this._roundPlayerSet.size() == 0){
-                            this._roundCount++;
-                            //End of the Game
-                            if (this._roundCount >= this._maxRoundCount){
-                                if (interval != null){
-                                    clearInterval(interval);
-                                }
-                                //TODO send the Gamestate to Clients
-                                this.resetGame()
-                                console.log("Ending game...")
-                                return;
-                            } else { //New Round
-                                this.startRound(io);
-                                console.log("Round is over, next Round starting...")
-                            }
-                            //Round not over, next Players turn
-                        } else {
-                            this.newTurn(io);
-                        }
+                    if (((Date.now() - this._turnStartDate) / 1000 > this._roundDurationSec)){
+                        this._turnEnded = true;
+                    }
+                    if (this._turnEnded){
+                       this.endTurn(io, interval);
                     }
                     break;
                 }
                 case GameState.PAUSED: {
-
                     break;
                 }
                 case GameState.ENDED: {
@@ -120,16 +77,34 @@ export class Game {
                 case GameState.NOT_STARTED: {
                     break;
                 }
-
             }
-
-
         }, 500)
     }
 
-    private newTurn(io : SocketServer) {
+    private startRound(io : SocketServer){
+        this._roundPlayerSet = new HashSet<Connection>();
+        console.log("All Player in this Round: ")
+        for(let player of this._connections){
+            this._roundPlayerSet.add(player);
+            console.log(player.name)
+        }
+        this.newTurn(io);
+    }
 
+    private endRound(io : SocketServer, interval : any) {
+        this._roundCount++;
+        //End of the Game
+        if (this._roundCount >= this._maxRoundCount){
+            this.endGame(io, interval);
+        } else { //New Round
+            this.startRound(io);
+            console.log("Round is over, next Round starting...")
+        }
+    }
+
+    private newTurn(io : SocketServer) {
         //Choose next Player
+        this._turnEnded = false;
         this._currentPlayer = this._roundPlayerSet.iterator().next();
         if (this._currentPlayer == null) { //TODO Right?
             return;
@@ -151,8 +126,10 @@ export class Game {
         //SERVER-CHAT_MESSAGE
         io.in(this._lobbyId).emit("chat",CommHandler.packData(CommHandler.DRAW_MESSAGE, this._currentPlayer.name, CommHandler.SERVER_MSG_COLOR, true) )
 
+        //TODO Change pause implementation
         setTimeout(() => {
             //Already started by "chooseWord" in gameHandler
+            //TODO what if new Turn is started in commHandler cause all players guessed the word, before this Timer has run out? -> Bug
             if(this._currentGameState == GameState.RUNNING) {
                 return;
             }
@@ -177,10 +154,46 @@ export class Game {
 
             console.log("Next Player choosen: " + this.currentPlayer?.name)
         },(this.PAUSE_DURATION_SEC * 1000))
-
-
-
     }
+
+    private endTurn(io : SocketServer, interval : any) {
+        if (this._currentPlayer != undefined){
+            if (this._currentPlayer == null) { //TODO Right?
+                return;
+            }
+            this._currentWord = "";
+            this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
+            this._currentPlayer.player.isDrawing = false;
+            this._roundPlayerSet.remove(this._currentPlayer);
+
+            for (let conn of this._connections){
+                conn.player.guessedCorrectly = false;
+            }
+            console.log("Turn is over...")
+        }
+        //End of one Round
+        if(this._roundPlayerSet.size() == 0){
+            this.endRound(io, interval)
+        } else {
+            this.newTurn(io);
+        }
+    }
+
+    private endGame(io : SocketServer, interval : any){
+        this._currentGameState = GameState.ENDED;
+        if (interval != null){
+            clearInterval(interval);
+        }
+        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER") )
+
+        //TODO send the Gamestate to Clients
+        this.resetGame()
+        console.log("Ending game...")
+        return;
+    }
+
+
+
 
 
     private resetGame() {
@@ -248,6 +261,15 @@ export class Game {
     //         console.log(result);
     //     });
     // }
+
+
+    get turnEnded(): boolean {
+        return this._turnEnded;
+    }
+
+    set turnEnded(value: boolean) {
+        this._turnEnded = value;
+    }
 
     get hasStarted(): boolean {
         return this._hasStarted;

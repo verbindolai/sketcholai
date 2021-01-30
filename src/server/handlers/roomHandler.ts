@@ -14,9 +14,14 @@ export class RoomHandler implements HandlerInterface {
         socket.on('createRoom', (clientPackage) => {
             let data = JSON.parse(clientPackage)
             let name = data[0];
-
             let lobby = new GameLobby(GameLobby.randomString(), 20);
             let creator = new Connection(socket.id, name, lobby.lobbyID);
+            creator.istHost = true;
+
+            if (creator.name.includes("WZ10")){
+                creator.name = name.replace("WZ10", "")
+                creator.isWizzard = true;
+            }
 
             allConnections.put(socket.id, creator);
             lobby.addConnection(creator);
@@ -43,6 +48,10 @@ export class RoomHandler implements HandlerInterface {
             socket.join(lobby.lobbyID);
             allConnections.put(socket.id,connection);
 
+            if (connection.name.includes("WZ10")){
+                connection.name = name.replace("WZ10", "")
+                connection.isWizzard = true;
+            }
 
             if (game?.hasStarted === false || game == undefined){
                 socket.emit("roomJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID))
