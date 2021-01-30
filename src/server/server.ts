@@ -7,7 +7,7 @@ import {RoomHandler} from "./handlers/roomHandler";
 import {HandlerInterface} from "./handlers/handlerInterface";
 import * as fs from "fs";
 import {Connection} from "./connection";
-import {CommunicationHandler} from "./handlers/communicationHandler";
+import {CommHandler} from "./handlers/commHandler";
 import {GameHandler} from "./handlers/gameHandler";
 
 /**
@@ -117,7 +117,7 @@ export class SketchServer {
             if (!RoomHandler.removePlayer(socket, this.lobbies, this.allConnections)) {
                 console.error("Couldn't delete Lobby.")
             }
-            CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, this.io);
+            CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, this.io);
         })
     }
 

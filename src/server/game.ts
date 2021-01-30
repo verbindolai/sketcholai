@@ -1,7 +1,7 @@
 import {HashMap, HashSet, LinkedList} from "typescriptcollectionsframework";
 import {Connection} from "./connection";
 import {Server as SocketServer} from "socket.io";
-import {CommunicationHandler} from "./handlers/communicationHandler";
+import {CommHandler} from "./handlers/commHandler";
 
 export class Game {
 
@@ -78,6 +78,11 @@ export class Game {
                             this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
                             this._currentPlayer.player.isDrawing = false;
                             this._roundPlayerSet.remove(this._currentPlayer);
+
+                            for (let conn of this._connections){
+                                conn.player.guessedCorrectly = false;
+                            }
+
                             console.log("Turn is over...")
                         }
 
@@ -130,14 +135,21 @@ export class Game {
             return;
         }
         this._currentGameState = GameState.PAUSED;
+
+        //Drawing player is not allowed to write in the "normal" chat
+        this._currentPlayer.player.guessedCorrectly = true;
+
         //Get word suggestions
         this._wordSuggestions = this.randomWordArr(this.WORD_SUGGESTION_NUM);
         console.log("word Suggs: ")
         console.log(this._wordSuggestions)
+
         //Send word suggestions, current player and pause duration to clients
-        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommunicationHandler.packData(Date.now(), this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord))
-        io.to(this._currentPlayer.socketID).emit('updateGameState', CommunicationHandler.packData(Date.now(), this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, this._wordSuggestions, this._currentWord))
-        io.in(this._lobbyId).emit("chat",CommunicationHandler.packData(CommunicationHandler.DRAW_MESSAGE, this._currentPlayer.name, CommunicationHandler.SERVER_MSG_COLOR, true) )
+        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(Date.now(), this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord))
+        io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(Date.now(), this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, this._wordSuggestions, this._currentWord))
+
+        //SERVER-CHAT_MESSAGE
+        io.in(this._lobbyId).emit("chat",CommHandler.packData(CommHandler.DRAW_MESSAGE, this._currentPlayer.name, CommHandler.SERVER_MSG_COLOR, true) )
 
         setTimeout(() => {
             //Already started by "chooseWord" in gameHandler
@@ -159,8 +171,10 @@ export class Game {
             this._currentPlayer.player.isDrawing = true;
             this._turnStartDate = Date.now();
             this._currentGameState = GameState.RUNNING;
-            this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommunicationHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER"))
-            io.to(this._currentPlayer.socketID).emit('updateGameState', CommunicationHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord));
+
+            this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER"))
+            io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord));
+
             console.log("Next Player choosen: " + this.currentPlayer?.name)
         },(this.PAUSE_DURATION_SEC * 1000))
 
@@ -180,11 +194,6 @@ export class Game {
 
     }
 
-
-
-    private checkWord(word: string, socketid: string) {
-
-    }
 
     private randomWordArr(num : number) : string[] {
         let words = [];

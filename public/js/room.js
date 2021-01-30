@@ -116,7 +116,17 @@ function listDisplayer(list, node) {
 
     for(let con of list) {
         let li = document.createElement("li");
-        li.appendChild(document.createTextNode(con._name));
+        let name = document.createElement("div");
+        let points = document.createElement("div")
+
+
+        name.appendChild(document.createTextNode(con._name));
+        points.appendChild(document.createTextNode(con._player._points.toString()))
+
+        name.classList.add("font-bold", "text-lg", "mr-2")
+        points.classList.add("font-bold")
+        li.classList.add("flex", "flex-row", "justify-center", "items-center")
+        li.append(name, points)
         node.appendChild(li);
     }
 

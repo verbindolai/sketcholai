@@ -3,7 +3,7 @@ import {Server as SocketServer, Socket} from "socket.io";
 import {GameLobby} from "../gameLobby";
 import {Connection} from "../connection";
 import {HashMap, LinkedList} from "typescriptcollectionsframework";
-import {CommunicationHandler} from "./communicationHandler";
+import {CommHandler} from "./commHandler";
 
 
 export class RoomHandler implements HandlerInterface {
@@ -23,7 +23,7 @@ export class RoomHandler implements HandlerInterface {
             lobbyHashMap.put(lobby.lobbyID, lobby)
             socket.join(lobby.lobbyID);
 
-            socket.emit("roomCreated", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID));
+            socket.emit("roomCreated", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID));
         });
 
 
@@ -45,12 +45,12 @@ export class RoomHandler implements HandlerInterface {
 
 
             if (game?.hasStarted === false || game == undefined){
-                socket.emit("roomJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID))
-                CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
+                socket.emit("roomJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID))
+                CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
             } else {
-                socket.emit("gameJoined", CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, game.turnStartDate, game.roundDurationSec, game.currentPlayer?.socketID));
-                CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(CommunicationHandler.JOIN_MESSAGE, connection.name, CommunicationHandler.SERVER_MSG_COLOR, true), 'chat', true, lobby, connection, io)
-                CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
+                socket.emit("gameJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, game.turnStartDate, game.roundDurationSec, game.currentPlayer?.socketID));
+                CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.JOIN_MESSAGE, connection.name, CommHandler.SERVER_MSG_COLOR, true), 'chat', true, lobby, connection, io)
+                CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
                 if(this.lateJoinedPlayers.containsKey(lobbyID)){
                     this.lateJoinedPlayers.get(lobbyID).add(socket.id);
                 }else{
@@ -59,7 +59,7 @@ export class RoomHandler implements HandlerInterface {
                     this.lateJoinedPlayers.put(lobbyID,newSocketIdList);
                 }
                 //Sends a request to all other connections in the room to send the current canvas status to the server
-                CommunicationHandler.deployMessage(socket,null, "sendCanvasStatus", false, lobby, connection, io);
+                CommHandler.deployMessage(socket,null, "sendCanvasStatus", false, lobby, connection, io);
 
             }
         });
@@ -79,7 +79,7 @@ export class RoomHandler implements HandlerInterface {
             }
 
             for(let socketId of lobbyLateJoinedPlayers){
-                io.to(socketId).emit("getCanvasStatus", CommunicationHandler.packData(imgData));
+                io.to(socketId).emit("getCanvasStatus", CommHandler.packData(imgData));
             }
             this.lateJoinedPlayers.remove(connection.lobbyID);
         })

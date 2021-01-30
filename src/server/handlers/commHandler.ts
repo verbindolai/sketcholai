@@ -3,12 +3,13 @@ import {Server as SocketServer, Socket} from "socket.io";
 import {HashMap} from "typescriptcollectionsframework";
 import {GameLobby} from "../gameLobby";
 import {Connection} from "../connection";
+import {RoomHandler} from "./roomHandler";
 
 
-export class CommunicationHandler implements HandlerInterface {
+export class CommHandler implements HandlerInterface {
 
     public static readonly SERVER_MSG_COLOR = "#3abd64"
-    public static readonly RIGHT_GUESS_MESSAGE = " guessed the word right!"
+    public static readonly RIGHT_GUESS_MESSAGE = " guessed the word!"
     public static readonly JOIN_MESSAGE = " joined the game."
     public static readonly DRAW_MESSAGE = " is now drawing!"
 
@@ -27,23 +28,27 @@ export class CommunicationHandler implements HandlerInterface {
             }
 
             let currentWord = game.currentWord.trim();
-            console.log(message);
-            console.log(currentWord)
-            console.log(message == currentWord)
-            if (message == currentWord){
-                console.log("Hi")
+
+            if (connection.player.guessedCorrectly){
+                for (let conn of game.connections){
+                    if (conn.player.guessedCorrectly){
+                        io.to(conn.socketID).emit("chat", CommHandler.packData(message, connection.name, connection.chatColor, MessageType.CLIENT_MESSAGE, ChatType.GUESSED_CHAT));
+                    }
+                }
+            } else if (message == currentWord){
                 connection.player.points += game.GUESS_RIGHT_POINTS * game.pointMultiplicator;
+                connection.player.guessedCorrectly = true;
                 game.decrementPointMult();
-                if (!CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(CommunicationHandler.RIGHT_GUESS_MESSAGE, connection.name, CommunicationHandler.SERVER_MSG_COLOR, true), 'chat', true, lobby, connection, io)) {
+                if (!CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.RIGHT_GUESS_MESSAGE, connection.name, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
                     console.error("Couldn't deploy Message.")
                 }
+                CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", true, lobby, connection, io);
+
             } else {
-                if (!CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(message, connection.name, connection.chatColor, false), 'chat', true, lobby, connection, io)) {
+                if (!CommHandler.deployMessage(socket, CommHandler.packData(message, connection.name, connection.chatColor, MessageType.CLIENT_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
                     console.error("Couldn't deploy Message.")
                 }
             }
-
-
 
         });
     }
@@ -81,4 +86,14 @@ export class CommunicationHandler implements HandlerInterface {
 
 }
 
-export let handler = new CommunicationHandler();
+enum MessageType{
+    SERVER_MESSAGE,
+    CLIENT_MESSAGE,
+}
+
+enum ChatType{
+    NORMAL_CHAT,
+    GUESSED_CHAT,
+}
+
+export let handler = new CommHandler();

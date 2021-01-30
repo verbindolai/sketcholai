@@ -2,7 +2,7 @@ import {HandlerInterface} from "./handlerInterface";
 import {Server as SocketServer, Socket} from "socket.io";
 import {HashMap} from "typescriptcollectionsframework";
 import {GameLobby} from "../gameLobby";
-import {CommunicationHandler} from "./communicationHandler";
+import {CommHandler} from "./commHandler";
 import {Game, GameState} from "../game";
 import {Connection} from "../connection";
 import {RoomHandler} from "./roomHandler";
@@ -42,7 +42,7 @@ export class GameHandler implements HandlerInterface {
             if(lobby == undefined) {
                 return;
             }
-            if (connection.player.isDrawing && !CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(drawInfoPackage), this.drawEvent, false, lobby, connection, io)) {
+            if (connection.player.isDrawing && !CommHandler.deployMessage(socket, CommHandler.packData(drawInfoPackage), this.drawEvent, false, lobby, connection, io)) {
                 console.error("Couldn't deploy draw Message.")
             }
         })
@@ -58,7 +58,7 @@ export class GameHandler implements HandlerInterface {
             if(lobby == undefined) {
                 return;
             }
-            if (connection.player.isDrawing && !CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(drawInfoPackage), this.fillEvent, false, lobby, connection, io)) {
+            if (connection.player.isDrawing && !CommHandler.deployMessage(socket, CommHandler.packData(drawInfoPackage), this.fillEvent, false, lobby, connection, io)) {
                 console.error("Couldn't deploy fill Message.")
             }
         })
@@ -77,7 +77,7 @@ export class GameHandler implements HandlerInterface {
             }
 
             lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections, this._words);
-            CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(lobby.lobbyID, lobby.game.currentPlayer?.name, RoomHandler.listToArr(lobby.connections)), "loadGame", true, lobby, connection, io);
+            CommHandler.deployMessage(socket, CommHandler.packData(lobby.lobbyID, lobby.game.currentPlayer?.name, RoomHandler.listToArr(lobby.connections)), "loadGame", true, lobby, connection, io);
         })
 
         socket.on('startGame', (clientPackage) => {
@@ -107,8 +107,8 @@ export class GameHandler implements HandlerInterface {
                 game.currentGameState = GameState.RUNNING;
                 game.currentPlayer.player.isDrawing = true;
                 game.turnStartDate = Date.now();
-                CommunicationHandler.deployMessage(socket,CommunicationHandler.packData(game.turnStartDate, game.roundDurationSec, game.currentPlayer.name,game.currentPlayer.socketID, game.currentGameState, [], "PLACEHOLDER" ),"updateGameState", false, lobby,connection, io)
-                socket.emit("updateGameState",CommunicationHandler.packData(game.turnStartDate, game.roundDurationSec, game.currentPlayer.name,game.currentPlayer.socketID, game.currentGameState, [], game.currentWord))
+                CommHandler.deployMessage(socket,CommHandler.packData(game.turnStartDate, game.roundDurationSec, game.currentPlayer.name,game.currentPlayer.socketID, game.currentGameState, [], "PLACEHOLDER" ),"updateGameState", false, lobby,connection, io)
+                socket.emit("updateGameState",CommHandler.packData(game.turnStartDate, game.roundDurationSec, game.currentPlayer.name,game.currentPlayer.socketID, game.currentGameState, [], game.currentWord))
             }
         })
     }

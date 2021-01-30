@@ -11,24 +11,28 @@ function initChatListening(){
         let name = data[1];
         let color = data[2];
         let serverMSG = data[3];
-
+        let chatType = data[4];
 
         let chatListNode = document.createElement("li");
         chatListNode.classList.add("flex", "flex-row","px-1","rounded","hover:bg-blue-700")
 
 
         let chatMsgCont = document.createElement("div");
-        chatMsgCont.classList.add("font-semibold", "break-all");
+        chatMsgCont.classList.add("font-semibold");
 
-        if (serverMSG === false) {
+        if (serverMSG === 1) {
             let chatNameCont = document.createElement("div");
             chatNameCont.style.color = color;
             chatNameCont.classList.add("font-bold", "mr-1");
             chatNameCont.appendChild(document.createTextNode(name + ":"));
             chatMsgCont.appendChild(document.createTextNode(message))
             chatListNode.append(chatNameCont);
-        } else if (serverMSG === true) {
+            if(chatType === 1){
+                chatMsgCont.style.color = "#c9892e";
+            }
+        } else if (serverMSG === 0) {
             chatMsgCont.appendChild(document.createTextNode(name + message));
+            chatMsgCont.classList.add("italic")
             chatMsgCont.style.color = color;
         }
         chatListNode.append(chatMsgCont);
