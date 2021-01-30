@@ -103,12 +103,7 @@ export class GameHandler implements HandlerInterface {
             }
 
             if(socket.id === game.currentPlayer?.socketID){
-                game.currentWord = word;
-                game.currentGameState = GameState.RUNNING;
-                game.currentPlayer.player.isDrawing = true;
-                game.turnStartDate = Date.now();
-                CommHandler.deployMessage(socket,CommHandler.packData(game.turnStartDate, game.roundDurationSec, game.currentPlayer.name,game.currentPlayer.socketID, game.currentGameState, [], "PLACEHOLDER" ),"updateGameState", false, lobby,connection, io)
-                socket.emit("updateGameState",CommHandler.packData(game.turnStartDate, game.roundDurationSec, game.currentPlayer.name,game.currentPlayer.socketID, game.currentGameState, [], game.currentWord))
+                game.pauseEnded = true;
             }
         })
     }

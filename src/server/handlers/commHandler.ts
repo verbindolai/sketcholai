@@ -48,16 +48,16 @@ export class CommHandler implements HandlerInterface {
 
                 //TODO
 
-                // let allGuessedRight = true;
-                // for (let conn of game.connections){
-                //     if (!conn.player.guessedCorrectly) {
-                //         allGuessedRight = false;
-                //         break;
-                //     }
-                // }
-                // if(allGuessedRight){
-                //    game.turnEnded = true;
-                // }
+                let allGuessedRight = true;
+                for (let conn of game.connections){
+                    if (!conn.player.guessedCorrectly) {
+                        allGuessedRight = false;
+                        break;
+                    }
+                }
+                if(allGuessedRight){
+                   game.turnEnded = true;
+                }
 
                 //SERVER-MESSAGE
                 if (!CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.RIGHT_GUESS_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {

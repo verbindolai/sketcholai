@@ -25,6 +25,7 @@ export class Game {
     private _roundCount : number;
     private readonly _roundDurationSec: number;
     private _turnStartDate: number;
+    private _pauseStartDate: number;
     private readonly _maxRoundCount : number;
     private _currentWord : string = "";
 
@@ -32,12 +33,14 @@ export class Game {
     private _currentGameState : GameState;
     private _pointMultiplicator : number;
     private _turnEnded : boolean;
+    private _pauseEnded : boolean;
 
 
     constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, players: LinkedList<Connection>, words : string[]) {
         this._connections = players;
         this._roundDurationSec = roundDuration;
         this._turnStartDate = 0;
+        this._pauseStartDate = 0;
         this._lobbyId = lobbyId;
         this._roundCount = 0;
         this._maxRoundCount = maxRoundCount;
@@ -46,6 +49,7 @@ export class Game {
         this._currentGameState = GameState.NOT_STARTED;
         this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
         this._turnEnded = false;
+        this._pauseEnded = false;
     }
 
     //Called on game initialization
@@ -68,6 +72,13 @@ export class Game {
                     break;
                 }
                 case GameState.PAUSED: {
+                    if (((Date.now() - this._pauseStartDate) / 1000 > this.PAUSE_DURATION_SEC)){
+                        this._pauseEnded = true;
+                    }
+
+                    if(this._pauseEnded) {
+                        this.startTurn(io)
+                    }
                     break;
                 }
                 case GameState.ENDED: {
@@ -88,7 +99,7 @@ export class Game {
             this._roundPlayerSet.add(player);
             console.log(player.name)
         }
-        this.newTurn(io);
+        this.startPause(io);
     }
 
     private endRound(io : SocketServer, interval : any) {
@@ -102,14 +113,17 @@ export class Game {
         }
     }
 
-    private newTurn(io : SocketServer) {
+    private startPause(io : SocketServer) {
         //Choose next Player
+        this._pauseEnded = false;
         this._turnEnded = false;
+
         this._currentPlayer = this._roundPlayerSet.iterator().next();
         if (this._currentPlayer == null) { //TODO Right?
             return;
         }
         this._currentGameState = GameState.PAUSED;
+        this._pauseStartDate = Date.now();
 
         //Drawing player is not allowed to write in the "normal" chat
         this._currentPlayer.player.guessedCorrectly = true;
@@ -120,40 +134,33 @@ export class Game {
         console.log(this._wordSuggestions)
 
         //Send word suggestions, current player and pause duration to clients
-        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(Date.now(), this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord))
-        io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(Date.now(), this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, this._wordSuggestions, this._currentWord))
+        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._pauseStartDate, this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord))
+        io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(this._pauseStartDate, this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, this._wordSuggestions, this._currentWord))
 
         //SERVER-CHAT_MESSAGE
         io.in(this._lobbyId).emit("chat",CommHandler.packData(CommHandler.DRAW_MESSAGE, this._currentPlayer.name, CommHandler.SERVER_MSG_COLOR, true) )
 
-        //TODO Change pause implementation
-        setTimeout(() => {
-            //Already started by "chooseWord" in gameHandler
-            //TODO what if new Turn is started in commHandler cause all players guessed the word, before this Timer has run out? -> Bug
-            if(this._currentGameState == GameState.RUNNING) {
-                return;
-            }
+    }
 
-            //If word not choosen after wait durtation, select randomly
-            if (this._currentWord === ""){
-                let randomIndex =  Math.floor(Math.random() * this.WORD_SUGGESTION_NUM);
-                this._currentWord = this._wordSuggestions[randomIndex];
-                console.log("not choosen, random sugg: " + this.currentWord)
-            }
+    private startTurn(io: SocketServer) {
+        if (this._currentWord === ""){
+            let randomIndex =  Math.floor(Math.random() * this.WORD_SUGGESTION_NUM);
+            this._currentWord = this._wordSuggestions[randomIndex];
+            console.log("not choosen, random sugg: " + this.currentWord)
+        }
 
-            if (this._currentPlayer == undefined){
-                return;
-            }
+        if (this._currentPlayer == undefined){
+            return;
+        }
 
-            this._currentPlayer.player.isDrawing = true;
-            this._turnStartDate = Date.now();
-            this._currentGameState = GameState.RUNNING;
+        this._currentPlayer.player.isDrawing = true;
+        this._turnStartDate = Date.now();
+        this._currentGameState = GameState.RUNNING;
 
-            this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER"))
-            io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord));
+        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER"))
+        io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord));
 
-            console.log("Next Player choosen: " + this.currentPlayer?.name)
-        },(this.PAUSE_DURATION_SEC * 1000))
+        console.log("Next Player choosen: " + this.currentPlayer?.name)
     }
 
     private endTurn(io : SocketServer, interval : any) {
@@ -175,7 +182,7 @@ export class Game {
         if(this._roundPlayerSet.size() == 0){
             this.endRound(io, interval)
         } else {
-            this.newTurn(io);
+            this.startPause(io);
         }
     }
 
@@ -366,6 +373,13 @@ export class Game {
         this._pointMultiplicator = value;
     }
 
+    get pauseEnded(): boolean {
+        return this._pauseEnded;
+    }
+
+    set pauseEnded(value: boolean) {
+        this._pauseEnded = value;
+    }
 }
 
 export enum GameState{
