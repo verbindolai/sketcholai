@@ -56,6 +56,11 @@ export class Connection {
         return this._player;
     }
 
+
+    set player(value: Player) {
+        this._player = value;
+    }
+
     get isInRoom(): boolean {
         return this._isInRoom;
     }

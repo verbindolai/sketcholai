@@ -1,7 +1,5 @@
 export class Player {
-    set points(value: number) {
-        this._points = value;
-    }
+
     private _isDrawing: boolean;
     private _points: number;
     private _guessedCorrectly : boolean;
@@ -30,7 +28,9 @@ export class Player {
     get points(): number {
         return this._points;
     }
-
+    set points(value: number) {
+        this._points = value;
+    }
 
     get guessedCorrectly(): boolean {
         return this._guessedCorrectly;

@@ -14,7 +14,7 @@ export class Game {
 
     private _points: HashMap<string, number> = new HashMap<string, number>();
     private _winner: Connection | undefined = undefined;
-    private _roundPlayerSet : HashSet<Connection> = new HashSet<Connection>();
+    private _roundPlayerArr : Connection[] = [];
     private readonly _connections: LinkedList<Connection>;
     private readonly _words: string[] = [];
     private _wordSuggestions: string[] = [];
@@ -97,12 +97,9 @@ export class Game {
     }
 
     private startRound(io : SocketServer){
-        this._roundPlayerSet = new HashSet<Connection>();
-
         console.log("----- Starting round----- Adding players to set")
         for(let player of this._connections){
-            this._roundPlayerSet.add(player);
-
+            this._roundPlayerArr.push(player);
         }
         this.startPause(io);
     }
@@ -121,12 +118,11 @@ export class Game {
     }
 
     private startPause(io : SocketServer) {
-
         console.log("----- Starting Pause -----")
         this._pauseEnded = false;
         this._turnEnded = false;
 
-        this._currentPlayer = this._roundPlayerSet.iterator().next();
+        this._currentPlayer = this._roundPlayerArr[0];
         if (this._currentPlayer == null) { //TODO Right?
             return;
         }
@@ -175,26 +171,18 @@ export class Game {
                 return;
             }
             console.log("----- Turn Ended -----")
-            console.log(this._roundPlayerSet.contains(this._currentPlayer));
-            console.log(this._roundPlayerSet.size())
-            console.log(this._currentPlayer);
-
-            for (let conn of this._roundPlayerSet){
-                console.log(conn)
-            }
             this._currentWord = "";
             this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
             this._currentPlayer.player.isDrawing = false;
-            console.log(this._roundPlayerSet.remove(this._currentPlayer))
+            this._roundPlayerArr.splice(0,1)
 
-            console.log(this._roundPlayerSet.size())
 
             for (let conn of this._connections){
                 conn.player.guessedCorrectly = false;
             }
         }
         //End of one Round
-        if(this._roundPlayerSet.size() == 0){
+        if(this._roundPlayerArr.length == 0){
             this.endRound(io, interval)
         } else {
             this.startPause(io);
@@ -310,8 +298,8 @@ export class Game {
         return this._winner;
     }
 
-    get roundPlayerSet(): HashSet<Connection> {
-        return this._roundPlayerSet;
+    get roundPlayerArr(): Connection[] {
+        return this._roundPlayerArr;
     }
 
     get connections(): LinkedList<Connection> {
@@ -395,6 +383,32 @@ export class Game {
     set pauseEnded(value: boolean) {
         this._pauseEnded = value;
     }
+
+    get wordSuggestions(): string[] {
+        return this._wordSuggestions;
+    }
+
+    get pauseStartDate(): number {
+        return this._pauseStartDate;
+    }
+
+
+    set roundPlayerArr(value: Connection[]) {
+        this._roundPlayerArr = value;
+    }
+
+    set wordSuggestions(value: string[]) {
+        this._wordSuggestions = value;
+    }
+
+    set roundCount(value: number) {
+        this._roundCount = value;
+    }
+
+    set pauseStartDate(value: number) {
+        this._pauseStartDate = value;
+    }
+
 }
 
 export enum GameState{
