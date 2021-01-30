@@ -80,6 +80,7 @@ export class Game {
                     }
 
                     if(this._pauseEnded) {
+                        console.log("----- Pause Ended -----")
                         this.startTurn(io)
                     }
                     break;
@@ -97,29 +98,31 @@ export class Game {
 
     private startRound(io : SocketServer){
         this._roundPlayerSet = new HashSet<Connection>();
-        console.log("All Player in this Round: ")
+
+        console.log("----- Starting round----- Adding players to set")
         for(let player of this._connections){
             this._roundPlayerSet.add(player);
-            console.log(player.name)
+
         }
         this.startPause(io);
     }
 
     private endRound(io : SocketServer, interval : any) {
         this._roundCount++;
-        console.log(`-----Ended round ${this.roundCount} -----`)
+        console.log(`----- Ended round ${this.roundCount} -----`)
         //End of the Game
         if (this._roundCount >= this._maxRoundCount){
-            console.log(`-----Ending Game -----`)
+            console.log(`----- Ending Game -----`)
             this.endGame(io, interval);
         } else { //New Round
             this.startRound(io);
-            console.log("Round is over, next Round starting...")
+
         }
     }
 
     private startPause(io : SocketServer) {
-        //Choose next Player
+
+        console.log("----- Starting Pause -----")
         this._pauseEnded = false;
         this._turnEnded = false;
 
@@ -135,8 +138,6 @@ export class Game {
 
         //Get word suggestions
         this._wordSuggestions = this.randomWordArr(this.WORD_SUGGESTION_NUM);
-        console.log("word Suggs: ")
-        console.log(this._wordSuggestions)
 
         //Send word suggestions, current player and pause duration to clients
         this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._pauseStartDate, this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord))
@@ -148,10 +149,12 @@ export class Game {
     }
 
     private startTurn(io: SocketServer) {
+        console.log("----- Start Turn -----")
+
+
         if (this._currentWord === ""){
             let randomIndex =  Math.floor(Math.random() * this.WORD_SUGGESTION_NUM);
             this._currentWord = this._wordSuggestions[randomIndex];
-            console.log("not choosen, random sugg: " + this.currentWord)
         }
 
         if (this._currentPlayer == undefined){
@@ -164,8 +167,6 @@ export class Game {
 
         this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER"))
         io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord));
-
-        console.log("Next Player choosen: " + this.currentPlayer?.name)
     }
 
     private endTurn(io : SocketServer, interval : any) {
@@ -173,15 +174,24 @@ export class Game {
             if (this._currentPlayer == null) { //TODO Right?
                 return;
             }
+            console.log("----- Turn Ended -----")
+            console.log(this._roundPlayerSet.contains(this._currentPlayer));
+            console.log(this._roundPlayerSet.size())
+            console.log(this._currentPlayer);
+
+            for (let conn of this._roundPlayerSet){
+                console.log(conn)
+            }
             this._currentWord = "";
             this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
             this._currentPlayer.player.isDrawing = false;
-            this._roundPlayerSet.remove(this._currentPlayer);
+            console.log(this._roundPlayerSet.remove(this._currentPlayer))
+
+            console.log(this._roundPlayerSet.size())
 
             for (let conn of this._connections){
                 conn.player.guessedCorrectly = false;
             }
-            console.log("Turn is over...")
         }
         //End of one Round
         if(this._roundPlayerSet.size() == 0){
