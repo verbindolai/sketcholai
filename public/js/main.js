@@ -144,6 +144,8 @@ function initGameStateListening() {
         const gameState = data[4];
         const words = data[5];
         const currentWord = data[6];
+        const winner = data[7];
+        const allConns = data[8];
 
         if (socket.id === id && gameState === 1){
            displayWordSuggestions(words)
@@ -154,7 +156,7 @@ function initGameStateListening() {
         }
 
         if (gameState == 2){
-            displayEndScreen();
+            displayEndScreen(winner, allConns);
         } else {
             currentPlayerID = id;
             currentPlayerName = name;
@@ -172,14 +174,44 @@ function initGameStateListening() {
     });
 }
 
-function displayEndScreen(){
+function displayEndScreen(winner, allConns){
     canvas.classList.add("hidden");
     WORD_HTML_CONTAINER.classList.remove("hidden")
     WORD_HTML_CONTAINER.children[0].classList.add("flex","flex-col","justify-center","items-center");
-    let text = document.createElement("div")
-    text.classList.add("text-5xl","text-black" ,"font-bold");
-    text.appendChild(document.createTextNode("Game Ended!"))
-    WORD_HTML_CONTAINER.children[0].appendChild(text)
+
+    let winText = document.createElement("div")
+    winText.classList.add("text-9xl","text-blue-700" ,"font-bold" ,"mb-4");
+    winText.appendChild(document.createTextNode("Game Ended!"))
+
+    let pointsContDiv = document.createElement("div")
+    pointsContDiv.classList.add("flex","flex-col","justify-center","items-center")
+
+    for (let conn of allConns){
+        let player = conn._player;
+
+        let playerPointsDiv = document.createElement("div")
+        playerPointsDiv.classList.add("flex", "flex-row","justify-center","items-center")
+
+        let playerDiv = document.createElement("div");
+        playerDiv.appendChild(document.createTextNode(conn._name + ":"))
+        playerDiv.classList.add("text-2xl", "font-bold", "mr-2")
+        playerDiv.style.color = conn._chatColor;
+
+        let pointsDiv = document.createElement("div");
+        pointsDiv.appendChild(document.createTextNode(player._points.toString()))
+        pointsDiv.classList.add("text-2xl", "font-bold", "mr-2")
+        pointsDiv.style.color = "#24d146";
+
+        playerPointsDiv.append(playerDiv, pointsDiv);
+        pointsContDiv.append(playerPointsDiv)
+    }
+    let playAgainButton = document.createElement('button');
+    playAgainButton.classList.add("p-4","bg-yellow-500","text-yellow-700", "rounded" , "mr-2" ,"mt-4")
+    playAgainButton.appendChild(document.createTextNode("Play again!"))
+    playAgainButton.onclick = () => {
+
+    }
+    WORD_HTML_CONTAINER.children[0].append(winText, pointsContDiv, playAgainButton)
 }
 
 function displayWordSuggestions(words) {

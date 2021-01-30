@@ -2,6 +2,7 @@ import {HashMap, HashSet, LinkedList} from "typescriptcollectionsframework";
 import {Connection} from "./connection";
 import {Server as SocketServer} from "socket.io";
 import {CommHandler} from "./handlers/commHandler";
+import {RoomHandler} from "./handlers/roomHandler";
 
 export class Game {
 
@@ -171,6 +172,11 @@ export class Game {
                 return;
             }
             console.log("----- Turn Ended -----")
+
+            //send server msg what the current word was
+            //io.in(this._lobbyId).emit("chat",CommHandler.packData("The word was " + this._currentWord, this._currentPlayer.name, CommHandler.SERVER_MSG_COLOR, true) )
+
+
             this._currentWord = "";
             this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
             this._currentPlayer.player.isDrawing = false;
@@ -194,17 +200,21 @@ export class Game {
         if (interval != null){
             clearInterval(interval);
         }
-        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER") )
+        let winner;
+        let points = 0;
+        for (let conn of this._connections){
+            if (conn.player.points >= points){
+                points = conn.player.points;
+                winner = conn;
+            }
+        }
+        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER", winner, RoomHandler.listToArr(this._connections)) )
 
         //TODO send the Gamestate to Clients
         this.resetGame()
         console.log("Ending game...")
         return;
     }
-
-
-
-
 
     private resetGame() {
         this._roundCount = 0;
@@ -214,9 +224,13 @@ export class Game {
         this._currentPlayer = undefined;
         this._currentGameState = GameState.NOT_STARTED;
         this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
-
+        this._hasStarted = false;
+        this._turnStartDate = 0;
+        this._pauseStartDate = 0;
+        this._turnEnded = false;
+        this._pauseEnded = false;
+        this._roundCount = 0;
     }
-
 
     private randomWordArr(num : number) : string[] {
         let words = [];
@@ -240,38 +254,6 @@ export class Game {
             this._pointMultiplicator--;
         }
     }
-    // getRandomWord(): Promise<string> {
-    //     const fetch = require('node-fetch');
-    //     let url = "https://random-word-api.herokuapp.com/word?number=1";
-    //     let settings = {method: "Get"}
-    //     return fetch(url, settings).then((res: any) => res.json()).then((data: any) => {
-    //         return data[0];
-    //     });
-    //     //CODE WILL BE EXECUTED RIGHT AWAY
-    // }
-    //
-    // //Basicly same with more syntactic-sugar.
-    // async getRandomWord2(): Promise<string> {
-    //     const fetch = require('node-fetch');
-    //     let url = "https://random-word-api.herokuapp.com/word?number=1";
-    //     let settings = {method: "Get"}
-    //     const data = await fetch(url, settings);
-    //     const word = await data.json();
-    //     //CODE WILL WAIT
-    //     return word[0];
-    // }
-    //
-    // trans(text: string) {
-    //     let translate = require('node-google-translate-skidz');
-    //     translate({
-    //         text: text,
-    //         source: 'en',
-    //         target: 'de'
-    //     }, function (result: any) {
-    //         console.log(result);
-    //     });
-    // }
-
 
     get turnEnded(): boolean {
         return this._turnEnded;

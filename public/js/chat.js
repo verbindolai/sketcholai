@@ -46,7 +46,6 @@ function initChatListening(){
             chatMsgCont.style.color = color;
         }
         chatListNode.append(chatMsgCont);
-        console.log(chatListNode)
         document.querySelector("#chatList").appendChild(chatListNode);
         scrollDown();
     })
