@@ -54,6 +54,9 @@ export class Game {
 
     //Called on game initialization
     public init(io : SocketServer) {
+
+        console.log(`----- Starting game with ${this.maxRoundCount} rounds.`)
+
         this.startGameLoop(io)
         this._hasStarted = true;
     }
@@ -89,7 +92,7 @@ export class Game {
                     break;
                 }
             }
-        }, 500)
+        }, 250)
     }
 
     private startRound(io : SocketServer){
@@ -104,8 +107,10 @@ export class Game {
 
     private endRound(io : SocketServer, interval : any) {
         this._roundCount++;
+        console.log(`-----Ended round ${this.roundCount} -----`)
         //End of the Game
         if (this._roundCount >= this._maxRoundCount){
+            console.log(`-----Ending Game -----`)
             this.endGame(io, interval);
         } else { //New Round
             this.startRound(io);

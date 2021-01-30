@@ -103,6 +103,7 @@ export class GameHandler implements HandlerInterface {
             }
 
             if(socket.id === game.currentPlayer?.socketID){
+                game.currentWord = word;
                 game.pauseEnded = true;
             }
         })
