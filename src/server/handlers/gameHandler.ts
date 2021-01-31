@@ -4,7 +4,7 @@ import {HashMap} from "typescriptcollectionsframework";
 import {GameLobby} from "../gameLobby";
 import {CommHandler} from "./commHandler";
 import {Game, GameState} from "../game";
-import {Connection} from "../connection";
+import {Connection, ReadyStatus} from "../connection";
 import {RoomHandler} from "./roomHandler";
 import * as fs from "fs";
 const signale = require('signale');
@@ -73,7 +73,6 @@ export class GameHandler implements HandlerInterface {
             let data = JSON.parse(clientPackage);
             let drawTime = data[0];
             let roundNum = data[1];
-            //TODO check rdy status
             let connection = allConnections.get(socket.id);
             let lobby = lobbyHashMap.get(connection.lobbyID);
 
@@ -94,7 +93,11 @@ export class GameHandler implements HandlerInterface {
             let connection = allConnections.get(socket.id);
             let lobby = lobbyHashMap.get(connection.lobbyID);
 
-            if (lobby.game?.hasStarted === false){
+            //When the Game is started by a player before the page of the drawing player is fully loaded it can lead to errors.
+            //In the current implementation the creator of the game is always the first player drawing, so we would need for him to load the page.
+            //This is not a final solving for the problem, cause when the creator disconnects or takes very long to connect the game doenst start at all or very delayed.
+            //TODO fix pls
+            if (lobby.game?.hasStarted === false && connection.socketID === lobby.game.CREATOR_ID){
                 signale.success("Start game request accepted.")
                 lobby.game.init(io);
             }
@@ -127,9 +130,21 @@ export class GameHandler implements HandlerInterface {
             }
             if(socket.id === game.currentPlayer?.socketID){
                 game.currentWord = word;
+                game.currentPlaceholder =  game.currentWord.replace(/[^- ]/g, "_");
                 game.wordPauseEnded = true;
             }
         })
+
+        //Implemented but currently not used.
+        socket.on("isReady", (clientPackage)=>{
+            let data = JSON.parse(clientPackage);
+            let connection = allConnections.get(socket.id);
+
+            if (data === 200 && connection.readyStatus === ReadyStatus.NOT_READY){
+                connection.readyStatus = ReadyStatus.READY;
+            }
+        })
+
     }
 }
 

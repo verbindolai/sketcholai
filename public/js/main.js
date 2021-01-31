@@ -118,6 +118,8 @@ function init(lobbyID, currentPlayerName) {
     initCanvasListening();
     initChatListening();
     initDrawListening();
+
+    socket.emit("isReady", 200);
 }
 
 function initUpdatePlayerListListening() {
@@ -236,13 +238,7 @@ function displayPointScreen(allConns){
         playerPointsDiv.append(playerDiv, pointsDiv);
         pointsContDiv.append(playerPointsDiv)
     }
-    let playAgainButton = document.createElement('button');
-    playAgainButton.classList.add("p-4","bg-yellow-500","text-yellow-700", "rounded" , "mr-2" ,"mt-4")
-    playAgainButton.appendChild(document.createTextNode("Play again!"))
-    playAgainButton.onclick = () => {
-
-    }
-    WORD_HTML_CONTAINER.children[0].append(winText, pointsContDiv, playAgainButton)
+    WORD_HTML_CONTAINER.children[0].append(winText, pointsContDiv)
 }
 
 function displayWordSuggestions(words) {
@@ -292,8 +288,8 @@ function updateTime() {
 }
 
 function pageLoad(name, onload) {
-    const xhr = new XMLHttpRequest()
 
+    const xhr = new XMLHttpRequest()
     xhr.onload = function () {
         if (this.status === 200) {
             const container = document.body;

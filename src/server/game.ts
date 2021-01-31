@@ -1,5 +1,5 @@
-import {HashMap, HashSet, LinkedList} from "typescriptcollectionsframework";
-import {Connection} from "./connection";
+import {LinkedList} from "typescriptcollectionsframework";
+import {Connection, ReadyStatus} from "./connection";
 import {Server as SocketServer} from "socket.io";
 import {CommHandler} from "./handlers/commHandler";
 import {RoomHandler} from "./handlers/roomHandler";
@@ -11,11 +11,12 @@ export class Game {
 
 
     public readonly WORD_PAUSE_DURATION_SEC : number = 15;
-    public readonly ROUND_PAUSE_DURATION_SEC : number = 5;
+    public readonly ROUND_PAUSE_DURATION_SEC : number = 7;
     public readonly WORD_SUGGESTION_NUM : number = 3;
     public readonly START_POINT_MULTIPLICATOR : number = 4;
     public readonly GUESS_RIGHT_POINTS : number = 100;
     public readonly DRAW_POINTS : number = 120;
+    public readonly HINT_TIME : number = 10;
 
     private readonly _CREATOR_ID : string;
     private readonly _GAME_ID : string;
@@ -33,6 +34,8 @@ export class Game {
     private readonly _roundDurationSec: number;
 
     private readonly _maxRoundCount : number;
+
+    private _currentPlaceholder : string = "";
     private _currentWord : string = "";
 
     private _currentPlayer : Connection | undefined;
@@ -40,9 +43,11 @@ export class Game {
     private _pointMultiplicator : number;
 
 
-    private _turnStartDate: number;
-    private _wordPauseStartDate: number;
-    private _roundPauseStartDate: number;
+    private _turnStartDate: number = 0;
+    private _wordPauseStartDate: number = 0;
+    private _roundPauseStartDate: number = 0;
+    private _hintDate : number = 0;
+
     private _turnEnded : boolean;
     private _wordPauseEnded : boolean;
     private _roundPauseEnded : boolean;
@@ -59,9 +64,6 @@ export class Game {
         this._words = words;
         this._currentGameState = GameState.NOT_STARTED;
         this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
-        this._turnStartDate = 0;
-        this._wordPauseStartDate = 0;
-        this._roundPauseStartDate = 0;
         this._turnEnded = false;
         this._wordPauseEnded = false;
         this._roundPauseEnded = false;
@@ -76,6 +78,17 @@ export class Game {
         this._hasStarted = true;
     }
 
+    private giveHint(io : SocketServer) {
+        let randomIndex = Math.floor(Math.random() * this._currentWord.length);
+        if ((this._currentPlaceholder.match(/_/g) || []).length > 3){
+            this._currentPlaceholder = this.replaceAt(this._currentPlaceholder, randomIndex, this._currentWord.charAt(randomIndex));
+            if (this._currentPlayer != undefined){
+                signale.info("Giving hint.")
+                this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder))
+            }
+        }
+    }
+
     private startGameLoop(io : SocketServer){
         this.startRound(io);
         let interval = setInterval(() => {
@@ -87,6 +100,11 @@ export class Game {
                     if (this._turnEnded){
                        this.endTurn(io, interval);
                     }
+                    if(((Date.now() - this._hintDate) / 1000 > this.HINT_TIME)){
+                        this._hintDate = Date.now();
+                        this.giveHint(io);
+                    }
+
                     break;
                 }
                 case GameState.WORD_PAUSE: {
@@ -112,10 +130,7 @@ export class Game {
                         } else {
                             this.startRound(io);
                         }
-
-
                     }
-
                     break;
                 }
 
@@ -148,7 +163,7 @@ export class Game {
         signale.start("Starting round pause.")
         this._currentGameState = GameState.ROUND_PAUSE;
         this._roundPauseStartDate = Date.now();
-        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(this._roundPauseStartDate, this.ROUND_PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER", undefined, RoomHandler.listToArr(this._connections)) )
+        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(this._roundPauseStartDate, this.ROUND_PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder, undefined, RoomHandler.listToArr(this._connections)) )
     }
 
     private startWordPause(io : SocketServer) {
@@ -175,7 +190,7 @@ export class Game {
         io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(this._wordPauseStartDate, this.WORD_PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, this._wordSuggestions, this._currentWord))
 
         //SERVER-CHAT_MESSAGE
-        io.in(this._lobbyId).emit("chat",CommHandler.packData(CommHandler.DRAW_MESSAGE, this._currentPlayer.name, CommHandler.SERVER_MSG_COLOR, true) )
+        //io.in(this._lobbyId).emit("chat",CommHandler.packData(CommHandler.DRAW_MESSAGE, this._currentPlayer.name, CommHandler.SERVER_MSG_COLOR, true) )
 
     }
 
@@ -186,6 +201,7 @@ export class Game {
             signale.info("No word choosen! Word gets picked random.")
             let randomIndex =  Math.floor(Math.random() * this.WORD_SUGGESTION_NUM);
             this._currentWord = this._wordSuggestions[randomIndex];
+            this._currentPlaceholder = this._currentWord.replace(/[^- ]/g, "_")
         }
 
         if (this._currentPlayer == undefined){
@@ -193,11 +209,12 @@ export class Game {
             return;
         }
 
+        this._hintDate = Date.now();
         this._currentPlayer.player.isDrawing = true;
         this._turnStartDate = Date.now();
         this._currentGameState = GameState.RUNNING;
 
-        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER"))
+        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder))
         io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord));
     }
 
@@ -213,6 +230,7 @@ export class Game {
 
 
             this._currentWord = "";
+            this._currentPlaceholder = "";
             this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
             this._currentPlayer.player.isDrawing = false;
             this._roundPlayerArr.splice(0,1)
@@ -245,7 +263,7 @@ export class Game {
             }
         }
         this.resetGame()
-        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(0, 0, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER", winner, RoomHandler.listToArr(this._connections), this.CREATOR_ID))
+        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(0, 0, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder, winner, RoomHandler.listToArr(this._connections), this.CREATOR_ID))
         this._currentGameState = GameState.NOT_STARTED;
     }
 
@@ -266,6 +284,7 @@ export class Game {
 
         for (let conn of this._connections){
             conn.player.reset();
+            conn.readyStatus = ReadyStatus.NOT_READY;
         }
     }
 
@@ -292,7 +311,9 @@ export class Game {
         }
     }
 
-
+    public replaceAt(string : string, index : number, replace : string) {
+        return string.substring(0, index) + replace + string.substring(index + 1);
+    }
 
     get turnEnded(): boolean {
         return this._turnEnded;
@@ -313,6 +334,15 @@ export class Game {
 
     get winner(): Connection | undefined {
         return this._winner;
+    }
+
+
+    get currentPlaceholder(): string {
+        return this._currentPlaceholder;
+    }
+
+    set currentPlaceholder(value: string) {
+        this._currentPlaceholder = value;
     }
 
     get roundPlayerArr(): Connection[] {

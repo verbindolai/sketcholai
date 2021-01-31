@@ -14,6 +14,7 @@ export class Connection {
     private _player: Player;
     private _receivedCanvas : boolean;
     private _chatColor : string;
+    private _readyStatus : number;
 
     //TODO Make Role Enum and Role Arr
     private _istHost : boolean;
@@ -30,6 +31,7 @@ export class Connection {
         this._chatColor = this.randomColor();
         this._istHost = false;
         this._isWizzard = false;
+        this._readyStatus = ReadyStatus.NOT_READY;
     }
 
 
@@ -108,6 +110,15 @@ export class Connection {
         return this._isWizzard;
     }
 
+
+    get readyStatus(): number {
+        return this._readyStatus;
+    }
+
+    set readyStatus(value: number) {
+        this._readyStatus = value;
+    }
+
     public toString(): string {
         return "name: " + this._name + "\n" +
             "id: " + this._socketID + "\n" +
@@ -131,4 +142,8 @@ export class Connection {
         }
         return 0;
     }
+}
+export enum ReadyStatus {
+    READY,
+    NOT_READY,
 }
