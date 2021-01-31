@@ -1,3 +1,5 @@
+import {Connection} from "./connection";
+
 export class Player {
 
     private _isDrawing: boolean;
@@ -14,6 +16,7 @@ export class Player {
     public reset() {
         this._isDrawing = false;
         this._points = 0;
+        this._guessedCorrectly = false;
     }
 
 

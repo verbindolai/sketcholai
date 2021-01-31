@@ -146,42 +146,73 @@ function initGameStateListening() {
         const currentWord = data[6];
         const winner = data[7];
         const allConns = data[8];
+        const creatorID = data[9];
+
+
+        //SWITCH CASE!!!
+
+        if(gameState === 2){
+            stopAllListeners()
+            if(socket.id === creatorID){
+                pageLoad("lobby" ,() => {
+                    roomInit()
+                    // let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
+                    // lobbyRoomCode.innerHTML = lobbyID;
+                    connections_html_container = document.querySelector("#connectedPlayerList");
+                    listDisplayer(allConns, connections_html_container);
+                })
+                return;
+            }
+
+            pageLoad("lobby2" ,() => {
+                roomInit()
+                // let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
+                // lobbyRoomCode.innerHTML = lobbyID;
+                connections_html_container = document.querySelector("#connectedPlayerList");
+                listDisplayer(allConns, connections_html_container);
+            })
+            return ;
+        }
 
         if (socket.id === id && gameState === 1){
            displayWordSuggestions(words)
-        } else if(socket.id === id && gameState === 0) {
+        }else if (gameState === 1){
+            WORD_HTML_CONTAINER.children[0].innerHTML ="";
+            WORD_HTML_CONTAINER.classList.add("hidden")
+            canvas.classList.remove("hidden");
+        }
+        else if(socket.id === id && gameState === 0) {
             WORD_HTML_CONTAINER.children[0].innerHTML ="";
             WORD_HTML_CONTAINER.classList.add("hidden")
             canvas.classList.remove("hidden");
         }
 
-        if (gameState == 2){
-            displayEndScreen(winner, allConns);
-        } else {
-            currentPlayerID = id;
-            currentPlayerName = name;
-            if(CURRENT_PLAYER_NAME_HTML_CONTAINER != undefined){
-                CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = currentPlayerName;
-
-            }
-            CURRENT_WORD_HTML_CONTAINER.innerHTML = currentWord;
-            displayTime(drawDuration, unixTime);
+        if (gameState === 4){
+            displayPointScreen(allConns);
         }
+        currentPlayerID = id;
+        currentPlayerName = name;
+        if(CURRENT_PLAYER_NAME_HTML_CONTAINER != undefined){
+            CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = currentPlayerName;
 
+        }
+        CURRENT_WORD_HTML_CONTAINER.innerHTML = currentWord;
+        displayTime(drawDuration, unixTime);
 
         context.fillStyle = '#ffffff';
         context.fillRect(0, 0, canvas.width, canvas.height);
     });
 }
 
-function displayEndScreen(winner, allConns){
+function displayPointScreen(allConns){
+    WORD_HTML_CONTAINER.children[0].innerHTML = "";
     canvas.classList.add("hidden");
     WORD_HTML_CONTAINER.classList.remove("hidden")
     WORD_HTML_CONTAINER.children[0].classList.add("flex","flex-col","justify-center","items-center");
 
     let winText = document.createElement("div")
-    winText.classList.add("text-9xl","text-blue-700" ,"font-bold" ,"mb-4");
-    winText.appendChild(document.createTextNode("Game Ended!"))
+    winText.classList.add("text-8xl","text-blue-700" ,"font-bold" ,"mb-4");
+    winText.appendChild(document.createTextNode("Round Ended!"))
 
     let pointsContDiv = document.createElement("div")
     pointsContDiv.classList.add("flex","flex-col","justify-center","items-center")
@@ -215,6 +246,8 @@ function displayEndScreen(winner, allConns){
 }
 
 function displayWordSuggestions(words) {
+    WORD_HTML_CONTAINER.children[0].innerHTML = "";
+    WORD_HTML_CONTAINER.children[0].classList.remove("flex-col")
     canvas.classList.add("hidden");
     WORD_HTML_CONTAINER.classList.remove("hidden")
     for (let i = 0; i < 3; i++){
@@ -287,4 +320,18 @@ function randomString(length) {
 
 function packData(...data){
     return JSON.stringify(data)
+}
+
+function stopAllListeners(){
+    socket.off('chat');
+    socket.off('updateGameState');
+    socket.off('updatePlayerList');
+    socket.off(drawEvent);
+    socket.off(fillEvent);
+    socket.off('loadGame');
+    socket.off('roomCreated');
+    socket.off('roomJoined');
+    socket.off('gameJoined')
+    socket.off('sendCanvasStatus')
+    socket.off('getCanvasStatus')
 }

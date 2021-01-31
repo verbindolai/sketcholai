@@ -4,6 +4,7 @@ import {GameLobby} from "../gameLobby";
 import {Connection} from "../connection";
 import {HashMap, LinkedList} from "typescriptcollectionsframework";
 import {CommHandler} from "./commHandler";
+import {Player} from "../player";
 const signale = require('signale');
 
 export class RoomHandler implements HandlerInterface {
@@ -139,12 +140,12 @@ export class RoomHandler implements HandlerInterface {
     }
 
 
-    public static listToArr <T> (list : LinkedList<T>)  : T[] {
-        let result : T[] = [];
+    public static listToArr  (list : LinkedList<Connection>)  : Connection[] {
+        let result : Connection[] = [];
         for (let obj of list) {
             result.push(obj)
         }
-        return result;
+        return result.sort(Connection.compare);
     }
 
     init(): void {}

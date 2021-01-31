@@ -73,7 +73,6 @@ socket.on("roomJoined", (serverPackage) =>{
         roomInit();
         let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
         lobbyRoomCode.innerHTML = lobbyID;
-
         listDisplayer(connections, connections_html_container);
 
     });
@@ -145,11 +144,6 @@ function listDisplayer(list, node) {
         node.appendChild(li);
     }
 
-
-}
-
-
-function sendReady () {
 
 }
 

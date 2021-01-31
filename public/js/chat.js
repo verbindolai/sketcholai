@@ -5,6 +5,7 @@ let CHAT_HTML_TEXTAREA;
  * creates a new chat message in chat on channel "chat"
  */
 function initChatListening(){
+
     socket.on('chat', (serverPackage) => {
         let data = JSON.parse(serverPackage);
         let message = data[0];

@@ -82,7 +82,7 @@ export class GameHandler implements HandlerInterface {
                 return;
             }
 
-            lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections, this._words);
+            lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections, this._words, connection.socketID);
             CommHandler.deployMessage(socket, CommHandler.packData(lobby.lobbyID, lobby.game.currentPlayer?.name, RoomHandler.listToArr(lobby.connections)), "loadGame", true, lobby, connection, io);
         })
 
@@ -95,6 +95,7 @@ export class GameHandler implements HandlerInterface {
             let lobby = lobbyHashMap.get(connection.lobbyID);
 
             if (lobby.game?.hasStarted === false){
+                signale.success("Start game request accepted.")
                 lobby.game.init(io);
             }
 
@@ -126,7 +127,7 @@ export class GameHandler implements HandlerInterface {
             }
             if(socket.id === game.currentPlayer?.socketID){
                 game.currentWord = word;
-                game.pauseEnded = true;
+                game.wordPauseEnded = true;
             }
         })
     }

@@ -52,7 +52,9 @@ export class CommHandler implements HandlerInterface {
                 //First guesses give more points
                 game.decrementPointMult();
 
-                //TODO
+                //SERVER-MESSAGE
+                if (!CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.RIGHT_GUESS_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
+                }
 
                 let allGuessedRight = true;
                 for (let conn of game.connections){
@@ -66,10 +68,6 @@ export class CommHandler implements HandlerInterface {
                    game.turnEnded = true;
                 }
 
-                //SERVER-MESSAGE
-                if (!CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.RIGHT_GUESS_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
-
-                }
                 //Update list so the points will be displayed
                 CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", true, lobby, connection, io);
 
@@ -100,7 +98,7 @@ export class CommHandler implements HandlerInterface {
             return false;
         }
         if (include) {
-            io.to(lobby.lobbyID).emit(event, data)
+            io.in(lobby.lobbyID).emit(event, data)
         } else {
             socket.broadcast.to(lobby.lobbyID).emit(event, data)
         }

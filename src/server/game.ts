@@ -3,19 +3,23 @@ import {Connection} from "./connection";
 import {Server as SocketServer} from "socket.io";
 import {CommHandler} from "./handlers/commHandler";
 import {RoomHandler} from "./handlers/roomHandler";
+import {GameLobby} from "./gameLobby";
 const signale = require('signale');
 
 
 export class Game {
 
 
-    public readonly PAUSE_DURATION_SEC : number = 15;
+    public readonly WORD_PAUSE_DURATION_SEC : number = 15;
+    public readonly ROUND_PAUSE_DURATION_SEC : number = 5;
     public readonly WORD_SUGGESTION_NUM : number = 3;
     public readonly START_POINT_MULTIPLICATOR : number = 4;
     public readonly GUESS_RIGHT_POINTS : number = 100;
     public readonly DRAW_POINTS : number = 120;
 
-    private _points: HashMap<string, number> = new HashMap<string, number>();
+    private readonly _CREATOR_ID : string;
+    private readonly _GAME_ID : string;
+
     private _winner: Connection | undefined = undefined;
     private _roundPlayerArr : Connection[] = [];
     private readonly _connections: LinkedList<Connection>;
@@ -27,23 +31,27 @@ export class Game {
 
     private _roundCount : number;
     private readonly _roundDurationSec: number;
-    private _turnStartDate: number;
-    private _pauseStartDate: number;
+
     private readonly _maxRoundCount : number;
     private _currentWord : string = "";
 
     private _currentPlayer : Connection | undefined;
     private _currentGameState : GameState;
     private _pointMultiplicator : number;
+
+
+    private _turnStartDate: number;
+    private _wordPauseStartDate: number;
+    private _roundPauseStartDate: number;
     private _turnEnded : boolean;
-    private _pauseEnded : boolean;
+    private _wordPauseEnded : boolean;
+    private _roundPauseEnded : boolean;
 
 
-    constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, players: LinkedList<Connection>, words : string[]) {
+    constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, players: LinkedList<Connection>, words : string[], creatorID : string) {
+        this._GAME_ID = GameLobby.randomString();
         this._connections = players;
         this._roundDurationSec = roundDuration;
-        this._turnStartDate = 0;
-        this._pauseStartDate = 0;
         this._lobbyId = lobbyId;
         this._roundCount = 0;
         this._maxRoundCount = maxRoundCount;
@@ -51,10 +59,14 @@ export class Game {
         this._words = words;
         this._currentGameState = GameState.NOT_STARTED;
         this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
+        this._turnStartDate = 0;
+        this._wordPauseStartDate = 0;
+        this._roundPauseStartDate = 0;
         this._turnEnded = false;
-        this._pauseEnded = false;
-
-        signale.success(`New game created for ${lobbyId} with ${maxRoundCount} rounds and ${roundDuration} seconds draw time.`)
+        this._wordPauseEnded = false;
+        this._roundPauseEnded = false;
+        this._CREATOR_ID = creatorID;
+        signale.success(`New game created for ${lobbyId} with ${maxRoundCount} rounds and ${roundDuration} seconds draw time. Game-ID: ${this._GAME_ID}`)
     }
 
     //Called on game initialization
@@ -77,17 +89,36 @@ export class Game {
                     }
                     break;
                 }
-                case GameState.PAUSED: {
-                    if (((Date.now() - this._pauseStartDate) / 1000 > this.PAUSE_DURATION_SEC)){
-                        this._pauseEnded = true;
+                case GameState.WORD_PAUSE: {
+                    if (((Date.now() - this._wordPauseStartDate) / 1000 > this.WORD_PAUSE_DURATION_SEC)){
+                        this._wordPauseEnded = true;
                     }
 
-                    if(this._pauseEnded) {
-                        signale.complete("Pause ended.")
+                    if(this._wordPauseEnded) {
+                        signale.complete("Word choosing pause ended.")
                         this.startTurn(io)
                     }
                     break;
                 }
+                case GameState.ROUND_PAUSE: {
+                    if (((Date.now() - this._roundPauseStartDate) / 1000 > this.ROUND_PAUSE_DURATION_SEC)){
+                        this._roundPauseEnded = true;
+                    }
+                    if (this._roundPauseEnded){
+                        //New Round
+                        signale.complete("Round pause ended.")
+                        if (this._roundCount >= this._maxRoundCount){
+                            this.endGame(io, interval);
+                        } else {
+                            this.startRound(io);
+                        }
+
+
+                    }
+
+                    break;
+                }
+
                 case GameState.ENDED: {
                     break;
                 }
@@ -101,27 +132,28 @@ export class Game {
 
     private startRound(io : SocketServer){
         signale.start("Starting round")
+        this._roundPauseEnded = false;
+
         for(let player of this._connections){
             this._roundPlayerArr.push(player);
         }
-        this.startPause(io);
+        this.startWordPause(io);
     }
 
     private endRound(io : SocketServer, interval : any) {
         this._roundCount++;
         signale.complete("Round ended.")
         //End of the Game
-        if (this._roundCount >= this._maxRoundCount){
-            this.endGame(io, interval);
-        } else { //New Round
-            this.startRound(io);
-
-        }
+        //Start round pause
+        signale.start("Starting round pause.")
+        this._currentGameState = GameState.ROUND_PAUSE;
+        this._roundPauseStartDate = Date.now();
+        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(this._roundPauseStartDate, this.ROUND_PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER", undefined, RoomHandler.listToArr(this._connections)) )
     }
 
-    private startPause(io : SocketServer) {
+    private startWordPause(io : SocketServer) {
         signale.start("Starting choose word Pause.")
-        this._pauseEnded = false;
+        this._wordPauseEnded = false;
         this._turnEnded = false;
 
         this._currentPlayer = this._roundPlayerArr[0];
@@ -129,8 +161,8 @@ export class Game {
             signale.warn("No current Player!")
             return;
         }
-        this._currentGameState = GameState.PAUSED;
-        this._pauseStartDate = Date.now();
+        this._currentGameState = GameState.WORD_PAUSE;
+        this._wordPauseStartDate = Date.now();
 
         //Drawing player is not allowed to write in the "normal" chat
         this._currentPlayer.player.guessedCorrectly = true;
@@ -139,8 +171,8 @@ export class Game {
         this._wordSuggestions = this.randomWordArr(this.WORD_SUGGESTION_NUM);
 
         //Send word suggestions, current player and pause duration to clients
-        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._pauseStartDate, this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord))
-        io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(this._pauseStartDate, this.PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, this._wordSuggestions, this._currentWord))
+        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._wordPauseStartDate, this.WORD_PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord))
+        io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(this._wordPauseStartDate, this.WORD_PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, this._wordSuggestions, this._currentWord))
 
         //SERVER-CHAT_MESSAGE
         io.in(this._lobbyId).emit("chat",CommHandler.packData(CommHandler.DRAW_MESSAGE, this._currentPlayer.name, CommHandler.SERVER_MSG_COLOR, true) )
@@ -151,7 +183,7 @@ export class Game {
         signale.start("Starting new Turn.")
 
         if (this._currentWord === ""){
-            signale.warn("No word choosen! Word gets picked random.")
+            signale.info("No word choosen! Word gets picked random.")
             let randomIndex =  Math.floor(Math.random() * this.WORD_SUGGESTION_NUM);
             this._currentWord = this._wordSuggestions[randomIndex];
         }
@@ -194,7 +226,7 @@ export class Game {
         if(this._roundPlayerArr.length == 0){
             this.endRound(io, interval)
         } else {
-            this.startPause(io);
+            this.startWordPause(io);
         }
     }
 
@@ -212,11 +244,9 @@ export class Game {
                 winner = conn;
             }
         }
-        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER", winner, RoomHandler.listToArr(this._connections)) )
-
-        //TODO send the Gamestate to Clients
         this.resetGame()
-        return;
+        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(0, 0, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], "PLACEHOLDER", winner, RoomHandler.listToArr(this._connections), this.CREATOR_ID))
+        this._currentGameState = GameState.NOT_STARTED;
     }
 
     private resetGame() {
@@ -226,14 +256,17 @@ export class Game {
             this.currentPlayer.player.isDrawing = false;
         }
         this._currentPlayer = undefined;
-        this._currentGameState = GameState.NOT_STARTED;
         this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
         this._hasStarted = false;
         this._turnStartDate = 0;
-        this._pauseStartDate = 0;
+        this._wordPauseStartDate = 0;
         this._turnEnded = false;
-        this._pauseEnded = false;
+        this._wordPauseEnded = false;
         this._roundCount = 0;
+
+        for (let conn of this._connections){
+            conn.player.reset();
+        }
     }
 
     private randomWordArr(num : number) : string[] {
@@ -259,6 +292,8 @@ export class Game {
         }
     }
 
+
+
     get turnEnded(): boolean {
         return this._turnEnded;
     }
@@ -275,10 +310,6 @@ export class Game {
         return this._currentPlayer;
     }
 
-
-    get points(): HashMap<string, number> {
-        return this._points;
-    }
 
     get winner(): Connection | undefined {
         return this._winner;
@@ -308,10 +339,6 @@ export class Game {
         return this._turnStartDate;
     }
 
-
-    set points(value: HashMap<string, number>) {
-        this._points = value;
-    }
 
     set winner(value: Connection | undefined) {
         this._winner = value;
@@ -362,22 +389,25 @@ export class Game {
         this._pointMultiplicator = value;
     }
 
-    get pauseEnded(): boolean {
-        return this._pauseEnded;
+    get wordPauseEnded(): boolean {
+        return this._wordPauseEnded;
     }
 
-    set pauseEnded(value: boolean) {
-        this._pauseEnded = value;
+    set wordPauseEnded(value: boolean) {
+        this._wordPauseEnded = value;
     }
 
     get wordSuggestions(): string[] {
         return this._wordSuggestions;
     }
 
-    get pauseStartDate(): number {
-        return this._pauseStartDate;
+    get wordPauseStartDate(): number {
+        return this._wordPauseStartDate;
     }
 
+    get CREATOR_ID(): string {
+        return this._CREATOR_ID;
+    }
 
     set roundPlayerArr(value: Connection[]) {
         this._roundPlayerArr = value;
@@ -391,17 +421,18 @@ export class Game {
         this._roundCount = value;
     }
 
-    set pauseStartDate(value: number) {
-        this._pauseStartDate = value;
+    set wordPauseStartDate(value: number) {
+        this._wordPauseStartDate = value;
     }
 
 }
 
 export enum GameState{
     RUNNING,
-    PAUSED,
+    WORD_PAUSE,
     ENDED,
     NOT_STARTED,
+    ROUND_PAUSE,
 }
 
 

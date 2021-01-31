@@ -120,4 +120,15 @@ export class Connection {
         let color = "#" + Math.floor(Math.random()*16777215).toString(16);
         return color;
     }
+
+    //adjusted to descending order of arr.sort
+    public static compare (a : Connection, b : Connection) : number {
+        if (a.player.points > b.player.points) {
+            return -1;
+        }
+        if (a.player.points < b.player.points){
+            return 1;
+        }
+        return 0;
+    }
 }
