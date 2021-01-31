@@ -1,7 +1,7 @@
 import {LinkedList} from "typescriptcollectionsframework";
 import {Connection, ReadyStatus} from "./connection";
 import {Server as SocketServer} from "socket.io";
-import {CommHandler} from "./handlers/commHandler";
+import {ChatType, CommHandler, MessageType} from "./handlers/commHandler";
 import {RoomHandler} from "./handlers/roomHandler";
 import {GameLobby} from "./gameLobby";
 const signale = require('signale');
@@ -226,7 +226,7 @@ export class Game {
             }
             signale.complete("Turn ended.")
             //send server msg what the current word was
-            //io.in(this._lobbyId).emit("chat",CommHandler.packData("The word was " + this._currentWord, this._currentPlayer.name, CommHandler.SERVER_MSG_COLOR, true) )
+            io.in(this._lobbyId).emit("chat",CommHandler.packData("The word was " + this._currentWord, undefined, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT) )
 
 
             this._currentWord = "";

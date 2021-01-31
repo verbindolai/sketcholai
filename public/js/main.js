@@ -158,8 +158,8 @@ function initGameStateListening() {
             if(socket.id === creatorID){
                 pageLoad("lobby" ,() => {
                     roomInit()
-                    // let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
-                    // lobbyRoomCode.innerHTML = lobbyID;
+                    let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
+                    lobbyRoomCode.innerHTML = allConns[0]._lobbyID;
                     connections_html_container = document.querySelector("#connectedPlayerList");
                     listDisplayer(allConns, connections_html_container);
                 })
@@ -168,8 +168,8 @@ function initGameStateListening() {
 
             pageLoad("lobby2" ,() => {
                 roomInit()
-                // let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
-                // lobbyRoomCode.innerHTML = lobbyID;
+                let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
+                lobbyRoomCode.innerHTML = allConns[0]._lobbyID;
                 connections_html_container = document.querySelector("#connectedPlayerList");
                 listDisplayer(allConns, connections_html_container);
             })
@@ -177,11 +177,15 @@ function initGameStateListening() {
         }
 
         if (socket.id === id && gameState === 1){
+            context.fillStyle = '#ffffff';
+            context.fillRect(0, 0, canvas.width, canvas.height);
            displayWordSuggestions(words)
         }else if (gameState === 1){
             WORD_HTML_CONTAINER.children[0].innerHTML ="";
             WORD_HTML_CONTAINER.classList.add("hidden")
             canvas.classList.remove("hidden");
+            context.fillStyle = '#ffffff';
+            context.fillRect(0, 0, canvas.width, canvas.height);
         }
         else if(socket.id === id && gameState === 0) {
             WORD_HTML_CONTAINER.children[0].innerHTML ="";
@@ -201,8 +205,7 @@ function initGameStateListening() {
         CURRENT_WORD_HTML_CONTAINER.innerHTML = currentWord;
         displayTime(drawDuration, unixTime);
 
-        context.fillStyle = '#ffffff';
-        context.fillRect(0, 0, canvas.width, canvas.height);
+
     });
 }
 

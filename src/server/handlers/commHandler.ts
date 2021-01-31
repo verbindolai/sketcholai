@@ -114,12 +114,12 @@ export class CommHandler implements HandlerInterface {
 
 }
 
-enum MessageType{
+export enum MessageType{
     SERVER_MESSAGE,
     CLIENT_MESSAGE,
 }
 
-enum ChatType{
+export enum ChatType{
     NORMAL_CHAT,
     GUESSED_CHAT,
 }

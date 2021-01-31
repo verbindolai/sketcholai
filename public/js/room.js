@@ -92,7 +92,6 @@ socket.on("gameJoined", (serverPackage) => {
         displayTime(drawDuration, unixTime);
         initUpdatePlayerListListening();
         listDisplayer(allConnections, connections_html_container);
-        //TODO
     });
 });
 

@@ -74,12 +74,17 @@ export class GameHandler implements HandlerInterface {
             let drawTime = data[0];
             let roundNum = data[1];
             let connection = allConnections.get(socket.id);
-            let lobby = lobbyHashMap.get(connection.lobbyID);
-
-            if (connection == undefined || lobby == undefined){
-                console.error("Cant init Game, connection or lobby is undefined.")
+            if (connection == undefined){
+                signale.error("Cant init Game, connection is undefined.")
                 return;
             }
+
+            let lobby = lobbyHashMap.get(connection.lobbyID);
+            if (lobby == undefined){
+                signale.error("Cant init Game, lobby is undefined.")
+                return;
+            }
+
 
             lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections, this._words, connection.socketID);
             CommHandler.deployMessage(socket, CommHandler.packData(lobby.lobbyID, lobby.game.currentPlayer?.name, RoomHandler.listToArr(lobby.connections)), "loadGame", true, lobby, connection, io);
@@ -137,11 +142,24 @@ export class GameHandler implements HandlerInterface {
 
         //Implemented but currently not used.
         socket.on("isReady", (clientPackage)=>{
+            signale.info("Heard isReady event.")
             let data = JSON.parse(clientPackage);
             let connection = allConnections.get(socket.id);
+            if (connection == undefined){
+                return;
+            }
+            let lobby = lobbyHashMap.get(connection.lobbyID);
+            if (lobby == undefined){
+                return;
+            }
+            let game = lobby.game;
 
             if (data === 200 && connection.readyStatus === ReadyStatus.NOT_READY){
                 connection.readyStatus = ReadyStatus.READY;
+            }
+            if (game != undefined && game.hasStarted){
+                signale.info("Updating gameState for Socket. (from isReady)")
+                socket.emit("updateGameState", CommHandler.packData(game.turnStartDate, game.roundDurationSec, game.currentPlayer?.name, game.currentPlayer?.socketID, game.currentGameState,[],game.currentPlaceholder))
             }
         })
 

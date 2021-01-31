@@ -3,7 +3,7 @@ import {Server as SocketServer, Socket} from "socket.io";
 import {GameLobby} from "../gameLobby";
 import {Connection} from "../connection";
 import {HashMap, LinkedList} from "typescriptcollectionsframework";
-import {CommHandler} from "./commHandler";
+import {ChatType, CommHandler, MessageType} from "./commHandler";
 import {Player} from "../player";
 const signale = require('signale');
 
@@ -64,7 +64,7 @@ export class RoomHandler implements HandlerInterface {
                 CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
             } else {
                 socket.emit("gameJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, game.turnStartDate, game.roundDurationSec, game.currentPlayer?.socketID));
-                CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.JOIN_MESSAGE, connection.name, CommHandler.SERVER_MSG_COLOR, true), 'chat', true, lobby, connection, io)
+                CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.JOIN_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
                 CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
                 if(this.lateJoinedPlayers.containsKey(lobbyID)){
                     this.lateJoinedPlayers.get(lobbyID).add(socket.id);
