@@ -8,8 +8,7 @@ import {HandlerInterface} from "./handlers/handlerInterface";
 import * as fs from "fs";
 import {Connection} from "./connection";
 import {CommHandler} from "./handlers/commHandler";
-import {GameHandler} from "./handlers/gameHandler";
-
+const signale = require('signale');
 /**
  * Represents the Sketch-Server
  * @author Christopher Peters, Mathusan Kannathasan, Nikolai Wieczorek
@@ -48,7 +47,7 @@ export class SketchServer {
      */
 
     private startServer(port: number): HTTPServer {
-        console.log(`Listening on Port ${port} ...`)
+        signale.watch(`Listening on Port ${port} ...`)
         return this.app.listen(port);
 
     }
@@ -81,7 +80,7 @@ export class SketchServer {
         this.app.get('/', function (req: Request, res: Response) {
             res.sendFile(process.cwd() + "/public/html/index.html", (err) => {
                 if (err) {
-                    console.error("There was an error sending the Response-File.")
+                    signale.error(new Error("There was an error sending the Response-File."))
                 }
             });
         });
@@ -103,19 +102,19 @@ export class SketchServer {
             let connection = this.allConnections.get(socket.id);
 
             if (connection == undefined) {
-                console.error("Disconnect Error, Player is undefined.")
+                signale.warn("Cant disconnect, connection not found.")
                 return;
             }
 
             let lobby = this.lobbies.get(connection.lobbyID);
 
             if (lobby == undefined) {
-                console.error("Disconnect Error, lobby is undefined.")
+                signale.warn("Cant disconnect, lobby not found.")
                 return;
             }
 
             if (!RoomHandler.removePlayer(socket, this.lobbies, this.allConnections)) {
-                console.error("Couldn't delete Lobby.")
+                signale.error(new Error("Couldn't remove player!"))
             }
             CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, this.io);
         })
@@ -125,6 +124,7 @@ export class SketchServer {
         for (const handler of this.handlerObjects) {
             handler.handle(socket, this.lobbies, this.io, this.allConnections)
         }
+        signale.success("Started handlers.")
     }
 
 
@@ -133,7 +133,9 @@ export class SketchServer {
         for (const file of handlerFiles) {
             const fileWithoutTS = file.replace(".ts", "");
             let handler = require(`./handlers/${fileWithoutTS}`);
-            this.handlerObjects.add(handler.handler)
+            if(!this.handlerObjects.add(handler.handler)){
+                signale.error(new Error("Handler couldn't be loaded!"))
+            }
         }
     }
 

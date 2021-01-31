@@ -7,6 +7,7 @@ import {Game, GameState} from "../game";
 import {Connection} from "../connection";
 import {RoomHandler} from "./roomHandler";
 import * as fs from "fs";
+const signale = require('signale');
 
 export class GameHandler implements HandlerInterface {
 
@@ -30,8 +31,10 @@ export class GameHandler implements HandlerInterface {
     // }
 
     handle(socket: Socket, lobbyHashMap: HashMap<string, GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>) {
+        signale.watch("Start listening for Game events...")
 
         socket.on(this.drawEvent, (clientPackage) => {
+
             const data = JSON.parse(clientPackage);
             const drawInfoPackage = data[0];
             const connection = allConnections.get(socket.id);
@@ -48,6 +51,7 @@ export class GameHandler implements HandlerInterface {
         })
 
         socket.on(this.fillEvent, (clientPackage) => {
+
             const data = JSON.parse(clientPackage);
             const drawInfoPackage = data[0];
             const connection = allConnections.get(socket.id);
@@ -64,6 +68,8 @@ export class GameHandler implements HandlerInterface {
         })
 
         socket.on('initGame', (clientPackage) => {
+            signale.info("Heard initGame event.")
+
             let data = JSON.parse(clientPackage);
             let drawTime = data[0];
             let roundNum = data[1];
@@ -81,6 +87,8 @@ export class GameHandler implements HandlerInterface {
         })
 
         socket.on('startGame', (clientPackage) => {
+            signale.info("Heard startGame event.")
+
             let data = JSON.parse(clientPackage);
             let statusCode = data[0];
             let connection = allConnections.get(socket.id);
@@ -93,15 +101,29 @@ export class GameHandler implements HandlerInterface {
         });
 
         socket.on("chooseWord",(clientPackage) => {
+            signale.info("Heard chooseWord event.")
+
             let data = JSON.parse(clientPackage);
             let connection = allConnections.get(socket.id);
-            let lobby = lobbyHashMap.get(connection.lobbyID);
-            let word = data[0];
-            let game = lobby.game;
-            if (game == undefined || game.hasStarted === false) {
+
+            if(connection == undefined){
+                signale.warn("Cant choose word, connection is undefined.")
                 return;
             }
 
+            let lobby = lobbyHashMap.get(connection.lobbyID);
+
+            if(lobby == undefined){
+                signale.warn("Cant choose word, lobby is undefined.")
+                return;
+            }
+            let word = data[0];
+            let game = lobby.game;
+
+            if (game == undefined || game.hasStarted === false) {
+                signale.warn("Cant choose word, game is undefined or has not started yet.")
+                return;
+            }
             if(socket.id === game.currentPlayer?.socketID){
                 game.currentWord = word;
                 game.pauseEnded = true;

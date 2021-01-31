@@ -29,6 +29,7 @@
     "node-fetch": "^2.6.1",
     "node-google-translate-skidz": "^1.1.2",
     "postcss": "^8.2.4",
+    "signale": "^1.4.0",
     "socket.io": "^3.0.4",
     "socket.io-client": "^3.0.4",
     "tailwindcss": "^2.0.2",

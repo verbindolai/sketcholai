@@ -3,6 +3,8 @@ import {Connection} from "./connection";
 import {Server as SocketServer} from "socket.io";
 import {CommHandler} from "./handlers/commHandler";
 import {RoomHandler} from "./handlers/roomHandler";
+const signale = require('signale');
+
 
 export class Game {
 
@@ -51,13 +53,13 @@ export class Game {
         this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
         this._turnEnded = false;
         this._pauseEnded = false;
+
+        signale.success(`New game created for ${lobbyId} with ${maxRoundCount} rounds and ${roundDuration} seconds draw time.`)
     }
 
     //Called on game initialization
     public init(io : SocketServer) {
-
-        console.log(`----- Starting game with ${this.maxRoundCount} rounds.`)
-
+        signale.start(`Starting game with ${this.maxRoundCount} rounds.`)
         this.startGameLoop(io)
         this._hasStarted = true;
     }
@@ -81,7 +83,7 @@ export class Game {
                     }
 
                     if(this._pauseEnded) {
-                        console.log("----- Pause Ended -----")
+                        signale.complete("Pause ended.")
                         this.startTurn(io)
                     }
                     break;
@@ -98,7 +100,7 @@ export class Game {
     }
 
     private startRound(io : SocketServer){
-        console.log("----- Starting round----- Adding players to set")
+        signale.start("Starting round")
         for(let player of this._connections){
             this._roundPlayerArr.push(player);
         }
@@ -107,10 +109,9 @@ export class Game {
 
     private endRound(io : SocketServer, interval : any) {
         this._roundCount++;
-        console.log(`----- Ended round ${this.roundCount} -----`)
+        signale.complete("Round ended.")
         //End of the Game
         if (this._roundCount >= this._maxRoundCount){
-            console.log(`----- Ending Game -----`)
             this.endGame(io, interval);
         } else { //New Round
             this.startRound(io);
@@ -119,12 +120,13 @@ export class Game {
     }
 
     private startPause(io : SocketServer) {
-        console.log("----- Starting Pause -----")
+        signale.start("Starting choose word Pause.")
         this._pauseEnded = false;
         this._turnEnded = false;
 
         this._currentPlayer = this._roundPlayerArr[0];
-        if (this._currentPlayer == null) { //TODO Right?
+        if (this._currentPlayer == undefined) { //TODO Right?
+            signale.warn("No current Player!")
             return;
         }
         this._currentGameState = GameState.PAUSED;
@@ -146,15 +148,16 @@ export class Game {
     }
 
     private startTurn(io: SocketServer) {
-        console.log("----- Start Turn -----")
-
+        signale.start("Starting new Turn.")
 
         if (this._currentWord === ""){
+            signale.warn("No word choosen! Word gets picked random.")
             let randomIndex =  Math.floor(Math.random() * this.WORD_SUGGESTION_NUM);
             this._currentWord = this._wordSuggestions[randomIndex];
         }
 
         if (this._currentPlayer == undefined){
+            signale.warn("No current Player!")
             return;
         }
 
@@ -168,11 +171,11 @@ export class Game {
 
     private endTurn(io : SocketServer, interval : any) {
         if (this._currentPlayer != undefined){
-            if (this._currentPlayer == null) { //TODO Right?
+            if (this._currentPlayer == undefined) { //TODO Right?
+                signale.warn("No current Player!")
                 return;
             }
-            console.log("----- Turn Ended -----")
-
+            signale.complete("Turn ended.")
             //send server msg what the current word was
             //io.in(this._lobbyId).emit("chat",CommHandler.packData("The word was " + this._currentWord, this._currentPlayer.name, CommHandler.SERVER_MSG_COLOR, true) )
 
@@ -196,6 +199,7 @@ export class Game {
     }
 
     private endGame(io : SocketServer, interval : any){
+        signale.complete("Ending Game.")
         this._currentGameState = GameState.ENDED;
         if (interval != null){
             clearInterval(interval);
@@ -212,11 +216,11 @@ export class Game {
 
         //TODO send the Gamestate to Clients
         this.resetGame()
-        console.log("Ending game...")
         return;
     }
 
     private resetGame() {
+        signale.info("Resetting game.")
         this._roundCount = 0;
         if (this.currentPlayer != undefined) {
             this.currentPlayer.player.isDrawing = false;

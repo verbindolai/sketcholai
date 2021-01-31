@@ -4,14 +4,17 @@ import {GameLobby} from "../gameLobby";
 import {Connection} from "../connection";
 import {HashMap, LinkedList} from "typescriptcollectionsframework";
 import {CommHandler} from "./commHandler";
-
+const signale = require('signale');
 
 export class RoomHandler implements HandlerInterface {
     private lateJoinedPlayers : HashMap<string, LinkedList<string>> = new HashMap<string, LinkedList<string>>();
 
     handle(socket: Socket, lobbyHashMap: HashMap<string, GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>): void {
+        signale.watch("Start listening for Room events...")
 
         socket.on('createRoom', (clientPackage) => {
+            signale.info("Heard createRoom event.")
+
             let data = JSON.parse(clientPackage)
             let name = data[0];
             let lobby = new GameLobby(GameLobby.randomString(), 20);
@@ -33,6 +36,8 @@ export class RoomHandler implements HandlerInterface {
 
 
         socket.on('joinGame', (clientPackage) => {
+            signale.info("Heard joinGame event.")
+
             let data = JSON.parse(clientPackage);
             let name = data[0];
             let lobbyID = data[1];
@@ -74,6 +79,8 @@ export class RoomHandler implements HandlerInterface {
         });
 
         socket.on("receiveCanvas", (clientPackage) =>{
+            signale.info("Heard receiveCanvas event.")
+
             if(this.lateJoinedPlayers.isEmpty()){
                 return;
             }
@@ -95,15 +102,6 @@ export class RoomHandler implements HandlerInterface {
 
     }
 
-
-    public static getLobbyByID(lobbyID: string, lobbys: LinkedList<GameLobby>): GameLobby | undefined {
-        for (let lobby of lobbys) {
-            if (lobby.lobbyID == lobbyID) {
-                return lobby;
-            }
-        }
-        return undefined;
-    }
 
     /**
      * Removes the Player belonging to the Socket from its GameLobby and
