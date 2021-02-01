@@ -14,7 +14,7 @@ export class CommHandler implements HandlerInterface {
     public static readonly DRAW_MESSAGE = " is now drawing!"
 
     handle(socket: Socket, lobbyHashMap: HashMap<string, GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>) {
-        signale.watch("Start listening for Communication events...")
+        signale.watch(`Start listening for Communication events for Socket ${socket.id} ...`)
 
         socket.on('chat', (clientPackage) => {
 

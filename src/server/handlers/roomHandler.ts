@@ -11,7 +11,7 @@ export class RoomHandler implements HandlerInterface {
     public static lateJoinedPlayers : HashMap<string, LinkedList<string>> = new HashMap<string, LinkedList<string>>();
 
     handle(socket: Socket, lobbyHashMap: HashMap<string, GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>): void {
-        signale.watch("Start listening for Room events...")
+        signale.watch(`Start listening for Room events for Socket ${socket.id} ...`)
 
         socket.on('createRoom', (clientPackage) => {
             signale.info("Heard createRoom event.")
@@ -31,7 +31,7 @@ export class RoomHandler implements HandlerInterface {
             lobby.addConnection(creator);
             lobbyHashMap.put(lobby.lobbyID, lobby)
             socket.join(lobby.lobbyID);
-
+            signale.success("Created lobby.")
             socket.emit("roomCreated", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID));
         });
 
@@ -62,12 +62,13 @@ export class RoomHandler implements HandlerInterface {
             if (game?.hasStarted === false || game == undefined){
                 socket.emit("roomJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID))
                 CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
+                signale.success("Joined not started lobby.")
+
             } else {
                 socket.emit("gameJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, game.turnStartDate, game.roundDurationSec, game.currentPlayer?.socketID));
                 CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.JOIN_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
                 CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
-
-
+                signale.success("Joining already started lobby.")
             }
         });
 

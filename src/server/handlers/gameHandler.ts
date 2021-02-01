@@ -31,7 +31,7 @@ export class GameHandler implements HandlerInterface {
     // }
 
     handle(socket: Socket, lobbyHashMap: HashMap<string, GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>) {
-        signale.watch("Start listening for Game events...")
+        signale.watch(`Start listening for Game events for Socket ${socket.id} ...`)
 
         socket.on(this.drawEvent, (clientPackage) => {
 

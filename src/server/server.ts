@@ -92,6 +92,7 @@ export class SketchServer {
      */
     private websocketHandler(): void {
         this.io.on('connection', (socket: Socket) => {
+            signale.info("Heard connection event.")
             this.startHandlers(socket);
             this.handleDisconnect(socket);
         })
@@ -99,6 +100,7 @@ export class SketchServer {
 
     private handleDisconnect(socket: Socket): void {
         socket.on('disconnect', (data) => {
+            signale.info("Heard disconnect event.")
             let connection = this.allConnections.get(socket.id);
 
             if (connection == undefined) {
