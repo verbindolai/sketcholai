@@ -67,6 +67,24 @@ export class GameHandler implements HandlerInterface {
             }
         })
 
+        socket.on("clearCanvas", (clientPackage)=> {
+            const data = JSON.parse(clientPackage);
+
+            const connection = allConnections.get(socket.id);
+            if(connection == undefined) {
+                return;
+            }
+            const lobby = lobbyHashMap.get(connection.lobbyID)
+            if(lobby == undefined) {
+                return;
+            }
+            if (connection.player.isDrawing && !CommHandler.deployMessage(socket, CommHandler.packData(data), "clearCanvas", false, lobby, connection, io)) {
+                console.error("Couldn't deploy fill Message.")
+            }
+        })
+
+
+
         socket.on('initGame', (clientPackage) => {
             signale.info("Heard initGame event.")
 
@@ -106,7 +124,11 @@ export class GameHandler implements HandlerInterface {
             //Idea: Maybe make first player who sends the start game request (lets call him Dave) the current player so that always the fist who starts the game, is the first one drawing.
             //Cause the currentPlayer gets chosen after the games init method, you could archive that by removing Dave from the list and add him at the first place of the connection list.
 
-            if (lobby.game?.hasStarted === false && connection.socketID === lobby.game.CREATOR_ID){
+
+
+            if (lobby.game?.hasStarted === false){
+                lobby.connections.remove(connection)
+                lobby.connections.addFirst(connection)
                 signale.success("Start game request accepted.")
                 lobby.game.init(io);
             }

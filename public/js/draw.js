@@ -12,7 +12,7 @@ const COL_BLUE = '#1c37b5';
 const COL_YELLOW = '#e3cf19';
 const ERASER = COL_WHITE;
 
-const LINE_WIDTH_NORMAL = 4;
+const LINE_WIDTH_NORMAL = 12;
 let lineWidth = LINE_WIDTH_NORMAL;
 
 
@@ -47,6 +47,8 @@ class Pen extends Tool {
     }
 
     drawLine(x0, y0, x1, y1, color) {
+
+
         this.context.beginPath();
         this.context.moveTo(x0, y0);
         //Extend line
@@ -109,6 +111,18 @@ class Eraser extends Pen {
     }
 }
 
+class ClearCanvas extends Tool {
+    constructor(context, canvas) {
+        super(context,canvas);
+    }
+    clear(send){
+        this.context.fillStyle = '#ffffff';
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        if(send) {
+            socket.emit("clearCanvas", packData("clear"));
+        }
+    }
+}
 class DrawInfoPackage {
     x;
     y;
@@ -149,6 +163,14 @@ function initDrawListening(){
         const message = data[0];
         let bucket = new Bucket(context, canvas);
         bucket.fill(message.x, message.y, FILL_BUCKET_TOLERANCE, message.color, false)
+    })
+
+    socket.on("clearCanvas", (serverPackage) => {
+        const data = JSON.parse(serverPackage);
+        const message = data[0];
+
+        let clear = new ClearCanvas(context, canvas);
+        clear.clear(false);
     })
 }
 
@@ -193,4 +215,10 @@ function drawDataURIOnCanvas(strDataURI) {
     img.setAttribute("src", strDataURI);
 }
 
-
+function clearButton(){
+    if(socket.id !== currentPlayerID){
+        return;
+    }
+    let clearer = new ClearCanvas(context,canvas);
+    clearer.clear(true);
+}

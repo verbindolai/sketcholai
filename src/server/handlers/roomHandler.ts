@@ -4,7 +4,6 @@ import {GameLobby} from "../gameLobby";
 import {Connection} from "../connection";
 import {HashMap, LinkedList} from "typescriptcollectionsframework";
 import {ChatType, CommHandler, MessageType} from "./commHandler";
-import {Player} from "../player";
 const signale = require('signale');
 
 export class RoomHandler implements HandlerInterface {
@@ -88,7 +87,6 @@ export class RoomHandler implements HandlerInterface {
                 return;
             }
 
-            //This implementation doesnt check if the late joined players already fully loaded the page and can listen to on the "getCanvasStatus"-Event.
             for(let socketId of lobbyLateJoinedPlayers){
                 io.to(socketId).emit("getCanvasStatus", CommHandler.packData(imgData));
             }

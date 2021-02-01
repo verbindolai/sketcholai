@@ -19,6 +19,7 @@ const fillEvent = 'fill';
 function init(lobbyID, currentPlayerName) {
     canvas = document.querySelector('#canvas')
     context = canvas.getContext('2d');
+    context.lineCap = 'round';
     site = document.querySelector('html');
     timerCont = document.querySelector("#timerContainer");
     CURRENT_PLAYER_NAME_HTML_CONTAINER = document.querySelector("#nameContainer");
