@@ -1,6 +1,6 @@
 import {HandlerInterface} from "./handlerInterface";
 import {Server as SocketServer, Socket} from "socket.io";
-import {HashMap} from "typescriptcollectionsframework";
+import {HashMap, LinkedList} from "typescriptcollectionsframework";
 import {GameLobby} from "../gameLobby";
 import {CommHandler} from "./commHandler";
 import {Game, GameState} from "../game";
@@ -148,6 +148,7 @@ export class GameHandler implements HandlerInterface {
             if (connection == undefined){
                 return;
             }
+            let lobbyID = connection.lobbyID;
             let lobby = lobbyHashMap.get(connection.lobbyID);
             if (lobby == undefined){
                 return;
@@ -158,8 +159,18 @@ export class GameHandler implements HandlerInterface {
                 connection.readyStatus = ReadyStatus.READY;
             }
             if (game != undefined && game.hasStarted){
-                signale.info("Updating gameState for Socket. (from isReady)")
+                signale.info("Connection gave Ready-Notification when Game has already started. Updating gameState for Socket, and requesting canvas.")
                 socket.emit("updateGameState", CommHandler.packData(game.turnStartDate, game.roundDurationSec, game.currentPlayer?.name, game.currentPlayer?.socketID, game.currentGameState,[],game.currentPlaceholder))
+
+                if(RoomHandler.lateJoinedPlayers.containsKey(lobbyID)){
+                    RoomHandler.lateJoinedPlayers.get(lobbyID).add(socket.id);
+                }else{
+                    const newSocketIdList = new LinkedList<string>();
+                    newSocketIdList.add(socket.id);
+                    RoomHandler.lateJoinedPlayers.put(lobbyID,newSocketIdList);
+                }
+                //Sends a request to all other connections in the room to send the current canvas status to the server
+                CommHandler.deployMessage(socket,null, "sendCanvasStatus", false, lobby, connection, io);
             }
         })
 

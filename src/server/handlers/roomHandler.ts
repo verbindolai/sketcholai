@@ -8,7 +8,7 @@ import {Player} from "../player";
 const signale = require('signale');
 
 export class RoomHandler implements HandlerInterface {
-    private lateJoinedPlayers : HashMap<string, LinkedList<string>> = new HashMap<string, LinkedList<string>>();
+    public static lateJoinedPlayers : HashMap<string, LinkedList<string>> = new HashMap<string, LinkedList<string>>();
 
     handle(socket: Socket, lobbyHashMap: HashMap<string, GameLobby>, io: SocketServer, allConnections : HashMap<string, Connection>): void {
         signale.watch("Start listening for Room events...")
@@ -66,15 +66,7 @@ export class RoomHandler implements HandlerInterface {
                 socket.emit("gameJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, game.turnStartDate, game.roundDurationSec, game.currentPlayer?.socketID));
                 CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.JOIN_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
                 CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
-                if(this.lateJoinedPlayers.containsKey(lobbyID)){
-                    this.lateJoinedPlayers.get(lobbyID).add(socket.id);
-                }else{
-                    const newSocketIdList = new LinkedList<string>();
-                    newSocketIdList.add(socket.id);
-                    this.lateJoinedPlayers.put(lobbyID,newSocketIdList);
-                }
-                //Sends a request to all other connections in the room to send the current canvas status to the server
-                CommHandler.deployMessage(socket,null, "sendCanvasStatus", false, lobby, connection, io);
+
 
             }
         });
@@ -82,23 +74,24 @@ export class RoomHandler implements HandlerInterface {
         socket.on("receiveCanvas", (clientPackage) =>{
             signale.info("Heard receiveCanvas event.")
 
-            if(this.lateJoinedPlayers.isEmpty()){
+            if(RoomHandler.lateJoinedPlayers.isEmpty()){
                 return;
             }
             let data = JSON.parse(clientPackage);
             let imgData = data[0];
             let connection = allConnections.get(socket.id);
-            let lobbyLateJoinedPlayers = this.lateJoinedPlayers.get(connection.lobbyID);
+            let lobbyLateJoinedPlayers = RoomHandler.lateJoinedPlayers.get(connection.lobbyID);
 
             if(lobbyLateJoinedPlayers == undefined){
                 console.error("no late joiners for this lobby!");
                 return;
             }
 
+            //This implementation doesnt check if the late joined players already fully loaded the page and can listen to on the "getCanvasStatus"-Event.
             for(let socketId of lobbyLateJoinedPlayers){
                 io.to(socketId).emit("getCanvasStatus", CommHandler.packData(imgData));
             }
-            this.lateJoinedPlayers.remove(connection.lobbyID);
+            RoomHandler.lateJoinedPlayers.remove(connection.lobbyID);
         })
 
     }
@@ -111,28 +104,39 @@ export class RoomHandler implements HandlerInterface {
      * @private
      * @returns
      */
-    public static removePlayer(socket: Socket, lobbyHashMap: HashMap<string,GameLobby>, allPlayers : HashMap<string, Connection>): boolean {
-        let player = allPlayers.get(socket.id);
-        let lobby = lobbyHashMap.get(player.lobbyID);
-
-        if (player == undefined || lobby == undefined) {
+    public static removeConnection(socket: Socket, lobbyHashMap: HashMap<string,GameLobby>, allPlayers : HashMap<string, Connection>): boolean {
+        let connection = allPlayers.get(socket.id);
+        if (connection == undefined){
+            signale.warn("Cant remove undefined connection.")
             return false;
         }
 
-        if (!lobby.removeConnection(player)) {
-            console.error("Couldn't remove Player!");
+        let lobby = lobbyHashMap.get(connection.lobbyID);
+
+        if (lobby == undefined) {
+            signale.warn("Cant remove connection from undefined lobby.")
             return false;
         }
-        allPlayers.remove(player.socketID);
+
+        if (!lobby.removeConnection(connection)) {
+            signale.error(new Error("Couldn't remove Connection from Lobby."))
+            return false;
+        } else {
+            signale.success(`Removed Connection with ID: ${connection.socketID} successfully.`);
+        }
+        allPlayers.remove(connection.socketID);
 
         //TODO only one lef?
 
         if (lobby.connections.size() == 0) {
             if (!lobbyHashMap.remove(lobby.lobbyID)) {
-                console.error("Couldn't remove Lobby!");
+                signale.error(new Error("Couldn't remove Lobby from LobbyHashMap!"))
                 return false;
             } else {
-                console.log("Closed Room successfully!");
+                if (lobby.game != undefined){
+                    lobby.game.stop = true;
+                }
+                signale.success(`Closed Lobby with ID: ${lobby.lobbyID} successfully`);
             }
         }
 

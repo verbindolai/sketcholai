@@ -52,6 +52,7 @@ export class Game {
     private _wordPauseEnded : boolean;
     private _roundPauseEnded : boolean;
 
+    private _stop : boolean = false;
 
     constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, players: LinkedList<Connection>, words : string[], creatorID : string) {
         this._GAME_ID = GameLobby.randomString();
@@ -92,6 +93,12 @@ export class Game {
     private startGameLoop(io : SocketServer){
         this.startRound(io);
         let interval = setInterval(() => {
+            if(this._stop){
+                signale.info(`Stopping game with ID: ${this._GAME_ID}`)
+                clearInterval(interval);
+                this.resetGame();
+            }
+
             switch (this._currentGameState){
                 case GameState.RUNNING: {
                     if (((Date.now() - this._turnStartDate) / 1000 > this._roundDurationSec)){
@@ -369,6 +376,13 @@ export class Game {
         return this._turnStartDate;
     }
 
+    get stop(): boolean {
+        return this._stop;
+    }
+
+    set stop(value: boolean) {
+        this._stop = value;
+    }
 
     set winner(value: Connection | undefined) {
         this._winner = value;
