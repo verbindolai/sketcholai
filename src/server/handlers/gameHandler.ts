@@ -98,10 +98,14 @@ export class GameHandler implements HandlerInterface {
             let connection = allConnections.get(socket.id);
             let lobby = lobbyHashMap.get(connection.lobbyID);
 
-            //When the Game is started by a player before the page of the drawing player is fully loaded it can lead to errors.
+            //When the Game is started by a player before the page of the drawing player is fully loaded it can lead to errors, i.e. the drawing Player misses the word choosing options.
             //In the current implementation the creator of the game is always the first player drawing, so we would need for him to load the page.
-            //This is not a final solving for the problem, cause when the creator disconnects or takes very long to connect the game doenst start at all or very delayed.
+            //This is not finally solving the problem, cause when the creator disconnects or takes very long to connect the game doesnt start at all or very delayed.
             //TODO fix pls
+
+            //Idea: Maybe make first player who sends the start game request (lets call him Dave) the current player so that always the fist who starts the game, is the first one drawing.
+            //Cause the currentPlayer gets chosen after the games init method, you could archive that by removing Dave from the list and add him at the first place of the connection list.
+
             if (lobby.game?.hasStarted === false && connection.socketID === lobby.game.CREATOR_ID){
                 signale.success("Start game request accepted.")
                 lobby.game.init(io);

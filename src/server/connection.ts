@@ -35,8 +35,6 @@ export class Connection {
     }
 
 
-
-
     get receivedCanvas(): boolean {
         return this._receivedCanvas;
     }

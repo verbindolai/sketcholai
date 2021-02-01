@@ -54,9 +54,9 @@ export class Game {
 
     private _stop : boolean = false;
 
-    constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, players: LinkedList<Connection>, words : string[], creatorID : string) {
+    constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, connections: LinkedList<Connection>, words : string[], creatorID : string) {
         this._GAME_ID = GameLobby.randomString();
-        this._connections = players;
+        this._connections = connections;
         this._roundDurationSec = roundDuration;
         this._lobbyId = lobbyId;
         this._roundCount = 0;
