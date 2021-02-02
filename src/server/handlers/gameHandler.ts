@@ -92,6 +92,9 @@ export class GameHandler implements HandlerInterface {
             let drawTime = data[0];
             let roundNum = data[1];
             let connection = allConnections.get(socket.id);
+            const words = data[2];
+            const probability = data[3];
+
             if (connection == undefined){
                 signale.error("Cant init Game, connection is undefined.")
                 return;

@@ -18,7 +18,16 @@ function initGame() {
 
     drawTime = document.querySelector("#drawTimeSelect").value;
     roundNumber = document.querySelector("#roundNumSelect").value;
-    socket.emit("initGame", packData(drawTime, roundNumber))
+    let words;
+    let probability = 0.5;  //TODO controlled by user
+    uploadWordList().then((value => {
+        words = value.split(/[ ,\n\r]+/).filter(Boolean);
+    })).catch((error) =>{
+        console.error(error);
+        words = [];
+    }).finally(()=>{
+        socket.emit("initGame", packData(drawTime, roundNumber, words, probability));
+    })
 }
 /**
  * loads the game Page and informs the Server that the game can be started.

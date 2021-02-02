@@ -336,8 +336,8 @@ function stopAllListeners(){
 
 function uploadWordList(){
     const listFile = document.querySelector("#wordListInput").files[0];
-    if(listFile.size > 30000){
-        return;
+    if(listFile === undefined || listFile.size > 30000){
+        return Promise.reject("file is empty or size too big");
     }
-    socket.emit("wordList", packData(listFile));
+    return listFile.text();
 }
