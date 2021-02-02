@@ -45,7 +45,6 @@ function init(lobbyID, currentPlayerName) {
         }
     }
 
-
     LOBBY_ID_HTML_CONTAINER.innerHTML = lobbyID;
     CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = currentPlayerName;
 
@@ -142,6 +141,7 @@ function initGameStateListening() {
         const data = JSON.parse(serverPackage);
         const unixTime = data[0];
         const drawDuration = data[1];
+
         const name = data[2];
         const id = data[3];
         const gameState = data[4];
@@ -149,15 +149,45 @@ function initGameStateListening() {
         const currentWord = data[6];
         const winner = data[7];
         const allConns = data[8];
-        const creatorID = data[9];
+        const leaderID = data[9];
 
+        switch (gameState){
+            case 0: {
+                if(socket.id === id) {
+                    WORD_HTML_CONTAINER.children[0].innerHTML ="";
+                    WORD_HTML_CONTAINER.classList.add("hidden")
+                    canvas.classList.remove("hidden");
+                }
+                break;
+            }
+            case 1: {
+                if (socket.id === id){
+                    context.fillStyle = '#ffffff';
+                    context.fillRect(0, 0, canvas.width, canvas.height);
+                    displayWordSuggestions(words)
+                } else  {
+                    WORD_HTML_CONTAINER.children[0].innerHTML ="";
+                    WORD_HTML_CONTAINER.classList.add("hidden")
+                    canvas.classList.remove("hidden");
+                    context.fillStyle = '#ffffff';
+                    context.fillRect(0, 0, canvas.width, canvas.height);
+                }
+                break;
+            }
+            case 2: {
+                stopAllListeners()
+                if(socket.id === leaderID){
+                    pageLoad("lobby" ,() => {
+                        roomInit()
+                        let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
+                        lobbyRoomCode.innerHTML = allConns[0]._lobbyID;
+                        connections_html_container = document.querySelector("#connectedPlayerList");
+                        listDisplayer(allConns, connections_html_container);
+                    })
+                    return;
+                }
 
-        //SWITCH CASE!!!
-
-        if(gameState === 2){
-            stopAllListeners()
-            if(socket.id === creatorID){
-                pageLoad("lobby" ,() => {
+                pageLoad("lobby2" ,() => {
                     roomInit()
                     let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
                     lobbyRoomCode.innerHTML = allConns[0]._lobbyID;
@@ -165,37 +195,18 @@ function initGameStateListening() {
                     listDisplayer(allConns, connections_html_container);
                 })
                 return;
+                break;
             }
-
-            pageLoad("lobby2" ,() => {
-                roomInit()
-                let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
-                lobbyRoomCode.innerHTML = allConns[0]._lobbyID;
-                connections_html_container = document.querySelector("#connectedPlayerList");
-                listDisplayer(allConns, connections_html_container);
-            })
-            return ;
-        }
-
-        if (socket.id === id && gameState === 1){
-            context.fillStyle = '#ffffff';
-            context.fillRect(0, 0, canvas.width, canvas.height);
-           displayWordSuggestions(words)
-        }else if (gameState === 1){
-            WORD_HTML_CONTAINER.children[0].innerHTML ="";
-            WORD_HTML_CONTAINER.classList.add("hidden")
-            canvas.classList.remove("hidden");
-            context.fillStyle = '#ffffff';
-            context.fillRect(0, 0, canvas.width, canvas.height);
-        }
-        else if(socket.id === id && gameState === 0) {
-            WORD_HTML_CONTAINER.children[0].innerHTML ="";
-            WORD_HTML_CONTAINER.classList.add("hidden")
-            canvas.classList.remove("hidden");
-        }
-
-        if (gameState === 4){
-            displayPointScreen(allConns);
+            case 3: {
+                break;
+            }
+            case 4: {
+                displayPointScreen(allConns);
+                break;
+            }
+            default: {
+                break;
+            }
         }
         currentPlayerID = id;
         currentPlayerName = name;
@@ -215,7 +226,7 @@ function displayPointScreen(allConns){
     WORD_HTML_CONTAINER.children[0].classList.add("flex","flex-col","justify-center","items-center");
 
     let winText = document.createElement("div")
-    winText.classList.add("text-8xl","text-blue-700" ,"font-bold" ,"mb-4");
+    winText.classList.add("text-8xl","text-warmGray-50" ,"font-bold" ,"mb-6");
     winText.appendChild(document.createTextNode("Round Ended!"))
 
     let pointsContDiv = document.createElement("div")
@@ -235,7 +246,12 @@ function displayPointScreen(allConns){
         let pointsDiv = document.createElement("div");
         pointsDiv.appendChild(document.createTextNode(player._points.toString()))
         pointsDiv.classList.add("text-2xl", "font-bold", "mr-2")
-        pointsDiv.style.color = "#24d146";
+        if(player._points === 0){
+            pointsDiv.style.color = "#dd0000"
+        } else {
+            pointsDiv.style.color = "#24d146";
+        }
+
 
         playerPointsDiv.append(playerDiv, pointsDiv);
         pointsContDiv.append(playerPointsDiv)
@@ -251,7 +267,7 @@ function displayWordSuggestions(words) {
     for (let i = 0; i < 3; i++){
         let button = document.createElement('button');
         let word = words[i];
-        button.classList.add("p-4","bg-yellow-500","text-yellow-700", "rounded" , "mr-2")
+        button.classList.add("py-4","px-5","bg-black","bg-opacity-80","text-white", "rounded" , "mr-4","font-bold")
         button.appendChild(document.createTextNode(word))
         button.onclick = () => {
             socket.emit("chooseWord", packData(word))

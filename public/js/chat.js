@@ -21,7 +21,7 @@ function initChatListening(){
         let chatType = data[4];
 
         let chatListNode = document.createElement("li");
-        chatListNode.classList.add("flex", "flex-row","px-1","rounded","hover:bg-blue-700")
+        chatListNode.classList.add("flex", "flex-row","px-1","rounded","hover:bg-white", "hover:bg-opacity-20")
 
         if (conn != null && conn != undefined){
             if (conn._isWizzard){

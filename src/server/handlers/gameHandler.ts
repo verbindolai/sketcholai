@@ -83,8 +83,6 @@ export class GameHandler implements HandlerInterface {
             }
         })
 
-
-
         socket.on('initGame', (clientPackage) => {
             signale.info("Heard initGame event.")
 

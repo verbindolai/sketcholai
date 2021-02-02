@@ -18,7 +18,7 @@ export class Game {
     public readonly DRAW_POINTS : number = 120;
     public readonly HINT_TIME : number = 10;
 
-    private readonly _lobbyLeaderID : string;
+    private _lobbyLeaderID : string;
     private readonly _GAME_ID : string;
 
     private _winner: Connection | undefined = undefined;
@@ -226,10 +226,7 @@ export class Game {
 
     private endTurn(io : SocketServer, interval : any) {
         if (this._currentPlayer != undefined){
-            if (this._currentPlayer == undefined) { //TODO Right?
-                signale.warn("No current Player!")
-                return;
-            }
+
             signale.complete("Turn ended.")
             //send server msg what the current word was
             io.in(this._lobbyId).emit("chat",CommHandler.packData("The word was " + this._currentWord, undefined, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT) )
@@ -396,6 +393,11 @@ export class Game {
 
     set currentPlayer(value: Connection | undefined) {
         this._currentPlayer = value;
+    }
+
+
+    set lobbyLeaderID(value: string) {
+        this._lobbyLeaderID = value;
     }
 
     get maxRoundCount(): number {

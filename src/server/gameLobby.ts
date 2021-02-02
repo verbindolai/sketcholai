@@ -55,6 +55,9 @@ export class GameLobby {
 
     set leaderID(value: string) {
         this._leaderID = value;
+        if(this.game != undefined){
+            this.game.lobbyLeaderID = value;
+        }
     }
 
     get game(): Game | undefined {

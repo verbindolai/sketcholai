@@ -103,6 +103,8 @@ socket.on("becomeLeader", (serverPackage) => {
 
     if(socket.id === leaderID){
         pageLoad("lobby", () => {
+            console.log(connections_html_container ==document.querySelector("#connectedPlayerList") )
+
             document.querySelector('#lobbyRoomCode').innerHTML = lobbyID;
             listDisplayer(allConnections, document.querySelector("#connectedPlayerList"));
         });
@@ -127,7 +129,7 @@ function listDisplayer(list, node) {
     node.innerHTML = "";
 
     for(let con of list) {
-        console.log(con)
+
 
         let li = document.createElement("li");
         let name = document.createElement("div");
