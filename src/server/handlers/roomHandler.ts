@@ -122,8 +122,27 @@ export class RoomHandler implements HandlerInterface {
             return false;
         } else {
             signale.success(`Removed Connection with ID: ${connection.socketID} successfully.`);
+            if(lobby.game?.creator_ID === connection.socketID){
+                if(lobby.connections.getFirst() != undefined){
+                    lobby.game.creator_ID = lobby.connections.getFirst().socketID;
+                }
+
+                if(!lobby.game.hasStarted){
+                    //TODO client needs to load page new
+                }
+            }
         }
         allPlayers.remove(connection.socketID);
+
+        if (lobby.game != undefined){
+            for (let i = 0; i < lobby.game?.roundPlayerArr.length; i++){
+                if (socket.id === lobby.game.roundPlayerArr[i].socketID){
+                    lobby.game.roundPlayerArr.splice(i, 1);
+                    break;
+                }
+            }
+        }
+
 
         //TODO only one lef?
 

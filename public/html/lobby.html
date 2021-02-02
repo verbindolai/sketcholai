@@ -1,15 +1,15 @@
-
+<div class="h-full bg-comic">
   <!-- Header =======================-->
-  <div class="text-blue-900  min-h-screen flex flex-col p-5">
+  <div class="min-h-screen flex flex-col p-5">
     <div class="flex flex-row justify-between p-3 items-center">
-      <a href="#">News</a>
-      <a href="#" class="font-bold text-3xl">Sketcholai</a>
-      <a href="#">About</a>
+      <a href="#" class="bg-white text-black p-2 rounded-lg">News</a>
+      <a href="#" class="py-3 px-4 rounded-lg bg-white font-bold text-black text-7xl">Sketcholai</a>
+      <a href="#" class="bg-white text-black p-2 rounded-lg">About</a>
     </div>
 
     <!-- Main =======================-->
-    <div class="bg-blue-600 p-10 m-auto flex flex-row justify-center items-center rounded-xl shadow-lg">
-      <div class=" flex flex-col p-16 border-r-4  border-blue-800 ">
+    <div class="bg-black  bg-opacity-80 p-10 m-auto flex flex-row justify-center items-center rounded-xl shadow-lg text-warmGray-100">
+      <div class=" flex flex-col p-16 border-r-4  border-black ">
         <div class="flex flex-row jusitfy-center items-center">
           <label class="font-bold text-lg mr-2">RoomID:</label>
           <div id="lobbyRoomCode" class="font-semibold"></div>
@@ -17,7 +17,7 @@
         <button onclick="initGame()" class="text-yellow-900 bg-yellow-500 p-2 shadow rounded mt-4 hover:bg-yellow-600 transition duration-200 ease-in-out my-12">Start</button>
         <div class="flex flex-col ">
           <label class="font-bold text-lg">Draw-Time</label>
-          <select name="drawTime" id="drawTimeSelect" class="p-2 mt-2 rounded outline-none focus:ring-4 focus:ring-blue-800">
+          <select name="drawTime" id="drawTimeSelect" class="p-2 mt-2 rounded outline-none focus:ring-4 focus:ring-blue-800 border-2 border-black text-black">
             <option value="20">20 seconds</option>
             <option value="30">30 seconds</option>
             <option value="60">60 seconds</option>
@@ -26,7 +26,7 @@
         </div>
         <div class="flex flex-col mt-4">
           <label class="font-bold text-lg">Round-Number:</label>
-          <select name="roundNum" id="roundNumSelect" class="p-2 mt-2 rounded outline-none focus:ring-4 focus:ring-blue-800">
+          <select name="roundNum" id="roundNumSelect" class="p-2 mt-2 rounded outline-none focus:ring-4 focus:ring-blue-800 border-2 border-black text-black">
             <option value="1">1 rounds</option>
             <option value="2">2 rounds</option>
             <option value="3">3 rounds</option>
@@ -35,9 +35,9 @@
         </div>
 
       </div>
-      <div class="flex flex-col p-8 justify-center items-center ">
+      <div class="flex flex-col p-8 justify-center items-center">
         <span class="font-bold text-2xl p-4 mb-4">Connected Players:</span>
-        <ul id="connectedPlayerList" class="font-semibold text-lg">
+        <ul id="connectedPlayerList" class="font-semibold text-lg rounded  bg-black bg-opacity-20 p-2">
 
         </ul>
       </div>
@@ -45,8 +45,9 @@
     </div>
 
     <!-- Footer =======================-->
-    <div class="bg-blue-500 p-5">
+    <div class="transparent p-5">
 
     </div>
 
   </div>
+</div>

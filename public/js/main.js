@@ -205,8 +205,6 @@ function initGameStateListening() {
         }
         CURRENT_WORD_HTML_CONTAINER.innerHTML = currentWord;
         displayTime(drawDuration, unixTime);
-
-
     });
 }
 

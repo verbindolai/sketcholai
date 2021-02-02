@@ -11,33 +11,33 @@
   <script src="/js/main.js"></script>
 
 </head>
-<body class="bg-blue-500">
+<body class="bg-comic">
   <!-- Header =======================-->
-  <div class="text-blue-900  min-h-screen flex flex-col p-5">
+  <div class="min-h-screen flex flex-col p-5">
     <div class="flex flex-row justify-between p-3 items-center">
-      <a href="#">News</a>
-      <a href="#" class="font-bold text-3xl">Sketcholai</a>
-      <a href="#">About</a>
+      <a href="#" class="bg-white text-black p-2 rounded-lg">News</a>
+      <a href="#" class="py-3 px-4 rounded-lg bg-white font-bold text-black text-7xl">Sketcholai</a>
+      <a href="#" class="bg-white text-black p-2 rounded-lg">About</a>
     </div>
 
     <!-- Main =======================-->
-    <div class="bg-blue-600 p-10 m-auto flex flex-col justify-center items-center rounded-xl shadow-2xl">
+    <div class="bg-black p-10 m-auto flex flex-col justify-center items-center rounded-xl shadow-lg bg-opacity-80 text-warmGray-100">
       <div class="mb-28">
-        <input type="text" name="" id="nameInput" placeholder="Name" class="outline-none shadow p-3 rounded focus:ring-4 focus:ring-yellow-600 transition duration-200 ease-in-out">
+        <input type="text" name="" id="nameInput" placeholder="Name" class="outline-none shadow p-3 rounded focus:ring-2 focus:ring-lightBlue-500 transition duration-200 ease-in-out border-2 border-black">
       </div>
 
       <div class="flex flex-col justify-center items-center  p-5 rounded">
-          <button onclick="createRoom()" class="text-yellow-900 bg-yellow-500 p-2 shadow rounded mt-4 hover:bg-yellow-600 transition duration-200 ease-in-out">Create Room</button>
+          <button onclick="createRoom()" class="text-amber-900 bg-amber-500 p-2 shadow rounded mt-4 hover:bg-amber-600 transition duration-200 ease-in-out">Create Room</button>
           <span class="font-bold text-xl p-1 my-4">OR</span>
-          <input type="text" placeholder="Room-ID" id="roomInput" class="outline-none shadow p-3 rounded focus:ring-4 focus:ring-yellow-600 transition duration-200 ease-in-out">
-          <button onclick="joinGame()" class="text-yellow-900 bg-yellow-500 p-2 shadow rounded mt-4 hover:bg-yellow-600 transition duration-200 ease-in-out">Join Room</button>
+          <input type="text" placeholder="Room-ID" id="roomInput" class="outline-none shadow p-3 rounded focus:ring-2 focus:ring-lightBlue-500 transition duration-200 ease-in-out border-2 border-black">
+          <button onclick="joinGame()" class="text-amber-900 bg-amber-500 p-2 shadow rounded mt-4 hover:bg-amber-600 transition duration-200 ease-in-out">Join Room</button>
       </div>
 
     </div>
 
     <!-- Footer =======================-->
-    <div class="bg-blue-500 p-5 flex flex-row justify-center items-center">
-        <div class="font-mono font-bold text-xs text-blue-600 shadow-inner py-1 px-2 rounded-lg">A Project bei Christopher P. and Nikolai W.</div>
+    <div class="transparent p-5 flex flex-row justify-center items-center">
+        <div class="font-mono font-bold text-xs text-black py-1 px-2 rounded-lg bg-white">A Project bei Christopher P. and Nikolai W.</div>
     </div>
 
   </div>

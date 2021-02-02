@@ -3,7 +3,21 @@ module.exports = {
   purge: [],
   darkMode: false, // or 'media' or 'class'
   theme: {
-    extend: {},
+    extend: {
+      backgroundImage: theme => ({
+
+        'doodle-balloon': "url('/images/balloon.jpg')",
+        'doodle-planets' : "url('https://image.freepik.com/vektoren-kostenlos/space-doodle_102902-2356.jpg')",
+        'doodle-astro' : "url('/images/astro.jpg')",
+        'colors' : "url('/images/colors.jpg')",
+        'lines' : "url('/images/lines.PNG')",
+        'lines-l' : "url('/images/linesLong.PNG')",
+        'kasten' : "url('/images/kasten.PNG')",
+        'comic-h' : "url('/images/comic1920Half.PNG')",
+        'comic' : "url('/images/comic1920.PNG')",
+        'pattern1' : "url('/images/Composition.jpg')",
+      })
+    },
     colors: {
       transparent: 'transparent',
       current: 'currentColor',

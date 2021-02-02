@@ -18,7 +18,7 @@ export class Game {
     public readonly DRAW_POINTS : number = 120;
     public readonly HINT_TIME : number = 10;
 
-    private readonly _CREATOR_ID : string;
+    private _creator_ID : string;
     private readonly _GAME_ID : string;
 
     private _winner: Connection | undefined = undefined;
@@ -41,7 +41,6 @@ export class Game {
     private _currentPlayer : Connection | undefined;
     private _currentGameState : GameState;
     private _pointMultiplicator : number;
-
 
     private _turnStartDate: number = 0;
     private _wordPauseStartDate: number = 0;
@@ -68,7 +67,7 @@ export class Game {
         this._turnEnded = false;
         this._wordPauseEnded = false;
         this._roundPauseEnded = false;
-        this._CREATOR_ID = creatorID;
+        this._creator_ID = creatorID;
         signale.success(`New game created for ${lobbyId} with ${maxRoundCount} rounds and ${roundDuration} seconds draw time. Game-ID: ${this._GAME_ID}`)
     }
 
@@ -270,7 +269,7 @@ export class Game {
             }
         }
         this.resetGame()
-        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(0, 0, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder, winner, RoomHandler.listToArr(this._connections), this.CREATOR_ID))
+        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(0, 0, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder, winner, RoomHandler.listToArr(this._connections), this.creator_ID))
         this._currentGameState = GameState.NOT_STARTED;
     }
 
@@ -343,6 +342,10 @@ export class Game {
         return this._winner;
     }
 
+
+    set creator_ID(value: string) {
+        this._creator_ID = value;
+    }
 
     get currentPlaceholder(): string {
         return this._currentPlaceholder;
@@ -449,8 +452,8 @@ export class Game {
         return this._wordPauseStartDate;
     }
 
-    get CREATOR_ID(): string {
-        return this._CREATOR_ID;
+    get creator_ID(): string {
+        return this._creator_ID;
     }
 
     set roundPlayerArr(value: Connection[]) {
