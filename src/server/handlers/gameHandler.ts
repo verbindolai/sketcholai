@@ -104,7 +104,7 @@ export class GameHandler implements HandlerInterface {
             }
 
 
-            lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections, this._words, connection.socketID);
+            lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections, this._words, lobby.leaderID);
             CommHandler.deployMessage(socket, CommHandler.packData(lobby.lobbyID, lobby.game.currentPlayer?.name, RoomHandler.listToArr(lobby.connections)), "loadGame", true, lobby, connection, io);
         })
 
@@ -115,15 +115,6 @@ export class GameHandler implements HandlerInterface {
             let statusCode = data[0];
             let connection = allConnections.get(socket.id);
             let lobby = lobbyHashMap.get(connection.lobbyID);
-
-            //When the Game is started by a player before the page of the drawing player is fully loaded it can lead to errors, i.e. the drawing Player misses the word choosing options.
-            //In the current implementation the creator of the game is always the first player drawing, so we would need for him to load the page.
-            //This is not finally solving the problem, cause when the creator disconnects or takes very long to connect the game doesnt start at all or very delayed.
-            //TODO fix pls
-
-            //Idea: Maybe make first player who sends the start game request (lets call him Dave) the current player so that always the fist who starts the game, is the first one drawing.
-            //Cause the currentPlayer gets chosen after the games init method, you could archive that by removing Dave from the list and add him at the first place of the connection list.
-
 
 
             if (lobby.game?.hasStarted === false){
@@ -198,7 +189,7 @@ export class GameHandler implements HandlerInterface {
                 //Sends a request to all other connections in the room to send the current canvas status to the server
                 CommHandler.deployMessage(socket,null, "sendCanvasStatus", false, lobby, connection, io);
             }
-        })
+        });
 
     }
 }

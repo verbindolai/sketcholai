@@ -18,7 +18,7 @@ export class Game {
     public readonly DRAW_POINTS : number = 120;
     public readonly HINT_TIME : number = 10;
 
-    private _creator_ID : string;
+    private readonly _lobbyLeaderID : string;
     private readonly _GAME_ID : string;
 
     private _winner: Connection | undefined = undefined;
@@ -53,7 +53,7 @@ export class Game {
 
     private _stop : boolean = false;
 
-    constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, connections: LinkedList<Connection>, words : string[], creatorID : string) {
+    constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, connections: LinkedList<Connection>, words : string[], leaderID : string) {
         this._GAME_ID = GameLobby.randomString();
         this._connections = connections;
         this._roundDurationSec = roundDuration;
@@ -67,7 +67,7 @@ export class Game {
         this._turnEnded = false;
         this._wordPauseEnded = false;
         this._roundPauseEnded = false;
-        this._creator_ID = creatorID;
+        this._lobbyLeaderID = leaderID;
         signale.success(`New game created for ${lobbyId} with ${maxRoundCount} rounds and ${roundDuration} seconds draw time. Game-ID: ${this._GAME_ID}`)
     }
 
@@ -269,7 +269,7 @@ export class Game {
             }
         }
         this.resetGame()
-        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(0, 0, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder, winner, RoomHandler.listToArr(this._connections), this.creator_ID))
+        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(0, 0, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder, winner, RoomHandler.listToArr(this._connections), this.lobbyLeaderID))
         this._currentGameState = GameState.NOT_STARTED;
     }
 
@@ -340,11 +340,6 @@ export class Game {
 
     get winner(): Connection | undefined {
         return this._winner;
-    }
-
-
-    set creator_ID(value: string) {
-        this._creator_ID = value;
     }
 
     get currentPlaceholder(): string {
@@ -452,8 +447,8 @@ export class Game {
         return this._wordPauseStartDate;
     }
 
-    get creator_ID(): string {
-        return this._creator_ID;
+    get lobbyLeaderID(): string {
+        return this._lobbyLeaderID;
     }
 
     set roundPlayerArr(value: Connection[]) {

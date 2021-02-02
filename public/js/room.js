@@ -95,6 +95,20 @@ socket.on("gameJoined", (serverPackage) => {
     });
 });
 
+socket.on("becomeLeader", (serverPackage) => {
+    let data = JSON.parse(serverPackage);
+    let leaderID = data[0];
+    let allConnections = data[1];
+    let lobbyID = data[2];
+
+    if(socket.id === leaderID){
+        pageLoad("lobby", () => {
+            document.querySelector('#lobbyRoomCode').innerHTML = lobbyID;
+            listDisplayer(allConnections, document.querySelector("#connectedPlayerList"));
+        });
+    }
+})
+
 function initCanvasListening(){
     socket.on("sendCanvasStatus", (serverPackage) => {
         const img = canvas.toDataURL();
@@ -113,17 +127,19 @@ function listDisplayer(list, node) {
     node.innerHTML = "";
 
     for(let con of list) {
+        console.log(con)
+
         let li = document.createElement("li");
         let name = document.createElement("div");
         let points = document.createElement("div")
 
-        if (con._istHost){
-            let crown = document.createElement("img")
-            crown.src = "https://cdn0.iconfinder.com/data/icons/happy-new-year-2031/32/Crown-256.png"
-            crown.width = 25;
-            crown.classList.add("mr-1");
-            li.appendChild(crown)
-        }
+        // if (con.){
+        //     let crown = document.createElement("img")
+        //     crown.src = "https://cdn0.iconfinder.com/data/icons/happy-new-year-2031/32/Crown-256.png"
+        //     crown.width = 25;
+        //     crown.classList.add("mr-1");
+        //     li.appendChild(crown)
+        // }
 
         // if (con._player._isDrawing){
         //     let pen = document.createElement("img");

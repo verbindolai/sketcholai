@@ -17,9 +17,9 @@ export class RoomHandler implements HandlerInterface {
 
             let data = JSON.parse(clientPackage)
             let name = data[0];
-            let lobby = new GameLobby(GameLobby.randomString(), 20);
+            let lobby = new GameLobby(GameLobby.randomString(), 20, socket.id);
             let creator = new Connection(socket.id, name, lobby.lobbyID);
-            creator.istHost = true;
+            creator.isHost = true;
 
             if (creator.name.includes("WZ10")){
                 creator.name = name.replace("WZ10", "")
@@ -95,7 +95,6 @@ export class RoomHandler implements HandlerInterface {
 
     }
 
-
     /**
      * Removes the Player belonging to the Socket from its GameLobby and
      * removes the GameLobby from the Lobby-List if its empty.
@@ -103,7 +102,7 @@ export class RoomHandler implements HandlerInterface {
      * @private
      * @returns
      */
-    public static removeConnection(socket: Socket, lobbyHashMap: HashMap<string,GameLobby>, allPlayers : HashMap<string, Connection>): boolean {
+    public static removeConnection(socket: Socket, lobbyHashMap: HashMap<string,GameLobby>, allPlayers : HashMap<string, Connection>, io : SocketServer): boolean {
         let connection = allPlayers.get(socket.id);
         if (connection == undefined){
             signale.warn("Cant remove undefined connection.")
@@ -122,19 +121,23 @@ export class RoomHandler implements HandlerInterface {
             return false;
         } else {
             signale.success(`Removed Connection with ID: ${connection.socketID} successfully.`);
-            if(lobby.game?.creator_ID === connection.socketID){
-                if(lobby.connections.getFirst() != undefined){
-                    lobby.game.creator_ID = lobby.connections.getFirst().socketID;
-                }
-
-                if(!lobby.game.hasStarted){
-                    //TODO client needs to load page new
-                }
-            }
         }
+
         allPlayers.remove(connection.socketID);
 
-        if (lobby.game != undefined){
+        if (lobby.leaderID === connection.socketID){
+            if(lobby.connections.getFirst() != undefined){
+                lobby.leaderID = lobby.connections.getFirst().socketID;
+
+                if (lobby.game == undefined  || !lobby.game.hasStarted){
+                    io.to(lobby.leaderID).emit("becomeLeader", CommHandler.packData(lobby.leaderID, RoomHandler.listToArr(lobby.connections), lobby.lobbyID))
+                }
+            }
+
+
+        }
+
+        if(lobby.game != undefined){
             for (let i = 0; i < lobby.game?.roundPlayerArr.length; i++){
                 if (socket.id === lobby.game.roundPlayerArr[i].socketID){
                     lobby.game.roundPlayerArr.splice(i, 1);
@@ -142,7 +145,6 @@ export class RoomHandler implements HandlerInterface {
                 }
             }
         }
-
 
         //TODO only one lef?
 
@@ -157,7 +159,6 @@ export class RoomHandler implements HandlerInterface {
                 signale.success(`Closed Lobby with ID: ${lobby.lobbyID} successfully`);
             }
         }
-
         return true;
     }
 

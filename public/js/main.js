@@ -333,3 +333,11 @@ function stopAllListeners(){
     socket.off('sendCanvasStatus')
     socket.off('getCanvasStatus')
 }
+
+function uploadWordList(){
+    const listFile = document.querySelector("#wordListInput").files[0];
+    if(listFile.size > 30000){
+        return;
+    }
+    socket.emit("wordList", packData(listFile));
+}

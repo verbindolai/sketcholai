@@ -33,7 +33,14 @@
             <option value="4">4 rounds</option>
           </select>
         </div>
+        <div class="flex flex-col mt-4 justify-center items-center">
+          <label class="font-bold text-lg">Upload Word-List</label>
+          <input type="file" id="wordListInput" accept=".txt">
+          <div>
+            <button class="text-yellow-900 bg-yellow-500 p-2 shadow rounded mt-4 hover:bg-yellow-600 transition duration-200 ease-in-out my-12" onclick="uploadWordList()">Upload</button>
+          </div>
 
+        </div>
       </div>
       <div class="flex flex-col p-8 justify-center items-center">
         <span class="font-bold text-2xl p-4 mb-4">Connected Players:</span>

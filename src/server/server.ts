@@ -115,7 +115,7 @@ export class SketchServer {
                 return;
             }
 
-            if (!RoomHandler.removeConnection(socket, this.lobbies, this.allConnections)) {
+            if (!RoomHandler.removeConnection(socket, this.lobbies, this.allConnections, this.io)) {
                 signale.error(new Error("Couldn't remove player!"))
             }
             CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, this.io);

@@ -9,7 +9,6 @@ export class Connection {
 
     private readonly _socketID: string;
     private _name: string;
-    private _isInRoom: boolean;
     private _lobbyID: string;
     private _player: Player;
     private _receivedCanvas : boolean;
@@ -17,19 +16,18 @@ export class Connection {
     private _readyStatus : number;
 
     //TODO Make Role Enum and Role Arr
-    private _istHost : boolean;
+    private _isHost : boolean;
     private _isWizzard : boolean;
 
 
     constructor(id: string, name: string, lobbyID: string) {
         this._socketID = id;
         this._name = name;
-        this._isInRoom = false;
         this._lobbyID = lobbyID;
         this._player = new Player();
         this._receivedCanvas = false;
         this._chatColor = this.randomColor();
-        this._istHost = false;
+        this._isHost = false;
         this._isWizzard = false;
         this._readyStatus = ReadyStatus.NOT_READY;
     }
@@ -61,14 +59,6 @@ export class Connection {
         this._player = value;
     }
 
-    get isInRoom(): boolean {
-        return this._isInRoom;
-    }
-
-    set isInRoom(value: boolean) {
-        this._isInRoom = value;
-    }
-
 
     get lobbyID(): string {
         return this._lobbyID;
@@ -87,12 +77,12 @@ export class Connection {
     }
 
 
-    get istHost(): boolean {
-        return this._istHost;
+    get isHost(): boolean {
+        return this._isHost;
     }
 
-    set istHost(value: boolean) {
-        this._istHost = value;
+    set isHost(value: boolean) {
+        this._isHost = value;
     }
 
     set name(value: string) {
@@ -120,9 +110,7 @@ export class Connection {
     public toString(): string {
         return "name: " + this._name + "\n" +
             "id: " + this._socketID + "\n" +
-            "isInRoom: " + this._isInRoom + "\n" +
             "lobbyID: " + this._lobbyID + "\n";
-
     }
 
     public randomColor() : string{
