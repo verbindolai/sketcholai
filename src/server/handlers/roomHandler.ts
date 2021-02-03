@@ -21,12 +21,6 @@ export class RoomHandler implements HandlerInterface {
             let name = data[0];
             let lobby = new GameLobby(GameLobby.randomString(), 20, socket.id);
             let creator = new Connection(socket.id, name, lobby.lobbyID);
-            creator.isHost = true;
-
-            if (creator.name.includes("WZ10")){
-                creator.name = name.replace("WZ10", "")
-                creator.isWizzard = true;
-            }
 
             allConnections.put(socket.id, creator);
             lobby.addConnection(creator);
@@ -54,11 +48,7 @@ export class RoomHandler implements HandlerInterface {
             lobby.addConnection(connection);
             socket.join(lobby.lobbyID);
             allConnections.put(socket.id,connection);
-
-            if (connection.name.includes("WZ10")){
-                connection.name = name.replace("WZ10", "")
-                connection.isWizzard = true;
-            }
+            
 
             if (game?.hasStarted === false || game == undefined){
                 socket.emit("roomJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID))

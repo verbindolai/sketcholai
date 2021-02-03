@@ -23,17 +23,6 @@ function initChatListening(){
         let chatListNode = document.createElement("li");
         chatListNode.classList.add("flex", "flex-row","px-1","rounded","hover:bg-white", "hover:bg-opacity-20")
 
-        if (conn != null && conn != undefined){
-            if (conn._isWizzard){
-                let hat = document.createElement("img")
-                hat.src = "https://cdn4.iconfinder.com/data/icons/halloween-01/128/Witch_Hat-2-256.png"
-                hat.width = 20;
-                hat.height = 20;
-                hat.classList.add("mr-1");
-                chatListNode.appendChild(hat)
-            }
-        }
-
         let chatMsgCont = document.createElement("div");
         chatMsgCont.classList.add("font-semibold");
 

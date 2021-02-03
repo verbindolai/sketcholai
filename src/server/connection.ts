@@ -4,6 +4,15 @@
  * @version 1.0
  */
 import {Player} from "./player";
+import { uniqueNamesGenerator, Config, adjectives, names, starWars } from 'unique-names-generator';
+import {HashMap} from "typescriptcollectionsframework";
+
+const customConfig: Config = {
+    dictionaries: [adjectives, names],
+    separator: '',
+    length: 2,
+    style: "capital",
+};
 
 export class Connection {
 
@@ -15,23 +24,26 @@ export class Connection {
     private _chatColor : string;
     private _readyStatus : number;
 
-    //TODO Make Role Enum and Role Arr
-    private _isHost : boolean;
-    private _isWizzard : boolean;
-
+    //private _roles: Roles[] = [];
 
     constructor(id: string, name: string, lobbyID: string) {
+        this.checkNameCodes(name);
         this._socketID = id;
-        this._name = name;
+        if (name == undefined || name == "") {
+            this._name = uniqueNamesGenerator(customConfig);
+        } else {
+            this._name = name;
+        }
         this._lobbyID = lobbyID;
         this._player = new Player();
         this._receivedCanvas = false;
         this._chatColor = this.randomColor();
-        this._isHost = false;
-        this._isWizzard = false;
         this._readyStatus = ReadyStatus.NOT_READY;
     }
 
+    private checkNameCodes(name : string){
+
+    }
 
     get receivedCanvas(): boolean {
         return this._receivedCanvas;
@@ -76,28 +88,9 @@ export class Connection {
         this._chatColor = value;
     }
 
-
-    get isHost(): boolean {
-        return this._isHost;
-    }
-
-    set isHost(value: boolean) {
-        this._isHost = value;
-    }
-
     set name(value: string) {
         this._name = value;
     }
-
-    set isWizzard(value: boolean) {
-        this._isWizzard = value;
-    }
-
-
-    get isWizzard(): boolean {
-        return this._isWizzard;
-    }
-
 
     get readyStatus(): number {
         return this._readyStatus;

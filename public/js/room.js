@@ -17,9 +17,6 @@ function createRoom() {
     let nameInput = document.querySelector("#nameInput");
     let name = nameInput.value;
 
-    if (name == undefined || name == "") {
-        name = randomString(6);
-    }
     socket.emit('createRoom', packData(name));
 }
 
@@ -51,9 +48,7 @@ function joinGame() {
     let name = nameInput.value;
     let roomID = roomInput.value;
 
-    if (name == undefined || name == "") {
-        name = randomString(6);
-    } else if (roomID == "" || roomID == undefined){
+   if (roomID == "" || roomID == undefined){
         console.error("Wrong Lobby-ID.")
         return;
     }
