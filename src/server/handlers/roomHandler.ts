@@ -66,19 +66,7 @@ export class RoomHandler implements HandlerInterface {
                 signale.success("Joined not started lobby.")
 
             } else {
-                let date = game.turnStartDate;
-                let dur = game.ROUND_DURATION_SEC;
-
-                if (game.currentGameState == GameState.WORD_PAUSE){
-
-                    date = game.wordPauseStartDate
-                    dur = game.WORD_PAUSE_DURATION_SEC;
-                } else if (game.currentGameState == GameState.ROUND_PAUSE){
-                    date = game.roundPauseStartDate;
-                    dur = game.ROUND_PAUSE_DURATION_SEC;
-                }
-
-                socket.emit("gameJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, date, dur, game.currentPlayer?.socketID));
+                socket.emit("gameJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, game.currentPlayer?.socketID));
                 CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.JOIN_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
                 CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
                 signale.success("Joining already started lobby.")

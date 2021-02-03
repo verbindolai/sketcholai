@@ -178,7 +178,18 @@ export class GameHandler implements HandlerInterface {
             }
             if (game != undefined && game.hasStarted){
                 signale.info("Connection gave Ready-Notification when Game has already started. Updating gameState for Socket, and requesting canvas.")
-                socket.emit("updateGameState", CommHandler.packData(game.turnStartDate, game.ROUND_DURATION_SEC, game.currentPlayer?.name, game.currentPlayer?.socketID, game.currentGameState,[],game.currentPlaceholder))
+
+                let date = game.turnStartDate;
+                let dur = game.ROUND_DURATION_SEC;
+                if (game.currentGameState == GameState.WORD_PAUSE){
+                    date = game.wordPauseStartDate
+                    dur = game.WORD_PAUSE_DURATION_SEC;
+                } else if (game.currentGameState == GameState.ROUND_PAUSE){
+                    date = game.roundPauseStartDate;
+                    dur = game.ROUND_PAUSE_DURATION_SEC;
+                }
+
+                socket.emit("updateGameState", CommHandler.packData(date, dur, game.currentPlayer?.name, game.currentPlayer?.socketID, game.currentGameState,[],game.currentPlaceholder))
 
                 if(RoomHandler.lateJoinedPlayers.containsKey(lobbyID)){
                     RoomHandler.lateJoinedPlayers.get(lobbyID).add(socket.id);

@@ -83,13 +83,10 @@ socket.on("gameJoined", (serverPackage) => {
     let allConnections = data[0];
     let lobbyID = data[1];
     let currentPlayerName = data[2];
-    let unixTime = data[3];
-    let drawDuration = data[4];
-    let currentPlayerSocketID = data[5];
+    let currentPlayerSocketID = data[3];
 
     pageLoad("game", () => {
         init(lobbyID, currentPlayerName);
-        displayTime(drawDuration, unixTime);
         initUpdatePlayerListListening();
         listDisplayer(allConnections, connections_html_container);
     });
@@ -103,8 +100,6 @@ socket.on("becomeLeader", (serverPackage) => {
 
     if(socket.id === leaderID){
         pageLoad("lobby", () => {
-            console.log(connections_html_container ==document.querySelector("#connectedPlayerList") )
-
             document.querySelector('#lobbyRoomCode').innerHTML = lobbyID;
             listDisplayer(allConnections, document.querySelector("#connectedPlayerList"));
         });
