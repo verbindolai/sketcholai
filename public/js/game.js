@@ -19,7 +19,7 @@ function initGame() {
     drawTime = document.querySelector("#drawTimeSelect").value;
     roundNumber = document.querySelector("#roundNumSelect").value;
     let words;
-    let customOnly = document.querySelector("#customOnly").checked;  //TODO controlled by user
+    let customOnly = document.querySelector("#customOnly").checked;
     uploadWordList().then((value => {
         words = value.split(/[,\n\r]+/).filter(Boolean);
     })).catch((error) =>{
