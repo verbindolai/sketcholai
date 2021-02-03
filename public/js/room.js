@@ -152,6 +152,7 @@ function listDisplayer(list, node) {
         // }
 
         name.appendChild(document.createTextNode(con._name));
+        name.style.color = con._chatColor;
         points.appendChild(document.createTextNode(con._player._points.toString()))
 
         name.classList.add("font-bold", "text-lg", "mr-2")

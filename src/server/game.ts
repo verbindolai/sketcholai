@@ -9,6 +9,9 @@ const signale = require('signale');
 
 export class Game {
 
+    private _lobbyLeaderID : string;
+    private readonly _GAME_ID : string;
+    private readonly _lobbyId: string;
 
     public readonly WORD_PAUSE_DURATION_SEC : number = 15;
     public readonly ROUND_PAUSE_DURATION_SEC : number = 7;
@@ -18,28 +21,29 @@ export class Game {
     public readonly DRAW_POINTS : number = 120;
     public readonly HINT_TIME : number = 10;
 
-    private _lobbyLeaderID : string;
-    private readonly _GAME_ID : string;
+    private readonly _ROUND_DURATION_SEC: number;
+    private readonly _MAX_ROUND_COUNT : number;
 
-    private _winner: Connection | undefined = undefined;
-    private _roundPlayerArr : Connection[] = [];
-    private readonly _connections: LinkedList<Connection>;
+
+
     private readonly _words: string[] = [];
     private _wordSuggestions: string[] = [];
-
-    private readonly _lobbyId: string;
-    private _hasStarted : boolean;
-
-    private _roundCount : number;
-    private readonly _roundDurationSec: number;
-
-    private readonly _maxRoundCount : number;
-
     private _currentPlaceholder : string = "";
     private _currentWord : string = "";
 
+    private readonly _connections: LinkedList<Connection>;
+    private _roundPlayerArr : Connection[] = [];
+
+
+
     private _currentPlayer : Connection | undefined;
+    private _winner: Connection | undefined = undefined;
+
     private _currentGameState : GameState;
+    private _roundCount : number;
+    private _hasStarted : boolean;
+    private _stop : boolean = false;
+
     private _pointMultiplicator : number;
 
     private _turnStartDate: number = 0;
@@ -51,15 +55,15 @@ export class Game {
     private _wordPauseEnded : boolean;
     private _roundPauseEnded : boolean;
 
-    private _stop : boolean = false;
+
 
     constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, connections: LinkedList<Connection>, words : string[], leaderID : string) {
         this._GAME_ID = GameLobby.randomString();
         this._connections = connections;
-        this._roundDurationSec = roundDuration;
+        this._ROUND_DURATION_SEC = roundDuration;
         this._lobbyId = lobbyId;
         this._roundCount = 0;
-        this._maxRoundCount = maxRoundCount;
+        this._MAX_ROUND_COUNT = maxRoundCount;
         this._hasStarted = false;
         this._words = words;
         this._currentGameState = GameState.NOT_STARTED;
@@ -73,7 +77,7 @@ export class Game {
 
     //Called on game initialization
     public init(io : SocketServer) {
-        signale.start(`Starting game with ${this.maxRoundCount} rounds.`)
+        signale.start(`Starting game with ${this.MAX_ROUND_COUNT} rounds.`)
         this.startGameLoop(io)
         this._hasStarted = true;
     }
@@ -84,7 +88,7 @@ export class Game {
             this._currentPlaceholder = this.replaceAt(this._currentPlaceholder, randomIndex, this._currentWord.charAt(randomIndex));
             if (this._currentPlayer != undefined){
                 signale.info("Giving hint.")
-                this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder))
+                this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._turnStartDate, this._ROUND_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder))
             }
         }
     }
@@ -100,7 +104,7 @@ export class Game {
 
             switch (this._currentGameState){
                 case GameState.RUNNING: {
-                    if (((Date.now() - this._turnStartDate) / 1000 > this._roundDurationSec)){
+                    if (((Date.now() - this._turnStartDate) / 1000 > this._ROUND_DURATION_SEC)){
                         this._turnEnded = true;
                     }
                     if (this._turnEnded){
@@ -131,7 +135,7 @@ export class Game {
                     if (this._roundPauseEnded){
                         //New Round
                         signale.complete("Round pause ended.")
-                        if (this._roundCount >= this._maxRoundCount){
+                        if (this._roundCount >= this._MAX_ROUND_COUNT){
                             this.endGame(io, interval);
                         } else {
                             this.startRound(io);
@@ -220,8 +224,8 @@ export class Game {
         this._turnStartDate = Date.now();
         this._currentGameState = GameState.RUNNING;
 
-        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder))
-        io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(this._turnStartDate, this._roundDurationSec, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord));
+        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._turnStartDate, this._ROUND_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder))
+        io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(this._turnStartDate, this._ROUND_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord));
     }
 
     private endTurn(io : SocketServer, interval : any) {
@@ -335,6 +339,10 @@ export class Game {
     }
 
 
+    get roundPauseStartDate(): number {
+        return this._roundPauseStartDate;
+    }
+
     get winner(): Connection | undefined {
         return this._winner;
     }
@@ -363,8 +371,8 @@ export class Game {
         return this._roundCount;
     }
 
-    get roundDurationSec(): number {
-        return this._roundDurationSec;
+    get ROUND_DURATION_SEC(): number {
+        return this._ROUND_DURATION_SEC;
     }
 
     get turnStartDate(): number {
@@ -400,8 +408,8 @@ export class Game {
         this._lobbyLeaderID = value;
     }
 
-    get maxRoundCount(): number {
-        return this._maxRoundCount;
+    get MAX_ROUND_COUNT(): number {
+        return this._MAX_ROUND_COUNT;
     }
 
 
