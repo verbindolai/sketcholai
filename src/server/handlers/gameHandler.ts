@@ -18,14 +18,14 @@ export class GameHandler implements HandlerInterface {
     init(){
         let rawData = fs.readFileSync("./src/server/handlers/words.txt","utf8");
         this._words = rawData.split("\n");
+        // this.jsonToTxt();
     }
 
-
     // private jsonToTxt(){
-    //     let rawData = fs.readFileSync("./src/server/handlers/words.json","utf16le").substr(1);
+    //     let rawData = fs.readFileSync("./src/server/handlers/words_en.json","utf8")//.substr(1);
     //     const list = JSON.parse(rawData);
-    //     for(let word in list){
-    //         fs.appendFileSync("./src/server/handlers/words.txt",word + "\n");
+    //     for(let word of list){
+    //         fs.appendFileSync("./src/server/handlers/words_en.txt",word + "\n");
     //     }
     //     console.log("feddich");
     // }
@@ -85,13 +85,16 @@ export class GameHandler implements HandlerInterface {
 
         socket.on('initGame', (clientPackage) => {
             signale.info("Heard initGame event.")
-
+            if(Buffer.byteLength(clientPackage, 'utf8') > 40000){
+                signale.error(new Error("clientPackage too big!"));
+                return;
+            }
             let data = JSON.parse(clientPackage);
             let drawTime = data[0];
             let roundNum = data[1];
             let connection = allConnections.get(socket.id);
-            const words = data[2];
-            const probability = data[3];
+            const words : string[] = data[2];
+            let customOnly = data[3];
 
             if (connection == undefined){
                 signale.error("Cant init Game, connection is undefined.")
@@ -104,8 +107,11 @@ export class GameHandler implements HandlerInterface {
                 return;
             }
 
+            if(words.length === 0 && customOnly){
+                customOnly = false;
+            }
 
-            lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections, this._words, lobby.leaderID);
+            lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections, this._words, lobby.leaderID, words,customOnly);
             CommHandler.deployMessage(socket, CommHandler.packData(lobby.lobbyID, lobby.game.currentPlayer?.name, RoomHandler.listToArr(lobby.connections)), "loadGame", true, lobby, connection, io);
         })
 
@@ -158,7 +164,6 @@ export class GameHandler implements HandlerInterface {
             }
         })
 
-        //Implemented but currently not used.
         socket.on("isReady", (clientPackage)=>{
             signale.info("Heard isReady event.")
             let data = JSON.parse(clientPackage);

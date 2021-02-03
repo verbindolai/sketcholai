@@ -4,6 +4,7 @@ import {Server as SocketServer} from "socket.io";
 import {ChatType, CommHandler, MessageType} from "./handlers/commHandler";
 import {RoomHandler} from "./handlers/roomHandler";
 import {GameLobby} from "./gameLobby";
+import {list} from "postcss";
 const signale = require('signale');
 
 
@@ -30,6 +31,8 @@ export class Game {
     private _wordSuggestions: string[] = [];
     private _currentPlaceholder : string = "";
     private _currentWord : string = "";
+    private readonly _customWords : string[];
+    private readonly _customOnly : boolean;
 
     private readonly _connections: LinkedList<Connection>;
     private _roundPlayerArr : Connection[] = [];
@@ -57,7 +60,7 @@ export class Game {
 
 
 
-    constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, connections: LinkedList<Connection>, words : string[], leaderID : string) {
+    constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, connections: LinkedList<Connection>, words : string[], leaderID : string, customWords : string[], customOnly : boolean) {
         this._GAME_ID = GameLobby.randomString();
         this._connections = connections;
         this._ROUND_DURATION_SEC = roundDuration;
@@ -72,6 +75,8 @@ export class Game {
         this._wordPauseEnded = false;
         this._roundPauseEnded = false;
         this._lobbyLeaderID = leaderID;
+        this._customWords = customWords;
+        this._customOnly = customOnly;
         signale.success(`New game created for ${lobbyId} with ${maxRoundCount} rounds and ${roundDuration} seconds draw time. Game-ID: ${this._GAME_ID}`)
     }
 
@@ -296,12 +301,26 @@ export class Game {
     }
 
     private randomWordArr(num : number) : string[] {
-        let words = [];
+        let result = [];
+        const allWordsSize = this._words.length + this._customWords.length;
+
         for (let i = 0; i < num; i++){
-            let randomIndex = Math.floor(Math.random() * this._words.length);
-            words.push(this._words[randomIndex]);
+            if(this._customOnly){
+                let randomIndex = Math.floor(Math.random() * this._customWords.length);
+                result.push(this._customWords[randomIndex]);
+            }else{
+                const diceThrow = Math.floor(Math.random() * 100);
+                let arrayToPush : string[];
+                if(diceThrow <= (this._words.length / allWordsSize * 100)){
+                    arrayToPush = this._words;
+                }else{
+                    arrayToPush = this._customWords;
+                }
+                let randomIndex = Math.floor(Math.random() * arrayToPush.length);
+                result.push(arrayToPush[randomIndex]);
+            }
         }
-        return words;
+        return result;
     }
 
     public sendToAllExcl(io :SocketServer, socketID :string , ev : string, data : any) {

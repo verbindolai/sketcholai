@@ -19,14 +19,14 @@ function initGame() {
     drawTime = document.querySelector("#drawTimeSelect").value;
     roundNumber = document.querySelector("#roundNumSelect").value;
     let words;
-    let probability = 0.5;  //TODO controlled by user
+    let customOnly = document.querySelector("#customOnly").checked;  //TODO controlled by user
     uploadWordList().then((value => {
-        words = value.split(/[ ,\n\r]+/).filter(Boolean);
+        words = value.split(/[,\n\r]+/).filter(Boolean);
     })).catch((error) =>{
         console.error(error);
         words = [];
     }).finally(()=>{
-        socket.emit("initGame", packData(drawTime, roundNumber, words, probability));
+        socket.emit("initGame", packData(drawTime, roundNumber, words, customOnly));
     })
 }
 /**
