@@ -20,13 +20,14 @@ function initGame() {
     roundNumber = document.querySelector("#roundNumSelect").value;
     let words;
     let customOnly = document.querySelector("#customOnly").checked;
+    let standardWordList = document.querySelector("#standardListSelect").value;
     uploadWordList().then((value => {
         words = value.split(/[,\n\r]+/).filter(Boolean);
     })).catch((error) =>{
         console.error(error);
         words = [];
     }).finally(()=>{
-        socket.emit("initGame", packData(drawTime, roundNumber, words, customOnly));
+        socket.emit("initGame", packData(drawTime, roundNumber, words, customOnly, standardWordList));
     })
 }
 /**

@@ -13,11 +13,15 @@ export class GameHandler implements HandlerInterface {
 
     private readonly drawEvent: string = "draw";
     private readonly fillEvent: string = "fill";
-    private _words : string[] = [];
+    private _words : string[][] = [];
 
     init(){
         let rawData = fs.readFileSync("./src/server/handlers/words.txt","utf8");
-        this._words = rawData.split("\n");
+        this._words[0] = rawData.split("\n");
+        rawData = fs.readFileSync("./src/server/handlers/words_en.txt","utf8");
+        this._words[1] = rawData.split("\n");
+        rawData = fs.readFileSync("./src/server/handlers/words_lol.txt","utf8");
+        this._words[2] = rawData.split("\n");
         // this.jsonToTxt();
     }
 
@@ -95,7 +99,12 @@ export class GameHandler implements HandlerInterface {
             let connection = allConnections.get(socket.id);
             const words : string[] = data[2];
             let customOnly = data[3];
+            let wordListIndex = data[4];
 
+            //Englisch wordlist if out of bounds
+            if(wordListIndex >= this._words.length){
+                wordListIndex = 1;
+            }
             if (connection == undefined){
                 signale.error("Cant init Game, connection is undefined.")
                 return;
@@ -111,7 +120,7 @@ export class GameHandler implements HandlerInterface {
                 customOnly = false;
             }
 
-            lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections, this._words, lobby.leaderID, words,customOnly);
+            lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections, this._words[wordListIndex], lobby.leaderID, words,customOnly);
             CommHandler.deployMessage(socket, CommHandler.packData(lobby.lobbyID, lobby.game.currentPlayer?.name, RoomHandler.listToArr(lobby.connections)), "loadGame", true, lobby, connection, io);
         })
 
