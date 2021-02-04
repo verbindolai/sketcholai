@@ -238,7 +238,7 @@ export class Game {
 
             signale.complete("Turn ended.")
             //send server msg what the current word was
-            io.in(this._lobbyId).emit("chat",CommHandler.packData("The word was " + this._currentWord, undefined, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT) )
+            io.in(this._lobbyId).emit("chat",CommHandler.packData("The word was " + this._currentWord +".", undefined, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT) )
 
 
             this._currentWord = "";

@@ -47,11 +47,13 @@ export class CommHandler implements HandlerInterface {
                 if(game.currentPlayer != undefined){
                     game.currentPlayer.player.points += game.DRAW_POINTS;
                 }
-                connection.player.points += game.GUESS_RIGHT_POINTS * game.pointMultiplicator;
+                let points = game.GUESS_RIGHT_POINTS * game.pointMultiplicator;
+                connection.player.points += points;
                 connection.player.guessedCorrectly = true;
                 //First guesses give more points
                 game.decrementPointMult();
 
+                socket.emit("triggerPointAnimation", CommHandler.packData(points))
                 //SERVER-MESSAGE
                 if (!CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.RIGHT_GUESS_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
                 }

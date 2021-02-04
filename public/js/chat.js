@@ -45,6 +45,13 @@ function initChatListening(){
         document.querySelector("#chatList").appendChild(chatListNode);
         scrollDown();
     })
+
+    socket.on("triggerPointAnimation",(serverPackage) => {
+        const data = JSON.parse(serverPackage);
+        const points = data[0];
+        document.querySelector("#pointNumAnimate").innerHTML = "+"+points;
+        triggerPointAnimation();
+    })
 }
 
 /**
@@ -61,7 +68,6 @@ function sendChatMsg() {
 
     socket.emit('chat', packData(message));
     chatInput.value = "";
-    triggerPointAnimation()
     scrollDown();
 }
 
