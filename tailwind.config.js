@@ -13,7 +13,7 @@ module.exports = {
         'lines-l' : "url('/images/linesLong.PNG')",
         'kasten' : "url('/images/kasten.PNG')",
         'comic-h' : "url('/images/comic1920Half.PNG')",
-        'comic' : "url('/images/comic1920.PNG')",
+        'comic' : "url('/images/comic1920.png')",
         'pattern1' : "url('/images/Composition.jpg')",
       })
     },
