@@ -15,7 +15,7 @@ module.exports = {
         'comic-h' : "url('/images/comic1920Half.PNG')",
         'comic' : "url('/images/comic1920.PNG')",
         'pattern1' : "url('/images/Composition.jpg')",
-      }),
+      })
     },
     colors: {
       transparent: 'transparent',

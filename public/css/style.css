@@ -21,6 +21,10 @@
 
 .pointTran{
     opacity: 0;
-    transition: opacity 100ms ease-in;
-    transition: top 270ms ease-in 5ms;
+    transition: opacity 100ms ease-out;
+    transition: top 300ms ease-out 5ms;
 }
+.glowGreen{
+    transition: border-color 500ms ease-out;
+}
+

@@ -73,6 +73,13 @@ function sendChatMsg() {
 
 function triggerPointAnimation(){
     let points = document.querySelector("#pointNumAnimate")
+    let input = document.querySelector("#chatInput")
+    input.classList.add("glowGreen")
+    input.style.borderColor = "#22C55E"
+    setTimeout(() =>{
+        input.style.borderColor = ""
+        input.classList.remove("glowGreen")
+    }, 500)
     points.style.opacity = 100;
     points.classList.remove("top-4")
     points.classList.add("top-0")
@@ -80,7 +87,7 @@ function triggerPointAnimation(){
         points.style.opacity = 0;
         points.classList.remove("top-0")
         points.classList.add("top-4")
-    },315)
+    },350)
 }
 
 /**
