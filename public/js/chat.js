@@ -61,10 +61,21 @@ function sendChatMsg() {
 
     socket.emit('chat', packData(message));
     chatInput.value = "";
+    triggerPointAnimation()
     scrollDown();
 }
 
-
+function triggerPointAnimation(){
+    let points = document.querySelector("#pointNumAnimate")
+    points.style.opacity = 100;
+    points.classList.remove("top-4")
+    points.classList.add("top-0")
+    setTimeout(() => {
+        points.style.opacity = 0;
+        points.classList.remove("top-0")
+        points.classList.add("top-4")
+    },315)
+}
 
 /**
  * scrolls down the chat

@@ -18,3 +18,9 @@
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
+
+.pointTran{
+    opacity: 0;
+    transition: opacity 100ms ease-in;
+    transition: top 270ms ease-in 5ms;
+}
