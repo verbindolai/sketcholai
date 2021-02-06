@@ -97,7 +97,7 @@ export class CommHandler implements HandlerInterface {
             game.wordGuessed = true;
 
             connection.player.guessStreak += 1;
-            if(connection.player.guessStreak == 1){
+            if(connection.player.guessStreak == 3){
                 connection.roles.push(roles.streak);
                 CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.STREAK_MESSAGE, connection, CommHandler.STREAK_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
             }
