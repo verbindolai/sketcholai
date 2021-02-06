@@ -5,7 +5,6 @@ module.exports = {
   theme: {
     extend: {
       backgroundImage: theme => ({
-
         'doodle-balloon': "url('/images/balloon.jpg')",
         'doodle-planets' : "url('https://image.freepik.com/vektoren-kostenlos/space-doodle_102902-2356.jpg')",
         'doodle-astro' : "url('/images/astro.jpg')",

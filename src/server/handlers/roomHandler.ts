@@ -5,6 +5,7 @@ import {Connection} from "../connection";
 import {HashMap, LinkedList} from "typescriptcollectionsframework";
 import {ChatType, CommHandler, MessageType} from "./commHandler";
 import {signale} from "../server";
+import validator from "validator";
 
 export class RoomHandler implements HandlerInterface {
     public static lateJoinedPlayers : HashMap<string, LinkedList<string>> = new HashMap<string, LinkedList<string>>();
@@ -16,7 +17,7 @@ export class RoomHandler implements HandlerInterface {
             signale.info("Heard createRoom event.")
             try{
                 let data = JSON.parse(clientPackage)
-                let name = data[0];
+                let name = validator.escape(data[0]);
                 let lobby = new GameLobby(GameLobby.randomString(), 20, socket.id);
                 let creator = new Connection(socket.id, name, lobby.lobbyID);
 
@@ -36,7 +37,7 @@ export class RoomHandler implements HandlerInterface {
             signale.info("Heard joinGame event.")
             try{
                 let data = JSON.parse(clientPackage);
-                let name = data[0];
+                let name = validator.escape(data[0]);
                 let lobbyID = data[1];
 
                 let lobby = lobbyHashMap.get(lobbyID);
@@ -124,13 +125,17 @@ export class RoomHandler implements HandlerInterface {
         }
 
         allPlayers.remove(connection.socketID);
+        CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.LEAVE_MESSAGE, connection, CommHandler.SERVER_BAD_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
 
         if (lobby.leaderID === connection.socketID){
             if(lobby.connections.getFirst() != undefined){
-                lobby.leaderID = lobby.connections.getFirst().socketID;
+                let newLeader = lobby.connections.getFirst();
+                lobby.leaderID = newLeader.socketID;
 
                 if (lobby.game == undefined  || !lobby.game.hasStarted){
                     io.to(lobby.leaderID).emit("becomeLeader", CommHandler.packData(lobby.leaderID, RoomHandler.listToArr(lobby.connections), lobby.lobbyID))
+                } else {
+                    CommHandler.deployMessage(socket, CommHandler.packData(" is now the lobby leader!", newLeader, CommHandler.SERVER_INFO_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
                 }
             }
 

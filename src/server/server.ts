@@ -31,7 +31,7 @@ export class SketchServer {
         this._port = port;
         this.app = express();
         this.io = new SocketServer(this.startServer(this._port),{
-            maxHttpBufferSize: 50000
+            maxHttpBufferSize: 5000000
         });
         this.handlerObjects = new LinkedList<HandlerInterface>();
         this.init();
@@ -105,6 +105,8 @@ export class SketchServer {
     private websocketHandler(): void {
         this.io.on('connection', (socket: Socket) => {
             signale.info("Heard connection event.")
+            let address = socket.handshake.address;
+            signale.info('New connection from ' + address);
             this.startHandlers(socket);
             this.handleDisconnect(socket);
         })

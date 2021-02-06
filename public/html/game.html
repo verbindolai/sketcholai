@@ -86,14 +86,15 @@
         <div class="p-10 rounded-r">
             <div class="flex flex-col justify-center items-center rounded bg-black bg-opacity-80 p-4 h-full ">
                 <!--Display-->
-                <div id="chatDisplay" class=" h-500 w-56 p-2 rounded-t overflow-x-hidden border-8 border-none text-blue-200" style="box-sizing: content-box" data-simplebar>
+                <div id="chatDisplay" class=" h-500 w-60 p-2 rounded-t overflow-x-hidden border-8 border-none text-blue-200" style="box-sizing: content-box" data-simplebar>
                     <ul id="chatList" class="text-sm break-words h-96">
 
                     </ul>
                 </div>
                 <!--Input-->
-                <div class="flex flex-col h-28">
-                    <textarea name="" placeholder="Send a Message..." id="chatInput" class="mt-1 w-52 rounded p-2 bg-black text-warmGray-100 text-sm font-semibold resize-none outline-none h-10 focus:ring-2 focus:ring-yellow-600 growH overflow-hidden"></textarea>
+                <div class="flex flex-col h-36 justify-end relative">
+                    <div class="text-base font-bold text-green-600 absolute top-4 pointTran" id="pointNumAnimate">+120</div>
+                    <textarea name="" placeholder="Send a Message..." id="chatInput" class="mt-1 w-52 rounded p-2 bg-black text-warmGray-100 text-sm font-semibold resize-none outline-none h-10 border border-black focus:border-2 focus:border-yellow-600 growH overflow-hidden"></textarea>
                     <button id="sendButton" onmousedown="sendChatMsg()" class="button text-yellow-900 bg-yellow-500 p-1 mt-1 rounded hover:bg-yellow-600 transition duration-200 ease-in-out outline-none w-1/4">Send</button>
                 </div>
             </div>

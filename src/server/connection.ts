@@ -23,7 +23,7 @@ export class Connection {
     private _chatColor : string;
     private _readyStatus : number;
 
-    //private _roles: Roles[] = [];
+    private _roles: string[] = [];
 
     constructor(id: string, name: string, lobbyID: string) {
         this.checkNameCodes(name);
@@ -42,6 +42,15 @@ export class Connection {
 
     private checkNameCodes(name : string){
 
+    }
+
+
+    get roles(): string[] {
+        return this._roles;
+    }
+
+    set roles(value: string[]) {
+        this._roles = value;
     }
 
     get receivedCanvas(): boolean {
@@ -124,4 +133,10 @@ export class Connection {
 export enum ReadyStatus {
     READY,
     NOT_READY,
+}
+
+export const roles = {
+    'host' : '',
+    'wizzard' :'/images/icons/wizzardIcon.png',
+    'streak' : '/images/icons/flameIcon.webp',
 }
