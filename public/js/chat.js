@@ -55,6 +55,13 @@ function initChatListening(){
         document.querySelector("#chatList").appendChild(chatListNode);
         scrollDown();
     })
+
+    socket.on("triggerPointAnimation",(serverPackage) => {
+        const data = JSON.parse(serverPackage);
+        const points = data[0];
+        document.querySelector("#pointNumAnimate").innerHTML = "+"+points;
+        triggerPointAnimation();
+    })
 }
 
 /**
@@ -74,7 +81,24 @@ function sendChatMsg() {
     scrollDown();
 }
 
-
+function triggerPointAnimation(){
+    let points = document.querySelector("#pointNumAnimate")
+    let input = document.querySelector("#chatInput")
+    input.classList.add("glowGreen")
+    input.style.borderColor = "#22C55E"
+    setTimeout(() =>{
+        input.style.borderColor = ""
+        input.classList.remove("glowGreen")
+    }, 500)
+    points.style.opacity = 100;
+    points.classList.remove("top-4")
+    points.classList.add("top-0")
+    setTimeout(() => {
+        points.style.opacity = 0;
+        points.classList.remove("top-0")
+        points.classList.add("top-4")
+    },350)
+}
 
 /**
  * scrolls down the chat

@@ -18,3 +18,13 @@
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
+
+.pointTran{
+    opacity: 0;
+    transition: opacity 100ms ease-out;
+    transition: top 300ms ease-out 5ms;
+}
+.glowGreen{
+    transition: border-color 500ms ease-out;
+}
+
