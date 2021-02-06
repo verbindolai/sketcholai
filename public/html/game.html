@@ -1,17 +1,17 @@
-
+<div class="h-full bg-comic">
   <!-- Header =======================-->
-  <div class="text-blue-900  min-h-screen flex flex-col p-5">
-    <div class="flex flex-row justify-between p-3 items-center">
-      <a href="#">News</a>
-      <a href="#" class="font-bold text-3xl">Sketcholai</a>
-      <a href="#">About</a>
-    </div>
+  <div class="min-h-screen flex flex-col p-5 text-warmGray-100">
+      <div class="flex flex-row justify-between p-3 items-center">
+          <a href="#" class="bg-white text-black p-2 rounded-lg">News</a>
+          <a href="#" class="py-3 px-4 rounded-lg bg-white font-bold text-black text-7xl">Sketcholai</a>
+          <a href="#" class="bg-white text-black p-2 rounded-lg">About</a>
+      </div>
 
     <!-- Main =======================-->
-    <div class=" px-4 m-auto flex flex-row shadow-xl bg-blue-600 rounded">
+    <div class="px-4 m-auto flex flex-row shadow-xl bg-black bg-opacity-80 rounded">
         <!--Points-->
-        <div class="flex flex-col justify-center items-center bg-blue-600 p-10 rounded-l">
-            <div class="flex flex-col justify-center items-center p-4 bg-blue-700 h-full rounded">
+        <div class="flex flex-col justify-center items-center  p-10 rounded-l">
+            <div class="flex flex-col justify-center items-center p-4 bg-black bg-opacity-80 h-full rounded">
                 <label class="p-2 mb-2 font-bold text-xl">Connected Players: </label>
                 <ul id="connectedPlayerList" class="font-bold text-sm"></ul>
             </div>
@@ -19,12 +19,12 @@
         </div>
         <!--Game-Area-->
         <div class="flex flex-col">
-            <div class="p-2 bg-blue-600 flex flex-row justify-between items-center">
+            <!--Game-Bar-->
+            <div class="p-2  flex flex-row justify-between items-center">
                 <div class="flex flex-row justify-center items-center">
                     <img src="https://cdn4.iconfinder.com/data/icons/business-and-finance-colorful-free-hand-drawn-set/100/stopwatch-256.png" width="50">
                     <div id="timerContainer" class="p-1 font-bold text-xl"></div>
                 </div>
-
                 <div class="flex flex-row justify-center items-center p-2">
                     <label class="font-bold text-xl mr-2">Current Player:</label>
                     <div id="nameContainer" class=""> </div>
@@ -33,46 +33,68 @@
                     <label class="font-bold text-xl mr-2">Roomcode:</label>
                     <div id="roomCodeContainer"></div>
                 </div>
+                <div class="flex flex-row justify-center items-center p-2 mr-2">
+                    <label class="font-bold text-xl mr-2">Word:</label>
+                    <div id="currentWordContainer" class="tracking-widest"></div>
+                </div>
             </div>
             <!--Canvas-->
             <div id="canvasContainer">
-                <canvas id="canvas" width="1000" height="600" class="bg-white rounded "></canvas>
+                <canvas id="canvas" width="1000" height="600" class="bg-white rounded"></canvas>
+                <div class="flex flex-row justify-center items-center bg-white rounded">
+                    <div id="wordContainer" class="bg-black bg-opacity-80 hidden wordCont flex flex-row justify-center align-center rounded">
+                        <div class="flex flex-row justify-center items-center"></div>
+                    </div>
+                </div>
             </div>
             <!--Tools-->
-            <div class="flex flex-row p-4 bg-blue-600 items-center">
+            <div class="flex flex-row p-4  justify-between items-center ">
                 <div class="">
-                    <button id="btnColRed" onclick="changeColor(this),highlightColor(this)" value="#ff0000" class="p-4 bg-red-700 rounded"></button>
-                    <button id="btnColBlue" onclick="changeColor(this),highlightColor(this)" value="#1c37b5" class="p-4 bg-blue-700 rounded"></button>
-                    <button id="btnColGreen" onclick="changeColor(this),highlightColor(this)" value="#2cb323" class="p-4 bg-green-700 rounded"></button>
-                    <button id="btnColWhite" onclick="changeColor(this),highlightColor(this)" value="#ffffff" class="p-4 bg-white rounded"></button>
-                    <button id="btnColBlack" onclick="changeColor(this),highlightColor(this)" value="#000000" class="p-4 bg-black rounded"></button>
-                    <button id="btnColYellow" onclick="changeColor(this),highlightColor(this)" value="#e3cf19" class="p-4 bg-yellow-700 rounded"></button>
+                    <button id="btnColWhite" onclick="changeColor(this),highlightColor(this)" value="#ffffff" class="p-4 bg-white rounded focus:outline-none outline-none"></button>
+                    <button id="btnColBlack" onclick="changeColor(this),highlightColor(this)" value="#000000" class="p-4 bg-black rounded focus:outline-none outline-none"></button>
+                    <button id="btnColGray" onclick="changeColor(this),highlightColor(this)" value="#737373" class="p-4 bg-trueGray-500 rounded focus:outline-none outline-none"></button>
+                    <button id="btnColBrownDark" onclick="changeColor(this),highlightColor(this)" value="#713F12" class="p-4 bg-yellow-900 rounded focus:outline-none outline-none"></button>
+                    <button id="btnColBrown" onclick="changeColor(this),highlightColor(this)" value="#B45309" class="p-4 bg-amber-700 rounded focus:outline-none outline-none"></button>
+                    <button id="btnColRed" onclick="changeColor(this),highlightColor(this)" value="#B91C1C" class="p-4 bg-red-700 rounded focus:outline-none outline-none"></button>
+                    <button id="btnColOrange" onclick="changeColor(this),highlightColor(this)" value="#F97316" class="p-4 bg-orange-500 rounded focus:outline-none outline-none"></button>
+                    <button id="btnColSkin" onclick="changeColor(this),highlightColor(this)" value="#FCA5A5" class="p-4 bg-red-300 rounded focus:outline-none outline-none"></button>
+                    <button id="btnColPink" onclick="changeColor(this),highlightColor(this)" value="#E879F9" class="p-4 bg-fuchsia-400 rounded focus:outline-none outline-none"></button>
+                    <button id="btnColPurple" onclick="changeColor(this),highlightColor(this)" value="#A855F7" class="p-4 bg-purple-500 rounded focus:outline-none outline-none"></button>
+                    <button id="btnColBlue" onclick="changeColor(this),highlightColor(this)" value="#1D4ED8" class="p-4 bg-blue-700 rounded focus:outline-none outline-none"></button>
+                    <button id="btnColLightBlue" onclick="changeColor(this),highlightColor(this)" value="#38BDF8" class="p-4 bg-lightBlue-400 rounded focus:outline-none outline-none"></button>
+                    <button id="btnColLightCyan" onclick="changeColor(this),highlightColor(this)" value="#22D3EE" class="p-4 bg-cyan-400 rounded focus:outline-none outline-none"></button>
+                    <button id="btnColDarkLime" onclick="changeColor(this),highlightColor(this)" value="#4D7C0F" class="p-4 bg-lime-700 rounded focus:outline-none outline-none"></button>
+                    <button id="btnColLime" onclick="changeColor(this),highlightColor(this)" value="#A3E635" class="p-4 bg-lime-400 rounded focus:outline-none outline-none"></button>
+                    <button id="btnColYellow" onclick="changeColor(this),highlightColor(this)" value="#FDE047" class="p-4 bg-yellow-300 rounded focus:outline-none outline-none"></button>
                 </div>
-                <div class="flex flex-row justify-center items-center ml-16">
-                    <button id="btnToolBucket" onclick="switchTool(this.value),highlightTool(this)" value="BUCKET" class="rounded"><img src="https://cdn0.iconfinder.com/data/icons/graphic-design-solid-1/88/paint_bucket_color_art_design-256.png" alt="Bucket" width="35"></button>
-                    <button id="btnToolEraser" onclick="switchTool(this.value),highlightTool(this)" value="ERASER" class="rounded"><img src="https://cdn4.iconfinder.com/data/icons/graphic-design-72/32/Graphic_Design_eraser-256.png" alt="Eraser" width="35"></button>
-                    <button id="btnToolPen" onclick="switchTool(this.value),highlightTool(this)" value="PEN" class="rounded"><img src="https://cdn4.iconfinder.com/data/icons/basic-user-interface-elements/700/edit-change-pencil-256.png" alt="Pen" width="35"></button>
+                <div class="flex flex-row justify-center items-center p-1 bg-white bg-opacity-20 rounded">
+                    <button id="btnToolBucket" onclick="switchTool(this.value),highlightTool(this)" value="BUCKET" class="rounded hover:bg-black hover:bg-opacity-20 p-1 focus:outline-none outline-none"><img src="https://cdn0.iconfinder.com/data/icons/graphic-design-solid-1/88/paint_bucket_color_art_design-256.png" alt="Bucket" width="35"></button>
+                    <button id="btnToolEraser" onclick="switchTool(this.value),highlightTool(this)" value="ERASER" class="rounded hover:bg-black hover:bg-opacity-20 p-1 focus:outline-none outline-none"><img src="https://cdn4.iconfinder.com/data/icons/graphic-design-72/32/Graphic_Design_eraser-256.png" alt="Eraser" width="35"></button>
+                    <button id="btnToolPen" onclick="switchTool(this.value),highlightTool(this)" value="PEN" class="rounded hover:bg-black hover:bg-opacity-20 p-1 focus:outline-none outline-none"><img src="https://cdn4.iconfinder.com/data/icons/basic-user-interface-elements/700/edit-change-pencil-256.png" alt="Pen" width="35"></button>
                 </div>
-                <div class="flex flex-row justify-center items-center ml-16">
-                    <button id="btnPenThin" onclick="setLineWidth(this.value),highlightPenSize(this)" value="2" class="rounded-full p-2 bg-black"></button>
-                    <button id="btnPenNormal" onclick="setLineWidth(this.value),highlightPenSize(this)" value="4" class="rounded-full p-3 bg-black"></button>
-                    <button id="btnPenThick" onclick="setLineWidth(this.value),highlightPenSize(this)" value="6" class="rounded-full p-4 bg-black"></button>
+                <div class="flex flex-row justify-center items-center p-1 bg-white bg-opacity-20 rounded">
+                    <button id="btnPenThin" onclick="setLineWidth(this.value),highlightPenSize(this)" value="6" class="rounded-full p-2 bg-black focus:outline-none outline-none"></button>
+                    <button id="btnPenNormal" onclick="setLineWidth(this.value),highlightPenSize(this)" value="12" class="rounded-full p-3 bg-black focus:outline-none outline-none"></button>
+                    <button id="btnPenThick" onclick="setLineWidth(this.value),highlightPenSize(this)" value="18" class="rounded-full p-4 bg-black focus:outline-none outline-none"></button>
+                </div>
+                <div class="flex flex-row justify-center items-center">
+                    <button id="btnClearCanvas" onclick="clearButton()" class="rounded hover:bg-black hover:bg-opacity-20 p-1 focus:outline-none outline-none"><img src="https://cdn4.iconfinder.com/data/icons/web-ui-color/128/Close-256.png" alt="clearCanvas" width="35"></button>
                 </div>
             </div>
         </div>
         <!--Chat-->
-        <div class="bg-blue-600 p-10 rounded-r">
-            <div class="flex flex-col justify-center items-center rounded bg-blue-800 p-4 h-full ">
+        <div class="p-10 rounded-r">
+            <div class="flex flex-col justify-center items-center rounded bg-black bg-opacity-80 p-4 h-full ">
                 <!--Display-->
-                <div id="chatDisplay" class="bg-blue-800 h-500 w-52 p-2 rounded-t overflow-x-hidden border-8 border-blue-800 text-blue-200" style="box-sizing: content-box" data-simplebar>
-                    <ul id="chatList" class="text-sm ">
+                <div id="chatDisplay" class=" h-500 w-56 p-2 rounded-t overflow-x-hidden border-8 border-none text-blue-200" style="box-sizing: content-box" data-simplebar>
+                    <ul id="chatList" class="text-sm break-words h-96">
 
                     </ul>
                 </div>
                 <!--Input-->
                 <div class="flex flex-col h-28">
-                    <textarea name="" placeholder="Send a Message..." id="chatInput" class="mt-1 w-52 rounded p-2 bg-blue-700 text-blue-300 text-sm font-semibold resize-none outline-none h-10 focus:ring-2 focus:ring-yellow-600 growH overflow-hidden"></textarea>
-                    <button id="sendButton" onclick="sendChatMsg()" class="text-yellow-900 bg-yellow-500 p-1 mt-1 rounded hover:bg-yellow-600 transition duration-200 ease-in-out outline-none w-1/4">Send</button>
+                    <textarea name="" placeholder="Send a Message..." id="chatInput" class="mt-1 w-52 rounded p-2 bg-black text-warmGray-100 text-sm font-semibold resize-none outline-none h-10 focus:ring-2 focus:ring-yellow-600 growH overflow-hidden"></textarea>
+                    <button id="sendButton" onmousedown="sendChatMsg()" class="button text-yellow-900 bg-yellow-500 p-1 mt-1 rounded hover:bg-yellow-600 transition duration-200 ease-in-out outline-none w-1/4">Send</button>
                 </div>
             </div>
 
@@ -80,8 +102,9 @@
     </div>
 
     <!-- Footer =======================-->
-    <div class="bg-blue-500 p-5">
+    <div class="transparent p-5">
 
     </div>
 
   </div>
+</div>

@@ -8,3 +8,13 @@
     height: 4rem;
     transition: height 0.10s ease-in;
 }
+
+.wordCont {
+    height: 600px;
+    width: 1000px;
+}
+
+.breakW{
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}

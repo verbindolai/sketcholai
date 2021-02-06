@@ -7,8 +7,8 @@ import {RoomHandler} from "./handlers/roomHandler";
 import {HandlerInterface} from "./handlers/handlerInterface";
 import * as fs from "fs";
 import {Connection} from "./connection";
-import {CommunicationHandler} from "./handlers/communicationHandler";
-
+import {CommHandler} from "./handlers/commHandler";
+const signale = require('signale');
 /**
  * Represents the Sketch-Server
  * @author Christopher Peters, Mathusan Kannathasan, Nikolai Wieczorek
@@ -22,6 +22,7 @@ export class SketchServer {
     private readonly handlerObjects: LinkedList<HandlerInterface>
     private lobbies: HashMap<string, GameLobby> = new HashMap<string, GameLobby>();
     private allConnections : HashMap<string, Connection> = new HashMap<string, Connection>();
+
 
 
     constructor(port: number) {
@@ -46,7 +47,7 @@ export class SketchServer {
      */
 
     private startServer(port: number): HTTPServer {
-        console.log(`Listening on Port ${port} ...`)
+        signale.watch(`Listening on Port ${port} ...`)
         return this.app.listen(port);
 
     }
@@ -58,6 +59,9 @@ export class SketchServer {
     private init(): void {
         this.addHandlers();
         this.app.use(express.static('./public'));
+        for(let handler of this.handlerObjects){
+            handler.init();
+        }
     }
 
     /**
@@ -76,7 +80,7 @@ export class SketchServer {
         this.app.get('/', function (req: Request, res: Response) {
             res.sendFile(process.cwd() + "/public/html/index.html", (err) => {
                 if (err) {
-                    console.error("There was an error sending the Response-File.")
+                    signale.error(new Error("There was an error sending the Response-File."))
                 }
             });
         });
@@ -88,6 +92,7 @@ export class SketchServer {
      */
     private websocketHandler(): void {
         this.io.on('connection', (socket: Socket) => {
+            signale.info("Heard connection event.")
             this.startHandlers(socket);
             this.handleDisconnect(socket);
         })
@@ -95,24 +100,25 @@ export class SketchServer {
 
     private handleDisconnect(socket: Socket): void {
         socket.on('disconnect', (data) => {
+            signale.info("Heard disconnect event.")
             let connection = this.allConnections.get(socket.id);
 
             if (connection == undefined) {
-                console.error("Disconnect Error, Player is undefined.")
+                signale.warn("Cant disconnect, connection not found.")
                 return;
             }
 
             let lobby = this.lobbies.get(connection.lobbyID);
 
             if (lobby == undefined) {
-                console.error("Disconnect Error, lobby is undefined.")
+                signale.warn("Cant disconnect, lobby not found.")
                 return;
             }
 
-            if (!RoomHandler.removePlayer(socket, this.lobbies, this.allConnections)) {
-                console.error("Couldn't delete Lobby.")
+            if (!RoomHandler.removeConnection(socket, this.lobbies, this.allConnections, this.io)) {
+                signale.error(new Error("Couldn't remove player!"))
             }
-            CommunicationHandler.deployMessage(socket, CommunicationHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, this.io);
+            CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, this.io);
         })
     }
 
@@ -120,6 +126,7 @@ export class SketchServer {
         for (const handler of this.handlerObjects) {
             handler.handle(socket, this.lobbies, this.io, this.allConnections)
         }
+        signale.success("Started handlers.")
     }
 
 
@@ -127,8 +134,10 @@ export class SketchServer {
         const handlerFiles = fs.readdirSync('src/server/handlers').filter(file => file.endsWith('.ts') && file !== 'handlerInterface.ts');
         for (const file of handlerFiles) {
             const fileWithoutTS = file.replace(".ts", "");
-            let command = require(`./handlers/${fileWithoutTS}`);
-            this.handlerObjects.add(command.handler)
+            let handler = require(`./handlers/${fileWithoutTS}`);
+            if(!this.handlerObjects.add(handler.handler)){
+                signale.error(new Error("Handler couldn't be loaded!"))
+            }
         }
     }
 

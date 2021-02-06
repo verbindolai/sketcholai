@@ -5,24 +5,43 @@ let CHAT_HTML_TEXTAREA;
  * creates a new chat message in chat on channel "chat"
  */
 function initChatListening(){
+
     socket.on('chat', (serverPackage) => {
         let data = JSON.parse(serverPackage);
         let message = data[0];
-        let name = data[1];
+        let conn = data[1];
+        let name;
+        if(conn == undefined || conn == null){
+            name = "";
+        }else {
+            name = conn._name;
+        }
         let color = data[2];
+        let serverMSG = data[3];
+        let chatType = data[4];
 
         let chatListNode = document.createElement("li");
-        let chatNameCont = document.createElement("div");
-        let chatMsgCont = document.createElement("div");
-        chatListNode.classList.add("flex", "flex-row")
-        chatNameCont.style.color = color;
-        chatNameCont.classList.add("font-bold", "mr-1");
-        chatMsgCont.classList.add("font-semibold", "break-all");
+        chatListNode.classList.add("flex", "flex-row","px-1","rounded","hover:bg-white", "hover:bg-opacity-20")
 
-        chatNameCont.appendChild(document.createTextNode(name + ":"));
-        chatMsgCont.appendChild(document.createTextNode(message));
-        chatListNode.append(chatNameCont, chatMsgCont);
-        chatListNode.classList.add("px-1","rounded","hover:bg-blue-700");
+        let chatMsgCont = document.createElement("div");
+        chatMsgCont.classList.add("font-semibold");
+
+        if (serverMSG === 1) {
+            let chatNameCont = document.createElement("div");
+            chatNameCont.style.color = color;
+            chatNameCont.classList.add("font-bold", "mr-1");
+            chatNameCont.appendChild(document.createTextNode(name + ":"));
+            chatMsgCont.appendChild(document.createTextNode(message))
+            chatListNode.append(chatNameCont);
+            if(chatType === 1){
+                chatMsgCont.style.color = "#c9892e";
+            }
+        } else if (serverMSG === 0) {
+            chatMsgCont.appendChild(document.createTextNode(name + message));
+            chatMsgCont.classList.add("italic")
+            chatMsgCont.style.color = color;
+        }
+        chatListNode.append(chatMsgCont);
         document.querySelector("#chatList").appendChild(chatListNode);
         scrollDown();
     })
@@ -44,6 +63,8 @@ function sendChatMsg() {
     chatInput.value = "";
     scrollDown();
 }
+
+
 
 /**
  * scrolls down the chat

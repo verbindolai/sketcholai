@@ -13,16 +13,17 @@ export class GameLobby {
     private _connections: LinkedList<Connection> = new LinkedList<Connection>();
     private readonly limit: number;
     private _game: Game | undefined;
+    private _leaderID : string;
 
-    constructor(lobbID: string, limit: number) {
-        this._lobbyID = lobbID;
+    constructor(lobbyID: string, limit: number, leaderID : string) {
+        this._lobbyID = lobbyID;
         this.limit = limit;
+        this._leaderID = leaderID;
     }
 
     public addConnection(connection: Connection): boolean {
         if (this._connections.size() < this.limit) {
             this._connections.add(connection);
-            connection.isInRoom = true;
             return true;
         } else {
             return false;
@@ -48,6 +49,16 @@ export class GameLobby {
         return this._lobbyID;
     }
 
+    get leaderID(): string {
+        return this._leaderID;
+    }
+
+    set leaderID(value: string) {
+        this._leaderID = value;
+        if(this.game != undefined){
+            this.game.lobbyLeaderID = value;
+        }
+    }
 
     get game(): Game | undefined {
         return this._game;

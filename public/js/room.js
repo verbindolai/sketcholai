@@ -17,9 +17,6 @@ function createRoom() {
     let nameInput = document.querySelector("#nameInput");
     let name = nameInput.value;
 
-    if (name == undefined || name == "") {
-        name = randomString(6);
-    }
     socket.emit('createRoom', packData(name));
 }
 
@@ -51,9 +48,7 @@ function joinGame() {
     let name = nameInput.value;
     let roomID = roomInput.value;
 
-    if (name == undefined || name == "") {
-        name = randomString(6);
-    } else if (roomID == "" || roomID == undefined){
+   if (roomID == "" || roomID == undefined){
         console.error("Wrong Lobby-ID.")
         return;
     }
@@ -73,7 +68,6 @@ socket.on("roomJoined", (serverPackage) =>{
         roomInit();
         let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
         lobbyRoomCode.innerHTML = lobbyID;
-
         listDisplayer(connections, connections_html_container);
 
     });
@@ -84,18 +78,28 @@ socket.on("gameJoined", (serverPackage) => {
     let allConnections = data[0];
     let lobbyID = data[1];
     let currentPlayerName = data[2];
-    let unixTime = data[3];
-    let drawDuration = data[4];
-    let currentPlayerSocketID = data[5];
+    let currentPlayerSocketID = data[3];
 
     pageLoad("game", () => {
         init(lobbyID, currentPlayerName);
-        displayTime(drawDuration, unixTime);
         initUpdatePlayerListListening();
         listDisplayer(allConnections, connections_html_container);
-        //TODO
     });
 });
+
+socket.on("becomeLeader", (serverPackage) => {
+    let data = JSON.parse(serverPackage);
+    let leaderID = data[0];
+    let allConnections = data[1];
+    let lobbyID = data[2];
+
+    if(socket.id === leaderID){
+        pageLoad("lobby", () => {
+            document.querySelector('#lobbyRoomCode').innerHTML = lobbyID;
+            listDisplayer(allConnections, document.querySelector("#connectedPlayerList"));
+        });
+    }
+})
 
 function initCanvasListening(){
     socket.on("sendCanvasStatus", (serverPackage) => {
@@ -115,16 +119,39 @@ function listDisplayer(list, node) {
     node.innerHTML = "";
 
     for(let con of list) {
+
+
         let li = document.createElement("li");
-        li.appendChild(document.createTextNode(con._name));
+        let name = document.createElement("div");
+        let points = document.createElement("div")
+
+        // if (con.){
+        //     let crown = document.createElement("img")
+        //     crown.src = "https://cdn0.iconfinder.com/data/icons/happy-new-year-2031/32/Crown-256.png"
+        //     crown.width = 25;
+        //     crown.classList.add("mr-1");
+        //     li.appendChild(crown)
+        // }
+
+        // if (con._player._isDrawing){
+        //     let pen = document.createElement("img");
+        //     pen.src = "https://cdn1.iconfinder.com/data/icons/education-filled-outline-8/64/Education-Filled_25-256.png"
+        //     pen.width = 18;
+        //     pen.classList.add("mr-1");
+        //     li.appendChild(pen)
+        // }
+
+        name.appendChild(document.createTextNode(con._name));
+        name.style.color = con._chatColor;
+        points.appendChild(document.createTextNode(con._player._points.toString()))
+
+        name.classList.add("font-bold", "text-lg", "mr-2")
+        points.classList.add("font-bold")
+        li.classList.add("flex", "flex-row", "justify-center", "items-center")
+        li.append(name, points)
         node.appendChild(li);
     }
 
-
-}
-
-
-function sendReady () {
 
 }
 

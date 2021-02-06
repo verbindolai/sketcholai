@@ -9,7 +9,7 @@ let currentPlayerName;
 let currentPlayerID;
 let clientName;
 let LOBBY_ID_HTML_CONTAINER
-
+let CURRENT_WORD_HTML_CONTAINER;
 
 
 function initGame() {
@@ -18,7 +18,17 @@ function initGame() {
 
     drawTime = document.querySelector("#drawTimeSelect").value;
     roundNumber = document.querySelector("#roundNumSelect").value;
-    socket.emit("initGame", packData(drawTime, roundNumber))
+    let words;
+    let customOnly = document.querySelector("#customOnly").checked;
+    let standardWordList = document.querySelector("#standardListSelect").value;
+    uploadWordList().then((value => {
+        words = value.split(/[,\n\r]+/).filter(Boolean);
+    })).catch((error) =>{
+        console.error(error);
+        words = [];
+    }).finally(()=>{
+        socket.emit("initGame", packData(drawTime, roundNumber, words, customOnly, standardWordList));
+    })
 }
 /**
  * loads the game Page and informs the Server that the game can be started.

@@ -4,27 +4,46 @@
  * @version 1.0
  */
 import {Player} from "./player";
+import { uniqueNamesGenerator, Config, adjectives, names, starWars } from 'unique-names-generator';
+import {HashMap} from "typescriptcollectionsframework";
+
+const customConfig: Config = {
+    dictionaries: [adjectives, names],
+    separator: '',
+    length: 2,
+    style: "capital",
+};
 
 export class Connection {
 
     private readonly _socketID: string;
     private _name: string;
-    private _isInRoom: boolean;
     private _lobbyID: string;
     private _player: Player;
     private _receivedCanvas : boolean;
     private _chatColor : string;
+    private _readyStatus : number;
+
+    //private _roles: Roles[] = [];
 
     constructor(id: string, name: string, lobbyID: string) {
+        this.checkNameCodes(name);
         this._socketID = id;
-        this._name = name;
-        this._isInRoom = false;
+        if (name == undefined || name == "") {
+            this._name = uniqueNamesGenerator(customConfig);
+        } else {
+            this._name = name;
+        }
         this._lobbyID = lobbyID;
         this._player = new Player();
         this._receivedCanvas = false;
         this._chatColor = this.randomColor();
+        this._readyStatus = ReadyStatus.NOT_READY;
     }
 
+    private checkNameCodes(name : string){
+
+    }
 
     get receivedCanvas(): boolean {
         return this._receivedCanvas;
@@ -47,12 +66,9 @@ export class Connection {
         return this._player;
     }
 
-    get isInRoom(): boolean {
-        return this._isInRoom;
-    }
 
-    set isInRoom(value: boolean) {
-        this._isInRoom = value;
+    set player(value: Player) {
+        this._player = value;
     }
 
 
@@ -72,18 +88,41 @@ export class Connection {
         this._chatColor = value;
     }
 
+    set name(value: string) {
+        this._name = value;
+    }
 
+    get readyStatus(): number {
+        return this._readyStatus;
+    }
+
+    set readyStatus(value: number) {
+        this._readyStatus = value;
+    }
 
     public toString(): string {
         return "name: " + this._name + "\n" +
             "id: " + this._socketID + "\n" +
-            "isInRoom: " + this._isInRoom + "\n" +
             "lobbyID: " + this._lobbyID + "\n";
-
     }
 
     public randomColor() : string{
         let color = "#" + Math.floor(Math.random()*16777215).toString(16);
         return color;
     }
+
+    //adjusted to descending order of arr.sort
+    public static compare (a : Connection, b : Connection) : number {
+        if (a.player.points > b.player.points) {
+            return -1;
+        }
+        if (a.player.points < b.player.points){
+            return 1;
+        }
+        return 0;
+    }
+}
+export enum ReadyStatus {
+    READY,
+    NOT_READY,
 }
