@@ -4,7 +4,7 @@ import {HashMap} from "typescriptcollectionsframework";
 import {GameLobby} from "../gameLobby";
 import {Connection} from "../connection";
 import {RoomHandler} from "./roomHandler";
-const signale = require('signale');
+import {signale} from "../server";
 
 export class CommHandler implements HandlerInterface {
 
@@ -17,64 +17,65 @@ export class CommHandler implements HandlerInterface {
         signale.watch(`Start listening for Communication events for Socket ${socket.id} ...`)
 
         socket.on('chat', (clientPackage) => {
+            try{
+                let data = JSON.parse(clientPackage);
+                let message = data[0].trim();
 
-            let data = JSON.parse(clientPackage);
-            let message = data[0].trim();
+                let connection = allConnections.get(socket.id);
+                let lobby = lobbyHashMap.get(connection.lobbyID);
+                let game = lobby.game;
 
-            let connection = allConnections.get(socket.id);
-            let lobby = lobbyHashMap.get(connection.lobbyID);
-            let game = lobby.game;
+                if (game == undefined){
+                    signale.error(new Error("Cant process message, game is undefined."))
+                    return;
+                }
 
+                let currentWord = game.currentWord.trim();
 
-            if (game == undefined){
-                signale.error(new Error("Cant process message, game is undefined."))
-                return;
-            }
+                if (connection.player.guessedCorrectly){
+                    //Send message only to players who have guessed the word too.
+                    for (let conn of game.connections){
+                        if (conn.player.guessedCorrectly){
+                            io.to(conn.socketID).emit("chat", CommHandler.packData(message, connection, connection.chatColor, MessageType.CLIENT_MESSAGE, ChatType.GUESSED_CHAT));
+                        }
+                    }
+                } else if (message == currentWord){
+                    signale.star(`Word was correctly guessed by ${connection.socketID}!`)
 
-            let currentWord = game.currentWord.trim();
+                    if(game.currentPlayer != undefined){
+                        game.currentPlayer.player.points += game.DRAW_POINTS;
+                    }
+                    connection.player.points += game.GUESS_RIGHT_POINTS * game.pointMultiplicator;
+                    connection.player.guessedCorrectly = true;
+                    //First guesses give more points
+                    game.decrementPointMult();
 
+                    //SERVER-MESSAGE
+                    if (!CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.RIGHT_GUESS_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
+                    }
 
-            if (connection.player.guessedCorrectly){
-                //Send message only to players who have guessed the word too.
-                for (let conn of game.connections){
-                    if (conn.player.guessedCorrectly){
-                        io.to(conn.socketID).emit("chat", CommHandler.packData(message, connection, connection.chatColor, MessageType.CLIENT_MESSAGE, ChatType.GUESSED_CHAT));
+                    let allGuessedRight = true;
+                    for (let conn of game.connections){
+                        if (!conn.player.guessedCorrectly) {
+                            allGuessedRight = false;
+                            break;
+                        }
+                    }
+                    if(allGuessedRight){
+                        signale.info("All players guessed the word!")
+                        game.turnEnded = true;
+                    }
+
+                    //Update list so the points will be displayed
+                    CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", true, lobby, connection, io);
+
+                } else {
+                    if (!CommHandler.deployMessage(socket, CommHandler.packData(message, connection, connection.chatColor, MessageType.CLIENT_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
+
                     }
                 }
-            } else if (message == currentWord){
-                signale.star(`Word was correctly guessed by ${connection.socketID}!`)
-
-                if(game.currentPlayer != undefined){
-                    game.currentPlayer.player.points += game.DRAW_POINTS;
-                }
-                connection.player.points += game.GUESS_RIGHT_POINTS * game.pointMultiplicator;
-                connection.player.guessedCorrectly = true;
-                //First guesses give more points
-                game.decrementPointMult();
-
-                //SERVER-MESSAGE
-                if (!CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.RIGHT_GUESS_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
-                }
-
-                let allGuessedRight = true;
-                for (let conn of game.connections){
-                    if (!conn.player.guessedCorrectly) {
-                        allGuessedRight = false;
-                        break;
-                    }
-                }
-                if(allGuessedRight){
-                   signale.info("All players guessed the word!")
-                   game.turnEnded = true;
-                }
-
-                //Update list so the points will be displayed
-                CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", true, lobby, connection, io);
-
-            } else {
-                if (!CommHandler.deployMessage(socket, CommHandler.packData(message, connection, connection.chatColor, MessageType.CLIENT_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
-
-                }
+            }catch (e) {
+                signale.error(e);
             }
 
         });

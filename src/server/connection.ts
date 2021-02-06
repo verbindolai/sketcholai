@@ -5,7 +5,6 @@
  */
 import {Player} from "./player";
 import { uniqueNamesGenerator, Config, adjectives, names, starWars } from 'unique-names-generator';
-import {HashMap} from "typescriptcollectionsframework";
 
 const customConfig: Config = {
     dictionaries: [adjectives, names],

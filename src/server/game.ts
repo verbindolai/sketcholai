@@ -4,8 +4,7 @@ import {Server as SocketServer} from "socket.io";
 import {ChatType, CommHandler, MessageType} from "./handlers/commHandler";
 import {RoomHandler} from "./handlers/roomHandler";
 import {GameLobby} from "./gameLobby";
-import {list} from "postcss";
-const signale = require('signale');
+import {signale} from "./server";
 
 
 export class Game {
@@ -25,8 +24,6 @@ export class Game {
     private readonly _ROUND_DURATION_SEC: number;
     private readonly _MAX_ROUND_COUNT : number;
 
-
-
     private readonly _words: string[] = [];
     private _wordSuggestions: string[] = [];
     private _currentPlaceholder : string = "";
@@ -36,8 +33,6 @@ export class Game {
 
     private readonly _connections: LinkedList<Connection>;
     private _roundPlayerArr : Connection[] = [];
-
-
 
     private _currentPlayer : Connection | undefined;
     private _winner: Connection | undefined = undefined;
@@ -173,8 +168,6 @@ export class Game {
     private endRound(io : SocketServer, interval : any) {
         this._roundCount++;
         signale.complete("Round ended.")
-        //End of the Game
-        //Start round pause
         signale.start("Starting round pause.")
         this._currentGameState = GameState.ROUND_PAUSE;
         this._roundPauseStartDate = Date.now();
@@ -240,13 +233,11 @@ export class Game {
             //send server msg what the current word was
             io.in(this._lobbyId).emit("chat",CommHandler.packData("The word was " + this._currentWord, undefined, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT) )
 
-
             this._currentWord = "";
             this._currentPlaceholder = "";
             this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
             this._currentPlayer.player.isDrawing = false;
             this._roundPlayerArr.splice(0,1)
-
 
             for (let conn of this._connections){
                 conn.player.guessedCorrectly = false;
