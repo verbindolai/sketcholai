@@ -4,8 +4,7 @@ import {Server as SocketServer} from "socket.io";
 import {ChatType, CommHandler, MessageType} from "./handlers/commHandler";
 import {RoomHandler} from "./handlers/roomHandler";
 import {GameLobby} from "./gameLobby";
-import {list} from "postcss";
-const signale = require('signale');
+import {signale} from "./server";
 
 
 export class Game {

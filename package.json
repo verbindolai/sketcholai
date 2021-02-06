@@ -39,5 +39,18 @@
   "devDependencies": {
     "simple-scrollbar": "^0.4.0",
     "tailwindcss-hyphens": "^0.1.0"
+  },
+  "signale": {
+    "displayScope": true,
+    "displayBadge": true,
+    "displayDate": false,
+    "displayFilename": false,
+    "displayLabel": true,
+    "displayTimestamp": true,
+    "underlineLabel": true,
+    "underlineMessage": false,
+    "underlinePrefix": false,
+    "underlineSuffix": false,
+    "uppercaseLabel": false
   }
 }

@@ -8,7 +8,9 @@ import {HandlerInterface} from "./handlers/handlerInterface";
 import * as fs from "fs";
 import {Connection} from "./connection";
 import {CommHandler} from "./handlers/commHandler";
-const signale = require('signale');
+const {Signale} = require('signale');
+const options = {};
+export const signale = new Signale(options);
 /**
  * Represents the Sketch-Server
  * @author Christopher Peters, Mathusan Kannathasan, Nikolai Wieczorek
@@ -28,7 +30,9 @@ export class SketchServer {
     constructor(port: number) {
         this._port = port;
         this.app = express();
-        this.io = new SocketServer(this.startServer(this._port));
+        this.io = new SocketServer(this.startServer(this._port),{
+            maxHttpBufferSize: 50000
+        });
         this.handlerObjects = new LinkedList<HandlerInterface>();
         this.init();
     }
@@ -57,6 +61,14 @@ export class SketchServer {
      * @private
      */
     private init(): void {
+        signale.disable();
+        for(let arg of process.argv){
+            if(arg === "debug"){
+                signale.enable();
+                signale.info("Server launched in debug mode!");
+                break;
+            }
+        }
         this.addHandlers();
         this.app.use(express.static('./public'));
         for(let handler of this.handlerObjects){
@@ -101,24 +113,28 @@ export class SketchServer {
     private handleDisconnect(socket: Socket): void {
         socket.on('disconnect', (data) => {
             signale.info("Heard disconnect event.")
-            let connection = this.allConnections.get(socket.id);
+            try{
+                let connection = this.allConnections.get(socket.id);
 
-            if (connection == undefined) {
-                signale.warn("Cant disconnect, connection not found.")
-                return;
+                if (connection == undefined) {
+                    signale.warn("Cant disconnect, connection not found.")
+                    return;
+                }
+
+                let lobby = this.lobbies.get(connection.lobbyID);
+
+                if (lobby == undefined) {
+                    signale.warn("Cant disconnect, lobby not found.")
+                    return;
+                }
+
+                if (!RoomHandler.removeConnection(socket, this.lobbies, this.allConnections, this.io)) {
+                    signale.error(new Error("Couldn't remove player!"))
+                }
+                CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, this.io);
+            }catch (e) {
+                signale.error(e);
             }
-
-            let lobby = this.lobbies.get(connection.lobbyID);
-
-            if (lobby == undefined) {
-                signale.warn("Cant disconnect, lobby not found.")
-                return;
-            }
-
-            if (!RoomHandler.removeConnection(socket, this.lobbies, this.allConnections, this.io)) {
-                signale.error(new Error("Couldn't remove player!"))
-            }
-            CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, this.io);
         })
     }
 

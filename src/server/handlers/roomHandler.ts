@@ -4,9 +4,7 @@ import {GameLobby} from "../gameLobby";
 import {Connection} from "../connection";
 import {HashMap, LinkedList} from "typescriptcollectionsframework";
 import {ChatType, CommHandler, MessageType} from "./commHandler";
-import {GameState} from "../game";
-
-const signale = require('signale');
+import {signale} from "../server";
 
 export class RoomHandler implements HandlerInterface {
     public static lateJoinedPlayers : HashMap<string, LinkedList<string>> = new HashMap<string, LinkedList<string>>();
@@ -16,73 +14,82 @@ export class RoomHandler implements HandlerInterface {
 
         socket.on('createRoom', (clientPackage) => {
             signale.info("Heard createRoom event.")
+            try{
+                let data = JSON.parse(clientPackage)
+                let name = data[0];
+                let lobby = new GameLobby(GameLobby.randomString(), 20, socket.id);
+                let creator = new Connection(socket.id, name, lobby.lobbyID);
 
-            let data = JSON.parse(clientPackage)
-            let name = data[0];
-            let lobby = new GameLobby(GameLobby.randomString(), 20, socket.id);
-            let creator = new Connection(socket.id, name, lobby.lobbyID);
-
-            allConnections.put(socket.id, creator);
-            lobby.addConnection(creator);
-            lobbyHashMap.put(lobby.lobbyID, lobby)
-            socket.join(lobby.lobbyID);
-            signale.success("Created lobby.")
-            socket.emit("roomCreated", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID));
+                allConnections.put(socket.id, creator);
+                lobby.addConnection(creator);
+                lobbyHashMap.put(lobby.lobbyID, lobby)
+                socket.join(lobby.lobbyID);
+                signale.success("Created lobby.")
+                socket.emit("roomCreated", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID));
+            }catch (e) {
+                signale.error(e);
+            }
         });
 
 
         socket.on('joinGame', (clientPackage) => {
             signale.info("Heard joinGame event.")
+            try{
+                let data = JSON.parse(clientPackage);
+                let name = data[0];
+                let lobbyID = data[1];
 
-            let data = JSON.parse(clientPackage);
-            let name = data[0];
-            let lobbyID = data[1];
+                let lobby = lobbyHashMap.get(lobbyID);
 
-            let lobby = lobbyHashMap.get(lobbyID);
+                if (lobby == undefined) {
+                    return;
+                }
+                let game = lobby.game;
+                let connection = new Connection(socket.id, name, lobby.lobbyID)
+                lobby.addConnection(connection);
+                socket.join(lobby.lobbyID);
+                allConnections.put(socket.id,connection);
 
-            if (lobby == undefined) {
-                return;
-            }
-            let game = lobby.game;
-            let connection = new Connection(socket.id, name, lobby.lobbyID)
-            lobby.addConnection(connection);
-            socket.join(lobby.lobbyID);
-            allConnections.put(socket.id,connection);
-            
 
-            if (game?.hasStarted === false || game == undefined){
-                socket.emit("roomJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID))
-                CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
-                signale.success("Joined not started lobby.")
+                if (game?.hasStarted === false || game == undefined){
+                    socket.emit("roomJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID))
+                    CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
+                    signale.success("Joined not started lobby.")
 
-            } else {
-                socket.emit("gameJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, game.currentPlayer?.socketID));
-                CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.JOIN_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
-                CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
-                signale.success("Joining already started lobby.")
+                } else {
+                    socket.emit("gameJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, game.currentPlayer?.socketID));
+                    CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.JOIN_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
+                    CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
+                    signale.success("Joining already started lobby.")
+                }
+            }catch (e) {
+                signale.error(e);
             }
         });
 
         socket.on("receiveCanvas", (clientPackage) =>{
             signale.info("Heard receiveCanvas event.")
+            try{
+                if(RoomHandler.lateJoinedPlayers.isEmpty()){
+                    return;
+                }
+                let data = JSON.parse(clientPackage);
+                let imgData = data[0];
+                let connection = allConnections.get(socket.id);
+                let lobbyLateJoinedPlayers = RoomHandler.lateJoinedPlayers.get(connection.lobbyID);
 
-            if(RoomHandler.lateJoinedPlayers.isEmpty()){
-                return;
-            }
-            let data = JSON.parse(clientPackage);
-            let imgData = data[0];
-            let connection = allConnections.get(socket.id);
-            let lobbyLateJoinedPlayers = RoomHandler.lateJoinedPlayers.get(connection.lobbyID);
+                if(lobbyLateJoinedPlayers == undefined){
+                    console.error("no late joiners for this lobby!");
+                    return;
+                }
 
-            if(lobbyLateJoinedPlayers == undefined){
-                console.error("no late joiners for this lobby!");
-                return;
+                for(let socketId of lobbyLateJoinedPlayers){
+                    io.to(socketId).emit("getCanvasStatus", CommHandler.packData(imgData));
+                }
+                RoomHandler.lateJoinedPlayers.remove(connection.lobbyID);
+            }catch (e) {
+                signale.error(e);
             }
-
-            for(let socketId of lobbyLateJoinedPlayers){
-                io.to(socketId).emit("getCanvasStatus", CommHandler.packData(imgData));
-            }
-            RoomHandler.lateJoinedPlayers.remove(connection.lobbyID);
         })
 
     }
