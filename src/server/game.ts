@@ -41,6 +41,7 @@ export class Game {
     private _roundCount : number;
     private _hasStarted : boolean;
     private _stop : boolean = false;
+    private _wordGuessed : boolean = false;
 
     private _pointMultiplicator : number;
 
@@ -235,6 +236,7 @@ export class Game {
 
             this._currentWord = "";
             this._currentPlaceholder = "";
+            this._wordGuessed = false;
             this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
             this._currentPlayer.player.isDrawing = false;
             this._roundPlayerArr.splice(0,1)
@@ -422,6 +424,14 @@ export class Game {
         return this._MAX_ROUND_COUNT;
     }
 
+
+    get wordGuessed(): boolean {
+        return this._wordGuessed;
+    }
+
+    set wordGuessed(value: boolean) {
+        this._wordGuessed = value;
+    }
 
     set currentWord(value: string) {
         this._currentWord = value;

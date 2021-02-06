@@ -4,12 +4,13 @@ export class Player {
     private _isDrawing: boolean;
     private _points: number;
     private _guessedCorrectly : boolean;
-
+    private _guessStreak : number;
 
     constructor() {
         this._isDrawing = false;
         this._points = 0;
         this._guessedCorrectly = false;
+        this._guessStreak = 0;
     }
 
     public reset() {
@@ -40,5 +41,13 @@ export class Player {
 
     set guessedCorrectly(value: boolean) {
         this._guessedCorrectly = value;
+    }
+
+    get guessStreak(): number {
+        return this._guessStreak;
+    }
+
+    set guessStreak(value: number) {
+        this._guessStreak = value;
     }
 }
