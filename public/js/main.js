@@ -306,19 +306,22 @@ function updateTime() {
 }
 
 function pageLoad(name, onload) {
-
-    const xhr = new XMLHttpRequest()
-    xhr.onload = function () {
-        if (this.status === 200) {
-            const container = document.body;
-            container.innerHTML = xhr.responseText;
-            onload();
-        } else {
-            console.log("UPPS")
+    //let delay = Math.floor(Math.random() * 1000 + 500);
+    //setTimeout(() => {
+        const xhr = new XMLHttpRequest()
+        xhr.onload = function () {
+            if (this.status === 200) {
+                const container = document.body;
+                container.innerHTML = xhr.responseText;
+                onload();
+            } else {
+                console.log("UPPS")
+            }
         }
-    }
-    xhr.open('get', `/html/${name}.html`)
-    xhr.send()
+        xhr.open('get', `/html/${name}.html`)
+        xhr.send()
+    //},delay)
+
 }
 
 function randomString(length) {
@@ -328,7 +331,6 @@ function randomString(length) {
     for (let i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
-
     return result;
 }
 
@@ -352,7 +354,7 @@ function stopAllListeners(){
 
 function uploadWordList(){
     const listFile = document.querySelector("#wordListInput").files[0];
-    if(listFile === undefined || listFile.size > 30000){
+    if(listFile === undefined || listFile.size > 30000 || listFile.size === 0){
         return Promise.reject("file is empty or size too big");
     }
     return listFile.text();

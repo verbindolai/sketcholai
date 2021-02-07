@@ -20,6 +20,9 @@ export class CommHandler implements HandlerInterface {
     public static readonly STREAK_MESSAGE = " IS ON A STREAK!!"
     public static readonly LEAVE_MESSAGE = " disconnected :("
 
+    init(): void {
+    }
+
     handle(socket: Socket, lobbyHashMap: HashMap<string, GameLobby>, io: SocketServer, allConnections: HashMap<string, Connection>) {
         signale.watch(`Start listening for Communication events for Socket ${socket.id} ...`)
 
@@ -43,53 +46,68 @@ export class CommHandler implements HandlerInterface {
                     //Send message only to players who have guessed the word too.
                     for (let conn of game.connections) {
                         if (conn.player.guessedCorrectly) {
-                            io.to(conn.socketID).emit("chat", CommHandler.packData(message, connection, connection.chatColor, MessageType.CLIENT_MESSAGE, ChatType.GUESSED_CHAT));
+                            io.to(conn.socketID).emit("chat", CommHandler.packData( message,
+                                                                                          connection,
+                                                                                          connection.chatColor,
+                                                                                          MessageType.CLIENT_MESSAGE,
+                                                                                          ChatType.GUESSED_CHAT ));
                         }
                     }
                 } else if (message == currentWord) {
                     signale.star(`Word was correctly guessed by ${connection.socketID}!`)
-
-                    if (game.currentPlayer != undefined) {
-                        game.currentPlayer.player.points += game.DRAW_POINTS;
-                    }
-                    let points = game.GUESS_RIGHT_POINTS * game.pointMultiplicator;
-                        connection.player.points += points;
-                    connection.player.guessedCorrectly = true;
-                    //First guesses give more points
-                    game.decrementPointMult();
-
-                socket.emit("triggerPointAnimation", CommHandler.packData(points))
-                //SERVER-MESSAGE
-                if (!CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.RIGHT_GUESS_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
-                }
+                    this.givePoints(socket, connection, game);
+                    //SERVER-MESSAGE
+                    CommHandler.deployMessage(socket, CommHandler.packData( CommHandler.RIGHT_GUESS_MESSAGE,
+                                                                            connection,
+                                                                            CommHandler.SERVER_MSG_COLOR,
+                                                                            MessageType.SERVER_MESSAGE,
+                                                                            ChatType.NORMAL_CHAT ), 'chat', true, lobby, connection, io)
 
                     this.checkStreak(game, connection, lobby, socket, io);
-
-                    let allGuessedRight = true;
-                    for (let conn of game.connections) {
-                        if (!conn.player.guessedCorrectly) {
-                            allGuessedRight = false;
-                            break;
-                        }
-                    }
-                    if (allGuessedRight) {
-                        signale.info("All players guessed the word!")
-                        game.turnEnded = true;
-                    }
+                    this.checkAllGuessed(game);
 
                     //Update list so the points will be displayed
                     CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)), "updatePlayerList", true, lobby, connection, io);
 
                 } else {
-                    if (!CommHandler.deployMessage(socket, CommHandler.packData(message, connection, connection.chatColor, MessageType.CLIENT_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)) {
-
-                    }
+                    CommHandler.deployMessage(socket, CommHandler.packData( message,
+                                                                            connection,
+                                                                            connection.chatColor,
+                                                                            MessageType.CLIENT_MESSAGE,
+                                                                            ChatType.NORMAL_CHAT ), 'chat', true, lobby, connection, io)
                 }
             } catch (e) {
                 signale.error(e);
             }
 
         });
+    }
+
+    private givePoints(socket : Socket, connection : Connection, game : Game) {
+        if (game.currentPlayer != undefined) {
+            game.currentPlayer.player.points += game.DRAW_POINTS;
+        }
+        let points = game.GUESS_RIGHT_POINTS * game.pointMultiplicator;
+        connection.player.points += points;
+        connection.player.guessedCorrectly = true;
+        //First guesses give more points
+        game.decrementPointMult();
+
+        socket.emit("triggerPointAnimation", CommHandler.packData(points))
+    }
+
+    private checkAllGuessed(game : Game){
+        let allGuessedRight = true;
+        for (let conn of game.connections) {
+            if (!conn.player.guessedCorrectly) {
+                allGuessedRight = false;
+                break;
+            }
+        }
+        if (allGuessedRight) {
+            signale.info("All players guessed the word!")
+            game.turnEnded = true;
+        }
     }
 
     private checkStreak(game: Game, connection: Connection, lobby : GameLobby, socket : Socket, io : SocketServer) {
@@ -99,7 +117,11 @@ export class CommHandler implements HandlerInterface {
             connection.player.guessStreak += 1;
             if(connection.player.guessStreak == 1){
                 connection.roles.push(roles.streak);
-                CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.STREAK_MESSAGE, connection, CommHandler.STREAK_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
+                CommHandler.deployMessage(socket, CommHandler.packData( CommHandler.STREAK_MESSAGE,
+                                                                        connection,
+                                                                        CommHandler.STREAK_MSG_COLOR,
+                                                                        MessageType.SERVER_MESSAGE,
+                                                                        ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io );
             }
 
             for (let conn of game.connections){
@@ -129,22 +151,19 @@ export class CommHandler implements HandlerInterface {
     public static deployMessage(socket: Socket, data: any, event: string, include: boolean, lobby: GameLobby, connection: Connection, io: SocketServer): boolean {
 
         if (connection == undefined || lobby == undefined) {
-            signale.error(new Error("Cant deploy message, connection or lobby is undefined."))
+            signale.error(new Error("Cant deploy message, connection or lobby is undefined."));
             return false;
         }
         if (include) {
-            io.in(lobby.lobbyID).emit(event, data)
+            io.in(lobby.lobbyID).emit(event, data);
         } else {
-            socket.broadcast.to(lobby.lobbyID).emit(event, data)
+            socket.broadcast.to(lobby.lobbyID).emit(event, data);
         }
         return true;
     }
 
     public static packData(...data: any) {
         return JSON.stringify(data);
-    }
-
-    init(): void {
     }
 
 }

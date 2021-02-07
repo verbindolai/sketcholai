@@ -16,7 +16,6 @@ function roomInit(){
 function createRoom() {
     let nameInput = document.querySelector("#nameInput");
     let name = nameInput.value;
-
     socket.emit('createRoom', packData(name));
 }
 
@@ -34,7 +33,7 @@ socket.on("roomCreated", (serverPackage) => {
 
         lobbyRoomCode.innerHTML = lobbyID;
 
-        listDisplayer(connections, connections_html_container)
+        socket.emit("isReady", packData(200));
 
     });
 })
@@ -68,7 +67,7 @@ socket.on("roomJoined", (serverPackage) =>{
         roomInit();
         let lobbyRoomCode = document.querySelector("#lobbyRoomCode")
         lobbyRoomCode.innerHTML = lobbyID;
-        listDisplayer(connections, connections_html_container);
+        socket.emit("isReady", packData(200));
 
     });
 })
@@ -83,7 +82,7 @@ socket.on("gameJoined", (serverPackage) => {
     pageLoad("game", () => {
         init(lobbyID, currentPlayerName);
         initUpdatePlayerListListening();
-        listDisplayer(allConnections, connections_html_container);
+        socket.emit("isReady", packData(200));
     });
 });
 
@@ -91,12 +90,12 @@ socket.on("becomeLeader", (serverPackage) => {
     let data = JSON.parse(serverPackage);
     let leaderID = data[0];
     let allConnections = data[1];
-    let lobbyID = data[2];
+    let lobbyID = data[1];
 
     if(socket.id === leaderID){
         pageLoad("lobby", () => {
             document.querySelector('#lobbyRoomCode').innerHTML = lobbyID;
-            listDisplayer(allConnections, document.querySelector("#connectedPlayerList"));
+            socket.emit("isReady", packData(200));
         });
     }
 })
@@ -119,27 +118,9 @@ function listDisplayer(list, node) {
     node.innerHTML = "";
 
     for(let con of list) {
-
-
         let li = document.createElement("li");
         let name = document.createElement("div");
         let points = document.createElement("div")
-
-        // if (con.){
-        //     let crown = document.createElement("img")
-        //     crown.src = "https://cdn0.iconfinder.com/data/icons/happy-new-year-2031/32/Crown-256.png"
-        //     crown.width = 25;
-        //     crown.classList.add("mr-1");
-        //     li.appendChild(crown)
-        // }
-
-        // if (con._player._isDrawing){
-        //     let pen = document.createElement("img");
-        //     pen.src = "https://cdn1.iconfinder.com/data/icons/education-filled-outline-8/64/Education-Filled_25-256.png"
-        //     pen.width = 18;
-        //     pen.classList.add("mr-1");
-        //     li.appendChild(pen)
-        // }
 
         name.appendChild(document.createTextNode(con._name));
         name.style.color = con._chatColor;
@@ -151,8 +132,6 @@ function listDisplayer(list, node) {
         li.append(name, points)
         node.appendChild(li);
     }
-
-
 }
 
 

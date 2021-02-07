@@ -19,40 +19,15 @@ function initChatListening(){
         let color = data[2];
         let serverMSG = data[3];
         let chatType = data[4];
-
         let roles = conn._roles;
 
-        let chatListNode = document.createElement("li");
-        chatListNode.classList.add("flex", "flex-row","px-1","rounded","hover:bg-white", "hover:bg-opacity-20")
-
-        let chatMsgCont = document.createElement("div");
-        chatMsgCont.classList.add("font-semibold");
-
-        if (serverMSG === 1) {
-            for (let role of roles){
-                let roleImg = document.createElement("img");
-                roleImg.src = role;
-                roleImg.width = 20;
-                chatListNode.appendChild(roleImg);
-            }
-
-
-            let chatNameCont = document.createElement("div");
-            chatNameCont.style.color = color;
-            chatNameCont.classList.add("font-bold", "mr-1");
-            chatNameCont.appendChild(document.createTextNode(decodeURI(name) + ":"));
-            chatMsgCont.appendChild(document.createTextNode(decodeURI(message)));
-            chatListNode.append(chatNameCont);
-            if(chatType === 1){
-                chatMsgCont.style.color = "#c9892e";
-            }
-        } else if (serverMSG === 0) {
-            chatMsgCont.appendChild(document.createTextNode(decodeURI(name + message)));
-            chatMsgCont.classList.add("italic")
-            chatMsgCont.style.color = color;
-        }
-        chatListNode.append(chatMsgCont);
-        document.querySelector("#chatList").appendChild(chatListNode);
+        displayChatMessage({
+            name,
+            message,
+            color,
+            serverMSG,
+            chatType
+        })
         scrollDown();
     })
 
@@ -63,6 +38,40 @@ function initChatListening(){
         triggerPointAnimation();
     })
 }
+
+function displayChatMessage({name, message, roles, color, serverMSG, chatType}){
+    let chatListNode = document.createElement("li");
+    chatListNode.classList.add("flex", "flex-row","px-1","rounded","hover:bg-white", "hover:bg-opacity-20")
+
+    let chatMsgCont = document.createElement("div");
+    chatMsgCont.classList.add("font-semibold");
+
+    if (serverMSG === 1) {
+        for (let role of roles){
+            let roleImg = document.createElement("img");
+            roleImg.src = role;
+            roleImg.width = 20;
+            chatListNode.appendChild(roleImg);
+        }
+        let chatNameCont = document.createElement("div");
+        chatNameCont.style.color = color;
+        chatNameCont.classList.add("font-bold", "mr-1");
+        chatNameCont.appendChild(document.createTextNode(decodeURI(name) + ":"));
+        chatMsgCont.appendChild(document.createTextNode(decodeURI(message)));
+        chatListNode.append(chatNameCont);
+        if(chatType === 1){
+            chatMsgCont.style.color = "#c9892e";
+        }
+    } else if (serverMSG === 0) {
+        chatMsgCont.appendChild(document.createTextNode(decodeURI(name + message)));
+        chatMsgCont.classList.add("italic")
+        chatMsgCont.style.color = color;
+    }
+    chatListNode.append(chatMsgCont);
+    document.querySelector("#chatList").appendChild(chatListNode);
+}
+
+
 
 /**
  * sends the value of the chatInput on channel "chat"
@@ -106,6 +115,4 @@ function triggerPointAnimation(){
 function scrollDown() {
     let chatDisplay = document.querySelector('#chatDisplay .simplebar-content-wrapper');
     chatDisplay.scrollTop = chatDisplay.scrollHeight - chatDisplay.clientHeight;
-
-
 }

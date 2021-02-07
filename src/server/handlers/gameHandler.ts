@@ -234,6 +234,8 @@ export class GameHandler implements HandlerInterface {
                     }
                     //Sends a request to all other connections in the room to send the current canvas status to the server
                     CommHandler.deployMessage(socket,null, "sendCanvasStatus", false, lobby, connection, io);
+                } else {
+                    socket.emit("updatePlayerList", CommHandler.packData(RoomHandler.listToArr(lobby.connections)))
                 }
             }catch (e) {
                 signale.error(e);

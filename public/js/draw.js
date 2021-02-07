@@ -6,10 +6,6 @@ Object.freeze(toolEnum);
 
 const COL_WHITE = '#ffffff';
 const COL_BLACK = '#000000';
-const COL_RED = '#ff0000';
-const COL_GREEN = '#2cb323';
-const COL_BLUE = '#1c37b5';
-const COL_YELLOW = '#e3cf19';
 const ERASER = COL_WHITE;
 
 const LINE_WIDTH_NORMAL = 12;

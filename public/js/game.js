@@ -24,7 +24,7 @@ function initGame() {
     uploadWordList().then((value => {
         words = value.split(/[,\n\r]+/).filter(Boolean);
     })).catch((error) =>{
-        console.error(error);
+        //console.error(error);
         words = [];
     }).finally(()=>{
         socket.emit("initGame", packData(drawTime, roundNumber, words, customOnly, standardWordList));
@@ -42,8 +42,9 @@ function initLoadGameListening() {
 
         pageLoad("game", () => {
             init(lobbyID, currentPlayerName);
+
+            socket.emit("isReady", packData(200))
             socket.emit("startGame", packData(200))
-            listDisplayer(allConnectionsArr,connections_html_container)
         });
     });
 }
