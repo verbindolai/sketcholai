@@ -5,6 +5,8 @@ import {ChatType, CommHandler, MessageType} from "./handlers/commHandler";
 import {RoomHandler} from "./handlers/roomHandler";
 import {GameLobby} from "./gameLobby";
 import {signale} from "./server";
+import {GameModeInterface} from "./gameModeInterface";
+import {DefaultGame} from "./defaultGame";
 
 
 export class Game {
@@ -54,6 +56,8 @@ export class Game {
     private _wordPauseEnded : boolean;
     private _roundPauseEnded : boolean;
 
+    private _gameMode : GameModeInterface = new DefaultGame();
+
 
 
     constructor(lobbyId: string, roundDuration: number, maxRoundCount : number, connections: LinkedList<Connection>, words : string[], leaderID : string, customWords : string[], customOnly : boolean) {
@@ -89,7 +93,7 @@ export class Game {
             this._currentPlaceholder = this.replaceAt(this._currentPlaceholder, randomIndex, this._currentWord.charAt(randomIndex));
             if (this._currentPlayer != undefined){
                 signale.info("Giving hint.")
-                this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._turnStartDate, this._ROUND_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder))
+                this.sendToAllExcl(io, this._gameMode.getCurrentPlayersSocketIds(), "updateGameState", CommHandler.packData(this._turnStartDate, this._ROUND_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder))
             }
         }
     }
@@ -159,10 +163,7 @@ export class Game {
     private startRound(io : SocketServer){
         signale.start("Starting round")
         this._roundPauseEnded = false;
-
-        for(let player of this._connections){
-            this._roundPlayerArr.push(player);
-        }
+        this._gameMode.startNextRound();
         this.startWordPause(io);
     }
 
@@ -180,8 +181,9 @@ export class Game {
         this._wordPauseEnded = false;
         this._turnEnded = false;
 
-        this._currentPlayer = this._roundPlayerArr[0];
-        if (this._currentPlayer == undefined) { //TODO Right?
+        // this._currentPlayer = this._roundPlayerArr[0];
+        this._gameMode.initTurn();
+        if (!this._gameMode.hasCurrentPlayers()) { //TODO Right?
             signale.warn("No current Player!")
             return;
         }
@@ -189,15 +191,17 @@ export class Game {
         this._wordPauseStartDate = Date.now();
 
         //Drawing player is not allowed to write in the "normal" chat
-        this._currentPlayer.player.guessedCorrectly = true;
+        // this._currentPlayer.player.guessedCorrectly = true;
 
         //Get word suggestions
         this._wordSuggestions = this.randomWordArr(this.WORD_SUGGESTION_NUM);
 
         //Send word suggestions, current player and pause duration to clients
-        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._wordPauseStartDate, this.WORD_PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord))
-        io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(this._wordPauseStartDate, this.WORD_PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, this._wordSuggestions, this._currentWord))
-
+        const socketIDs : string[] = this._gameMode.getCurrentPlayersSocketIds();
+        this.sendToAllExcl(io, socketIDs, "updateGameState", CommHandler.packData(this._wordPauseStartDate, this.WORD_PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord));
+        for(let id of socketIDs){
+            io.to(id).emit('updateGameState', CommHandler.packData(this._wordPauseStartDate, this.WORD_PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, this._wordSuggestions, this._currentWord));
+        }
         //SERVER-CHAT_MESSAGE
         //io.in(this._lobbyId).emit("chat",CommHandler.packData(CommHandler.DRAW_MESSAGE, this._currentPlayer.name, CommHandler.SERVER_MSG_COLOR, true) )
 
@@ -223,12 +227,12 @@ export class Game {
         this._turnStartDate = Date.now();
         this._currentGameState = GameState.RUNNING;
 
-        this.sendToAllExcl(io, this._currentPlayer.socketID, "updateGameState", CommHandler.packData(this._turnStartDate, this._ROUND_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder))
+        this.sendToAllExcl(io, this._gameMode.getCurrentPlayersSocketIds(), "updateGameState", CommHandler.packData(this._turnStartDate, this._ROUND_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder))
         io.to(this._currentPlayer.socketID).emit('updateGameState', CommHandler.packData(this._turnStartDate, this._ROUND_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord));
     }
 
     private endTurn(io : SocketServer, interval : any) {
-        if (this._currentPlayer != undefined){
+        if (this._gameMode.hasCurrentPlayers()){
 
             signale.complete("Turn ended.")
             //send server msg what the current word was
@@ -238,19 +242,27 @@ export class Game {
             this._currentPlaceholder = "";
             this._wordGuessed = false;
             this._pointMultiplicator = this.START_POINT_MULTIPLICATOR;
-            this._currentPlayer.player.isDrawing = false;
-            this._roundPlayerArr.splice(0,1)
 
-            for (let conn of this._connections){
-                conn.player.guessedCorrectly = false;
+            // this._currentPlayer.player.isDrawing = false;
+            // this._roundPlayerArr.splice(0,1)
+            //
+            // for (let conn of this._connections){
+            //     conn.player.guessedCorrectly = false;
+            // }
+            if(this._gameMode.endTurn()){
+                this.endRound(io, interval)
+            } else {
+                this.startWordPause(io);
             }
+        }else{
+            signale.warn("cant end turn - no current players!");
         }
         //End of one Round
-        if(this._roundPlayerArr.length == 0){
-            this.endRound(io, interval)
-        } else {
-            this.startWordPause(io);
-        }
+        // if(this._gameMode.endTurn()){
+        //     this.endRound(io, interval)
+        // } else {
+        //     this.startWordPause(io);
+        // }
     }
 
     private endGame(io : SocketServer, interval : any){
@@ -259,7 +271,7 @@ export class Game {
         if (interval != null){
             clearInterval(interval);
         }
-        let winner;
+        let winner; //TODO auslagern
         let points = 0;
         for (let conn of this._connections){
             if (conn.player.points >= points){
@@ -316,9 +328,9 @@ export class Game {
         return result;
     }
 
-    public sendToAllExcl(io :SocketServer, socketID :string , ev : string, data : any) {
+    public sendToAllExcl(io : SocketServer, connections : string[] , ev : string, data : any) {
         for(let connection of this.connections){
-            if (connection.socketID !== socketID){
+            if (!connections.includes(connection.socketID)){
                 io.to(connection.socketID).emit(ev, data);
             }
         }
