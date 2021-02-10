@@ -58,10 +58,11 @@ export class RoomHandler implements HandlerInterface {
                     signale.success("Joined not started lobby.")
 
                 } else {
-                    socket.emit("gameJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.currentPlayer?.name, game.currentPlayer?.socketID));
+                    socket.emit("gameJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.gameMode.getCurrentPlayerNames, game.gameMode.getCurrentPlayerSocketIDs));
                     CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.JOIN_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
                     CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
-                    game.roundPlayerArr.push(connection);
+                    // game.roundPlayerArr.push(connection);
+                    game.gameMode.addPlayerToRound(connection);
                     signale.success("Joining already started lobby.")
                 }
             }catch (e) {
@@ -142,20 +143,25 @@ export class RoomHandler implements HandlerInterface {
 
         }
 
+        // if(lobby.game != undefined){
+        //     for (let i = 0; i < lobby.game?.roundPlayerArr.length; i++){
+        //         if (socket.id === lobby.game.roundPlayerArr[i].socketID){
+        //             if(socket.id === lobby.game.currentPlayer?.socketID){
+        //                lobby.game.turnEnded = true;
+        //             }else{
+        //                 lobby.game.roundPlayerArr.splice(i, 1);
+        //             }
+        //             break;
+        //         }
+        //     }
+        // }
         if(lobby.game != undefined){
-            for (let i = 0; i < lobby.game?.roundPlayerArr.length; i++){
-                if (socket.id === lobby.game.roundPlayerArr[i].socketID){
-                    if(socket.id === lobby.game.currentPlayer?.socketID){
-                       lobby.game.turnEnded = true;
-                    }else{
-                        lobby.game.roundPlayerArr.splice(i, 1);
-                    }
-                    break;
-                }
+            if(lobby.game.gameMode.kickPlayerBySocketId(socket.id)){
+                lobby.game.turnEnded = true;
             }
+        }else{
+            signale.error("game shouldnt be undefined!");
         }
-
-        //TODO only one lef?
 
         if (lobby.connections.size() == 0) {
             if (!lobbyHashMap.remove(lobby.lobbyID)) {

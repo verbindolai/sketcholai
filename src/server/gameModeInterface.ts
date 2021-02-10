@@ -24,14 +24,14 @@ export interface GameModeInterface{
     hasCurrentPlayers(): boolean;
 
     /**
-     * Returns all names of every Connection as an array
+     * Returns all names from every current drawing player
      */
-    getCurrentConnectionNames(): string[];  //TODO keine schöne lösung
+    getCurrentPlayerNames(): string[];  //TODO keine schöne lösung, mir fällt nix besseres ein
 
     /**
-     * Returns a string array SocketIds from every connected player
+     * Returns a string array SocketIds from every current drawing player
      */
-    getCurrentConnectionSocketIDs(): string[];
+    getCurrentPlayerSocketIDs(): string[];
 
     /**
      * ends a turn. Returns true if the round has ended
@@ -47,4 +47,17 @@ export interface GameModeInterface{
      * resets the game
      */
     reset(): void;
+
+    /**
+     * Kicks a player with a specific socketId
+     * @param id SocketId of the player which should be kicked
+     * @return true if kicked player was last one drawing
+     */
+    kickPlayerBySocketId(id: string): boolean;
+
+    /**
+     * adds a player to the game
+     * @param connection player which should be added
+     */
+    addPlayerToRound(connection: Connection): void;
 }

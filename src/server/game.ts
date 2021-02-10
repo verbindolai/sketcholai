@@ -33,9 +33,8 @@ export class Game {
     private readonly _customWords : string[];
     private readonly _customOnly : boolean;
 
-    // private readonly _connections: LinkedList<Connection>;
+    private readonly _connections: LinkedList<Connection>;
     // private _roundPlayerArr : Connection[] = [];
-
     // private _currentPlayer : Connection | undefined;
     private _winner: Connection | undefined = undefined;
 
@@ -76,6 +75,7 @@ export class Game {
         this._lobbyLeaderID = leaderID;
         this._customWords = customWords;
         this._customOnly = customOnly;
+        this._connections = connections;
         this._gameMode.init(connections);
         signale.success(`New game created for ${lobbyId} with ${maxRoundCount} rounds and ${roundDuration} seconds draw time. Game-ID: ${this._GAME_ID}`)
     }
@@ -92,8 +92,8 @@ export class Game {
         if ((this._currentPlaceholder.match(/_/g) || []).length > 3){
             this._currentPlaceholder = this.replaceAt(this._currentPlaceholder, randomIndex, this._currentWord.charAt(randomIndex));
             signale.info("Giving hint.")
-            const socketIDs : string[] = this._gameMode.getCurrentConnectionNames();
-            this.sendToAllExcl(io, this._gameMode.getCurrentConnectionSocketIDs(), "updateGameState", CommHandler.packData(this._turnStartDate, this._ROUND_DURATION_SEC, this._gameMode.getCurrentConnectionNames, socketIDs, this._currentGameState, [], this._currentPlaceholder))
+            const drawingSocketIDs : string[] = this._gameMode.getCurrentPlayerNames();
+            this.sendToAllExcl(io, this._gameMode.getCurrentPlayerSocketIDs(), "updateGameState", CommHandler.packData(this._turnStartDate, this._ROUND_DURATION_SEC, this._gameMode.getCurrentPlayerNames, drawingSocketIDs, this._currentGameState, [], this._currentPlaceholder))
         }
     }
 
@@ -172,7 +172,7 @@ export class Game {
         signale.start("Starting round pause.")
         this._currentGameState = GameState.ROUND_PAUSE;
         this._roundPauseStartDate = Date.now();
-        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(this._roundPauseStartDate, this.ROUND_PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder, undefined, RoomHandler.listToArr(this._connections)) )
+        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(this._roundPauseStartDate, this.ROUND_PAUSE_DURATION_SEC, this._gameMode.getCurrentPlayerNames, this._gameMode.getCurrentPlayerSocketIDs, this._currentGameState, [], this._currentPlaceholder, undefined, this._connections));
     }
 
     private startWordPause(io : SocketServer) {
@@ -196,10 +196,11 @@ export class Game {
         this._wordSuggestions = this.randomWordArr(this.WORD_SUGGESTION_NUM);
 
         //Send word suggestions, current player and pause duration to clients
-        const socketIDs : string[] = this._gameMode.getCurrentConnectionSocketIDs();
-        this.sendToAllExcl(io, socketIDs, "updateGameState", CommHandler.packData(this._wordPauseStartDate, this.WORD_PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord));
-        for(let id of socketIDs){
-            io.to(id).emit('updateGameState', CommHandler.packData(this._wordPauseStartDate, this.WORD_PAUSE_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, this._wordSuggestions, this._currentWord));
+        const drawingSocketIDs : string[] = this._gameMode.getCurrentPlayerSocketIDs();
+        const drawingNames : string[] = this._gameMode.getCurrentPlayerNames();
+        this.sendToAllExcl(io, drawingSocketIDs, "updateGameState", CommHandler.packData(this._wordPauseStartDate, this.WORD_PAUSE_DURATION_SEC, drawingNames, drawingSocketIDs, this._currentGameState, [], this._currentWord));
+        for(let id of drawingSocketIDs){
+            io.to(id).emit('updateGameState', CommHandler.packData(this._wordPauseStartDate, this.WORD_PAUSE_DURATION_SEC, drawingNames, drawingSocketIDs, this._currentGameState, this._wordSuggestions, this._currentWord));
         }
         //SERVER-CHAT_MESSAGE
         //io.in(this._lobbyId).emit("chat",CommHandler.packData(CommHandler.DRAW_MESSAGE, this._currentPlayer.name, CommHandler.SERVER_MSG_COLOR, true) )
@@ -228,10 +229,12 @@ export class Game {
         this._turnStartDate = Date.now();
         this._currentGameState = GameState.RUNNING;
 
-        this.sendToAllExcl(io, this._gameMode.getCurrentConnectionSocketIDs(), "updateGameState", CommHandler.packData(this._turnStartDate, this._ROUND_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder));
-        const socketIDs : string[] = this._gameMode.getCurrentConnectionSocketIDs();
-        for(let id of socketIDs){
-            io.to(id).emit('updateGameState', CommHandler.packData(this._turnStartDate, this._ROUND_DURATION_SEC, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentWord));
+        const drawingSocketIDs : string[] = this._gameMode.getCurrentPlayerSocketIDs();
+        const drawingNames : string[] = this._gameMode.getCurrentPlayerNames();
+
+        this.sendToAllExcl(io, this._gameMode.getCurrentPlayerSocketIDs(), "updateGameState", CommHandler.packData(this._turnStartDate, this._ROUND_DURATION_SEC, drawingNames, drawingSocketIDs, this._currentGameState, [], this._currentPlaceholder));
+        for(let id of drawingSocketIDs){
+            io.to(id).emit('updateGameState', CommHandler.packData(this._turnStartDate, this._ROUND_DURATION_SEC, drawingNames, drawingSocketIDs, this._currentGameState, [], this._currentWord));
         }
     }
 
@@ -285,7 +288,7 @@ export class Game {
         // }
 
         this.resetGame()
-        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(0, 0, this.currentPlayer?.name, this.currentPlayer?.socketID, this._currentGameState, [], this._currentPlaceholder, this._gameMode.getPlayerWithHighscore(), RoomHandler.listToArr(this._connections), this.lobbyLeaderID))
+        io.in(this._lobbyId).emit("updateGameState",CommHandler.packData(0, 0, this._gameMode.getCurrentPlayerNames, this._gameMode.getCurrentPlayerSocketIDs, this._currentGameState, [], this._currentPlaceholder, this._gameMode.getPlayerWithHighscore(), RoomHandler.listToArr(this._connections), this.lobbyLeaderID))
         this._currentGameState = GameState.NOT_STARTED;
     }
 
@@ -329,9 +332,10 @@ export class Game {
         return result;
     }
 
-    public sendToAllExcl(io : SocketServer, connections : string[] , ev : string, data : any) {
-        for(let connection of this.connections){
-            if (!connections.includes(connection.socketID)){
+    //TODO so richtig?
+    public sendToAllExcl(io : SocketServer, exlcudedConnections : string[] , ev : string, data : any) {
+        for(let connection of this._connections){
+            if (!exlcudedConnections.includes(connection.socketID)){
                 io.to(connection.socketID).emit(ev, data);
             }
         }
@@ -490,6 +494,9 @@ export class Game {
         this._wordPauseStartDate = value;
     }
 
+    get gameMode(): GameModeInterface {
+        return this._gameMode;
+    }
 }
 
 export enum GameState{
