@@ -44,7 +44,6 @@ export class Connection {
 
     }
 
-
     get roles(): string[] {
         return this._roles;
     }
@@ -78,7 +77,6 @@ export class Connection {
     set player(value: Player) {
         this._player = value;
     }
-
 
     get lobbyID(): string {
         return this._lobbyID;

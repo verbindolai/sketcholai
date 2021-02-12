@@ -37,11 +37,11 @@ function initLoadGameListening() {
     socket.on("loadGame", (serverPackage)=>{
         const data = JSON.parse(serverPackage);
         const lobbyID = data[0];
-        const currentPlayerName = data[1];
+        const currentPlayerNames = data[1];
         const allConnectionsArr = data[2];
 
         pageLoad("game", () => {
-            init(lobbyID, currentPlayerName);
+            init(lobbyID, currentPlayerNames);
 
             socket.emit("isReady", packData(200))
             socket.emit("startGame", packData(200))

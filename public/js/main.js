@@ -16,7 +16,7 @@ const fillEvent = 'fill';
 /**
  * inits the clients drawing lobby and adds eventlisteners
  */
-function init(lobbyID, currentPlayerName) {
+function init(lobbyID, currentPlayerNames) {
     canvas = document.querySelector('#canvas')
     context = canvas.getContext('2d');
     context.lineCap = 'round';
@@ -45,8 +45,10 @@ function init(lobbyID, currentPlayerName) {
         }
     }
 
+    for(let name in currentPlayerNames){
+        CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML += name + ","
+    }
     LOBBY_ID_HTML_CONTAINER.innerHTML = lobbyID;
-    CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = currentPlayerName;
 
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);

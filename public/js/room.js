@@ -76,11 +76,11 @@ socket.on("gameJoined", (serverPackage) => {
     let data = JSON.parse(serverPackage);
     let allConnections = data[0];
     let lobbyID = data[1];
-    let currentPlayerName = data[2];
-    let currentPlayerSocketID = data[3];
+    let currentPlayerNames = data[2];
+    let currentPlayerSocketIDs = data[3];
 
     pageLoad("game", () => {
-        init(lobbyID, currentPlayerName);
+        init(lobbyID, currentPlayerNames);
         initUpdatePlayerListListening();
         socket.emit("isReady", packData(200));
     });

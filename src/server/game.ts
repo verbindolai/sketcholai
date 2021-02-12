@@ -212,7 +212,7 @@ export class Game {
             io.to(id).emit('updateGameState', CommHandler.packData(this._wordPauseStartDate, this.WORD_PAUSE_DURATION_SEC, drawingNames, drawingSocketIDs, this._currentGameState, this._wordSuggestions, this._currentWord));
         }
         //SERVER-CHAT_MESSAGE
-        //io.in(this._lobbyId).emit("chat",CommHandler.packData(CommHandler.DRAW_MESSAGE, this._currentPlayer.name, CommHandler.SERVER_MSG_COLOR, true) )
+        io.in(this._lobbyId).emit("chat",CommHandler.packData(CommHandler.DRAW_MESSAGE, this.getCurrentPlayerNames, CommHandler.SERVER_MSG_COLOR, true) )
 
     }
 
@@ -350,7 +350,7 @@ export class Game {
         }
     }
 
-    public decrementPointMult(){
+    private decrementPointMult(){
         if (this._pointMultiplicator - 1 >= 1){
             this._pointMultiplicator--;
         }
@@ -374,6 +374,16 @@ export class Game {
 
     public kickPlayerBySocketId(socketId : string): boolean {
         return this._gameMode.kickPlayerBySocketId(socketId);
+    }
+
+    public isSocketIdDrawing(socketID : string) {
+        return this._gameMode.isSocketIdDrawing(socketID);
+    }
+
+    public decideWord(word : string) {
+        this.currentWord = word;
+        this.currentPlaceholder =  this.currentWord.replace(/[^- ]/g, "_");
+        this.wordPauseEnded = true;
     }
 
 
@@ -473,16 +483,6 @@ export class Game {
 
     get connections(): LinkedList<Connection> {
         return this._connections;
-    }
-
-    isSocketIdDrawing(socketID : string) {
-        return this._gameMode.isSocketIdDrawing(socketID);
-    }
-
-    decideWord(word : string) {
-        this.currentWord = word;
-        this.currentPlaceholder =  this.currentWord.replace(/[^- ]/g, "_");
-        this.wordPauseEnded = true;
     }
 }
 
