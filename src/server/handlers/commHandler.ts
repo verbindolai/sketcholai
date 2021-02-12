@@ -55,7 +55,9 @@ export class CommHandler implements HandlerInterface {
                     }
                 } else if (message == currentWord) {
                     signale.star(`Word was correctly guessed by ${connection.socketID}!`)
-                    this.givePoints(socket, connection, game);
+                    const points = game.playerGuessedRight()
+                    connection.player.rightGuess(points);
+                    socket.emit("triggerPointAnimation", CommHandler.packData(points))
                     //SERVER-MESSAGE
                     CommHandler.deployMessage(socket, CommHandler.packData( CommHandler.RIGHT_GUESS_MESSAGE,
                                                                             connection,
@@ -83,18 +85,11 @@ export class CommHandler implements HandlerInterface {
         });
     }
 
-    private givePoints(socket : Socket, connection : Connection, game : Game) {
-        if (game.currentPlayer != undefined) {
-            game.currentPlayer.player.points += game.DRAW_POINTS;
-        }
-        let points = game.GUESS_RIGHT_POINTS * game.pointMultiplicator;
-        connection.player.points += points;
-        connection.player.guessedCorrectly = true;
-        //First guesses give more points
-        game.decrementPointMult();
-
-        socket.emit("triggerPointAnimation", CommHandler.packData(points))
-    }
+    // private givePoints(socket : Socket, connection : Connection, game : Game) {
+    //     const points = game.playerGuessedRight()
+    //     connection.player.rightGuess(points);
+    //     socket.emit("triggerPointAnimation", CommHandler.packData(points))
+    // }
 
     private checkAllGuessed(game : Game){
         let allGuessedRight = true;
@@ -123,17 +118,18 @@ export class CommHandler implements HandlerInterface {
                                                                         MessageType.SERVER_MESSAGE,
                                                                         ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io );
             }
+            //TODO help
 
-            for (let conn of game.connections){
-                if (conn.socketID != game.currentPlayer?.socketID && conn.socketID != connection.socketID){
-                    conn.player.guessStreak = 0;
-                    for(let i = 0; i < conn.roles.length; i++){
-                        if(conn.roles[i] == roles.streak){
-                            conn.roles.splice(i, 1);
-                        }
-                    }
-                }
-            }
+            // for (let conn of game.connections){
+            //     if (conn.socketID != game.currentPlayer?.socketID && conn.socketID != connection.socketID){
+            //         conn.player.guessStreak = 0;
+            //         for(let i = 0; i < conn.roles.length; i++){
+            //             if(conn.roles[i] == roles.streak){
+            //                 conn.roles.splice(i, 1);
+            //             }
+            //         }
+            //     }
+            // }
         }
     }
 

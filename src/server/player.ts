@@ -19,6 +19,11 @@ export class Player {
         this._guessedCorrectly = false;
     }
 
+    public rightGuess(points : number){
+        this._points += points;
+        this.guessedCorrectly = true;
+    }
+
 
     set isDrawing(value: boolean) {
         this._isDrawing = value;

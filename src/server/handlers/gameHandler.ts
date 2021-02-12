@@ -133,7 +133,7 @@ export class GameHandler implements HandlerInterface {
                 }
 
                 lobby.game = new Game(lobby.lobbyID, drawTime, roundNum, lobby.connections, this._words[wordListIndex], lobby.leaderID, words,customOnly);
-                CommHandler.deployMessage(socket, CommHandler.packData(lobby.lobbyID, lobby.game.currentPlayer?.name, RoomHandler.listToArr(lobby.connections)), "loadGame", true, lobby, connection, io);
+                CommHandler.deployMessage(socket, CommHandler.packData(lobby.lobbyID, lobby.game.getCurrentPlayerNames, RoomHandler.listToArr(lobby.connections)), "loadGame", true, lobby, connection, io);
             }catch (e) {
                 signale.error(e);
             }
@@ -178,15 +178,19 @@ export class GameHandler implements HandlerInterface {
                 let word = data[0];
                 let game = lobby.game;
 
-                if (game == undefined || game.hasStarted === false) {
+                if (game == undefined || !game.hasStarted) {
                     signale.warn("Cant choose word, game is undefined or has not started yet.")
                     return;
                 }
-                if(socket.id === game.currentPlayer?.socketID){
-                    game.currentWord = word;
-                    game.currentPlaceholder =  game.currentWord.replace(/[^- ]/g, "_");
-                    game.wordPauseEnded = true;
+
+                if(game.isSocketIdDrawing(socket.id)){
+                    game.decideWord(word);
                 }
+                // if(socket.id === game.currentPlayer?.socketID){
+                //     game.currentWord = word;
+                //     game.currentPlaceholder =  game.currentWord.replace(/[^- ]/g, "_");
+                //     game.wordPauseEnded = true;
+                // }
             }catch(e){
                 signale.error(e);
             }
@@ -223,7 +227,7 @@ export class GameHandler implements HandlerInterface {
                         dur = game.ROUND_PAUSE_DURATION_SEC;
                     }
 
-                    socket.emit("updateGameState", CommHandler.packData(date, dur, game.currentPlayer?.name, game.currentPlayer?.socketID, game.currentGameState,[],game.currentPlaceholder))
+                    socket.emit("updateGameState", CommHandler.packData(date, dur, game.getCurrentPlayerNames, game.getCurrentPlayerSocketIDs(), game.currentGameState,[],game.currentPlaceholder))
 
                     if(RoomHandler.lateJoinedPlayers.containsKey(lobbyID)){
                         RoomHandler.lateJoinedPlayers.get(lobbyID).add(socket.id);

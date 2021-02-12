@@ -60,4 +60,16 @@ export interface GameModeInterface{
      * @param connection player which should be added
      */
     addPlayerToRound(connection: Connection): void;
+
+    /**
+     * Adds points to the drawing players
+     */
+    addPointsToDrawingPlayers(points : number): void;
+
+    /**
+     * Decides if a given socket id matches a drawing player
+     * @param socketId Socket id of a player
+     * @return true, if the socket it matches a drawing player
+     */
+    isSocketIdDrawing(socketId : string): boolean;
 }

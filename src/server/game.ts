@@ -34,8 +34,6 @@ export class Game {
     private readonly _customOnly : boolean;
 
     private readonly _connections: LinkedList<Connection>;
-    // private _roundPlayerArr : Connection[] = [];
-    // private _currentPlayer : Connection | undefined;
     private _winner: Connection | undefined = undefined;
 
     private _currentGameState : GameState;
@@ -85,6 +83,16 @@ export class Game {
         signale.start(`Starting game with ${this.MAX_ROUND_COUNT} rounds.`)
         this.startGameLoop(io)
         this._hasStarted = true;
+    }
+
+    /**
+     * Invoked if a player made a right guess
+     * @return The points the player gets for the right guess
+     */
+    public playerGuessedRight() : number {
+        this._gameMode.addPointsToDrawingPlayers(this.DRAW_POINTS);
+        this.decrementPointMult();         //First guesses give more points
+        return this.GUESS_RIGHT_POINTS * this.pointMultiplicator
     }
 
     private giveHint(io : SocketServer) {
@@ -158,6 +166,7 @@ export class Game {
             }
         }, 250)
     }
+
 
     private startRound(io : SocketServer){
         signale.start("Starting round")
@@ -351,9 +360,22 @@ export class Game {
         return string.substring(0, index) + replace + string.substring(index + 1);
     }
 
-    get turnEnded(): boolean {
-        return this._turnEnded;
+    public getCurrentPlayerNames(): string[]{
+        return this._gameMode.getCurrentPlayerNames()
     }
+
+    public getCurrentPlayerSocketIDs(): string[]{
+        return this._gameMode.getCurrentPlayerSocketIDs()
+    }
+
+    public addPlayerToRound(conn : Connection) {
+        this._gameMode.addPlayerToRound(conn);
+    }
+
+    public kickPlayerBySocketId(socketId : string): boolean {
+        return this._gameMode.kickPlayerBySocketId(socketId);
+    }
+
 
     set turnEnded(value: boolean) {
         this._turnEnded = value;
@@ -363,13 +385,12 @@ export class Game {
         return this._hasStarted;
     }
 
+    get winner(): Connection | undefined {
+        return this._winner;
+    }
 
     get roundPauseStartDate(): number {
         return this._roundPauseStartDate;
-    }
-
-    get winner(): Connection | undefined {
-        return this._winner;
     }
 
     get currentPlaceholder(): string {
@@ -384,10 +405,6 @@ export class Game {
         return this._lobbyId;
     }
 
-    get roundCount(): number {
-        return this._roundCount;
-    }
-
     get ROUND_DURATION_SEC(): number {
         return this._ROUND_DURATION_SEC;
     }
@@ -396,26 +413,13 @@ export class Game {
         return this._turnStartDate;
     }
 
-    get stop(): boolean {
-        return this._stop;
-    }
-
     set stop(value: boolean) {
         this._stop = value;
-    }
-
-    set winner(value: Connection | undefined) {
-        this._winner = value;
     }
 
     set hasStarted(value: boolean) {
         this._hasStarted = value;
     }
-
-    set turnStartDate(value: number) {
-        this._turnStartDate = value;
-    }
-
 
     set lobbyLeaderID(value: string) {
         this._lobbyLeaderID = value;
@@ -424,7 +428,6 @@ export class Game {
     get MAX_ROUND_COUNT(): number {
         return this._MAX_ROUND_COUNT;
     }
-
 
     get wordGuessed(): boolean {
         return this._wordGuessed;
@@ -438,10 +441,6 @@ export class Game {
         this._currentWord = value;
     }
 
-    get words(): string[] {
-        return this._words;
-    }
-
     get currentWord(): string {
         return this._currentWord;
     }
@@ -450,29 +449,14 @@ export class Game {
         return this._currentGameState;
     }
 
-    set currentGameState(value: GameState) {
-        this._currentGameState = value;
-    }
-
     get pointMultiplicator(): number {
         return this._pointMultiplicator;
-    }
-
-    set pointMultiplicator(value: number) {
-        this._pointMultiplicator = value;
-    }
-
-    get wordPauseEnded(): boolean {
-        return this._wordPauseEnded;
     }
 
     set wordPauseEnded(value: boolean) {
         this._wordPauseEnded = value;
     }
 
-    get wordSuggestions(): string[] {
-        return this._wordSuggestions;
-    }
 
     get wordPauseStartDate(): number {
         return this._wordPauseStartDate;
@@ -482,20 +466,23 @@ export class Game {
         return this._lobbyLeaderID;
     }
 
-    set wordSuggestions(value: string[]) {
-        this._wordSuggestions = value;
+    // get gameMode(): GameModeInterface {
+    //     return this._gameMode;
+    // }
+
+
+    get connections(): LinkedList<Connection> {
+        return this._connections;
     }
 
-    set roundCount(value: number) {
-        this._roundCount = value;
+    isSocketIdDrawing(socketID : string) {
+        return this._gameMode.isSocketIdDrawing(socketID);
     }
 
-    set wordPauseStartDate(value: number) {
-        this._wordPauseStartDate = value;
-    }
-
-    get gameMode(): GameModeInterface {
-        return this._gameMode;
+    decideWord(word : string) {
+        this.currentWord = word;
+        this.currentPlaceholder =  this.currentWord.replace(/[^- ]/g, "_");
+        this.wordPauseEnded = true;
     }
 }
 

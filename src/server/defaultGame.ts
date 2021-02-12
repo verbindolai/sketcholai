@@ -79,12 +79,24 @@ export class DefaultGame implements GameModeInterface{
                 }
             }
         }
-        signale.warn("no player found to kick!");
+        signale.error("no player found to kick!");
         return false;
     }
 
     addPlayerToRound(connection: Connection): void {
         this._roundPlayers.push(connection);
+    }
+
+    addPointsToDrawingPlayers(points: number): void {
+        if(this._currentPlayer != undefined){
+            this._currentPlayer.player.points += points;
+        }else{
+            signale.error("currentPlayer is undefined!")
+        }
+    }
+
+    isSocketIdDrawing(socketId: string): boolean {
+        return this._currentPlayer?.socketID == socketId;
     }
 
 

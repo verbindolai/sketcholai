@@ -58,11 +58,11 @@ export class RoomHandler implements HandlerInterface {
                     signale.success("Joined not started lobby.")
 
                 } else {
-                    socket.emit("gameJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.gameMode.getCurrentPlayerNames, game.gameMode.getCurrentPlayerSocketIDs));
+                    socket.emit("gameJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.getCurrentPlayerNames, game.getCurrentPlayerSocketIDs));
                     CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.JOIN_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
                     CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
                     // game.roundPlayerArr.push(connection);
-                    game.gameMode.addPlayerToRound(connection);
+                    game.addPlayerToRound(connection);
                     signale.success("Joining already started lobby.")
                 }
             }catch (e) {
@@ -156,7 +156,7 @@ export class RoomHandler implements HandlerInterface {
         //     }
         // }
         if(lobby.game != undefined){
-            if(lobby.game.gameMode.kickPlayerBySocketId(socket.id)){
+            if(lobby.game.kickPlayerBySocketId(socket.id)){
                 lobby.game.turnEnded = true;
             }
         }else{
