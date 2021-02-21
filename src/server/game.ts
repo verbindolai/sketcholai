@@ -212,8 +212,7 @@ export class Game {
             io.to(id).emit('updateGameState', CommHandler.packData(this._wordPauseStartDate, this.WORD_PAUSE_DURATION_SEC, drawingNames, drawingSocketIDs, this._currentGameState, this._wordSuggestions, this._currentWord));
         }
         //SERVER-CHAT_MESSAGE
-        io.in(this._lobbyId).emit("chat",CommHandler.packData(CommHandler.DRAW_MESSAGE, this.getCurrentPlayerNames, CommHandler.SERVER_MSG_COLOR, true) )
-
+        io.in(this._lobbyId).emit("chat",CommHandler.packData(CommHandler.DRAW_MESSAGE, this.getCurrentPlayerNames(), CommHandler.SERVER_MSG_COLOR, true) )
     }
 
     private startTurn(io: SocketServer) {

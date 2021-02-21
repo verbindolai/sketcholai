@@ -8,21 +8,20 @@ function initChatListening(){
 
     socket.on('chat', (serverPackage) => {
         let data = JSON.parse(serverPackage);
+        console.log(data);
         let message = data[0];
-        let conn = data[1];
-        let name;
-        if(conn == undefined || conn == null){
-            name = "";
-        }else {
-            name = conn._name;
+        let names = data[1];
+        if(names === null || names === undefined){
+            names = [];
         }
+
         let color = data[2];
         let serverMSG = data[3];
         let chatType = data[4];
-        let roles = conn._roles;
+        // let roles = conn._roles;
 
         displayChatMessage({
-            name,
+            names,
             message,
             color,
             serverMSG,
