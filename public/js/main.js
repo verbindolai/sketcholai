@@ -55,7 +55,7 @@ function init(lobbyID, currentPlayerNames) {
 
     canvas.addEventListener('mousedown', (event) => {
 
-        if(socket.id !== currentPlayerID){
+        if(!currentPlayerIDs.includes(socket.id)){
             return;
         }
 
@@ -73,7 +73,7 @@ function init(lobbyID, currentPlayerNames) {
     })
 
     site.addEventListener('mouseup', (event) => {
-        if(socket.id !== currentPlayerID){
+        if(!currentPlayerIDs.includes(socket.id)){
             return;
         }
 
@@ -86,7 +86,7 @@ function init(lobbyID, currentPlayerNames) {
     })
 
     canvas.addEventListener('mouseout', (event) => {
-        if(socket.id !== currentPlayerID){
+        if(!currentPlayerIDs.includes(socket.id)){
             return;
         }
 
@@ -96,7 +96,7 @@ function init(lobbyID, currentPlayerNames) {
     })
 
     canvas.addEventListener('mousemove', (event) => {
-        if(socket.id !== currentPlayerID){
+        if(!currentPlayerIDs.includes(socket.id)){
             return;
         }
 
@@ -139,13 +139,13 @@ function initUpdatePlayerListListening() {
  * Receives game information for a new turn
  */
 function initGameStateListening() {
-    socket.on('updateGameState', (serverPackage) => {  //TODO
+    socket.on('updateGameState', (serverPackage) => {
         const data = JSON.parse(serverPackage);
         const unixTime = data[0];
         const drawDuration = data[1];
 
         const name = data[2];
-        const id = data[3];
+        const ids = data[3];
         const gameState = data[4];
         const words = data[5];
         const currentWord = data[6];
@@ -155,7 +155,7 @@ function initGameStateListening() {
 
         switch (gameState){
             case 0: {
-                if(socket.id === id) {
+                if(ids.includes(socket.id)) {
                     WORD_HTML_CONTAINER.children[0].innerHTML ="";
                     WORD_HTML_CONTAINER.classList.add("hidden")
                     canvas.classList.remove("hidden");
@@ -163,7 +163,7 @@ function initGameStateListening() {
                 break;
             }
             case 1: {
-                if (socket.id === id){
+                if (ids.includes(socket.id)){
                     context.fillStyle = '#ffffff';
                     context.fillRect(0, 0, canvas.width, canvas.height);
                     displayWordSuggestions(words)
@@ -210,7 +210,7 @@ function initGameStateListening() {
                 break;
             }
         }
-        currentPlayerID = id;
+        currentPlayerIDs = ids;
         currentPlayerName = name;
         if(CURRENT_PLAYER_NAME_HTML_CONTAINER != undefined){
             CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = currentPlayerName;
@@ -317,7 +317,7 @@ function pageLoad(name, onload) {
                 container.innerHTML = xhr.responseText;
                 onload();
             } else {
-                console.log("UPPS")
+                console.log("Error while loading the page!")
             }
         }
         xhr.open('get', `/html/${name}.html`)

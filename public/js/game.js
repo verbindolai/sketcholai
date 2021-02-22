@@ -6,7 +6,7 @@ let timer;
 let timerCont;
 let CURRENT_PLAYER_NAME_HTML_CONTAINER;
 let currentPlayerName;
-let currentPlayerID;
+let currentPlayerIDs;
 let clientName;
 let LOBBY_ID_HTML_CONTAINER
 let CURRENT_WORD_HTML_CONTAINER;

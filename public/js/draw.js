@@ -212,7 +212,7 @@ function drawDataURIOnCanvas(strDataURI) {
 }
 
 function clearButton(){
-    if(socket.id !== currentPlayerID){
+    if(!currentPlayerIDs.includes(socket.id)){
         return;
     }
     let clearer = new ClearCanvas(context,canvas);
