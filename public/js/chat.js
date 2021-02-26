@@ -18,11 +18,12 @@ function initChatListening(){
         let color = data[2];
         let serverMSG = data[3];
         let chatType = data[4];
-        // let roles = conn._roles;
+        let roles = data[5];
 
         displayChatMessage({
             names,
             message,
+            roles,
             color,
             serverMSG,
             chatType
@@ -46,11 +47,13 @@ function displayChatMessage({name, message, roles, color, serverMSG, chatType}){
     chatMsgCont.classList.add("font-semibold");
 
     if (serverMSG === 1) {
-        for (let role of roles){
-            let roleImg = document.createElement("img");
-            roleImg.src = role;
-            roleImg.width = 20;
-            chatListNode.appendChild(roleImg);
+        if(roles !== undefined){
+            for (let role of roles){
+                let roleImg = document.createElement("img");
+                roleImg.src = role;
+                roleImg.width = 20;
+                chatListNode.appendChild(roleImg);
+            }
         }
         let chatNameCont = document.createElement("div");
         chatNameCont.style.color = color;
