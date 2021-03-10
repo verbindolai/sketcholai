@@ -1,5 +1,5 @@
-let port = 6969;
-let socket = io(`http://localhost:${port}`);
+let port = 50000;
+let socket = io(`http://christopherp.de:${port}`);
 
 let context;
 let canvas;
@@ -143,7 +143,6 @@ function initGameStateListening() {
         const data = JSON.parse(serverPackage);
         const unixTime = data[0];
         const drawDuration = data[1];
-
         const name = data[2];
         const ids = data[3];
         const gameState = data[4];
@@ -210,11 +209,14 @@ function initGameStateListening() {
                 break;
             }
         }
-        currentPlayerIDs = ids;
+        if(currentPlayerIDs){
+            currentPlayerIDs = ids;
+        }else{
+            currentPlayerIDs = [];
+        }
         currentPlayerName = name;
         if(CURRENT_PLAYER_NAME_HTML_CONTAINER != undefined){
             CURRENT_PLAYER_NAME_HTML_CONTAINER.innerHTML = currentPlayerName;
-
         }
         CURRENT_WORD_HTML_CONTAINER.innerHTML = currentWord;
         displayTime(drawDuration, unixTime);
