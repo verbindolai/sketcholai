@@ -59,7 +59,7 @@ export class RoomHandler implements HandlerInterface {
 
                 } else {
                     socket.emit("gameJoined", CommHandler.packData(RoomHandler.listToArr(lobby.connections), lobby.lobbyID, game?.getCurrentPlayerNames, game.getCurrentPlayerSocketIDs));
-                    CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.JOIN_MESSAGE, connection, CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
+                    CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.JOIN_MESSAGE, [connection.name], CommHandler.SERVER_MSG_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
                     CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)),"updatePlayerList", false, lobby, connection, io);
                     // game.roundPlayerArr.push(connection);
                     game.addPlayerToRound(connection);
@@ -126,7 +126,7 @@ export class RoomHandler implements HandlerInterface {
         }
 
         allPlayers.remove(connection.socketID);
-        CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.LEAVE_MESSAGE, connection, CommHandler.SERVER_BAD_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
+        CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.LEAVE_MESSAGE, [connection.name], CommHandler.SERVER_BAD_COLOR, MessageType.SERVER_MESSAGE, ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
 
         if (lobby.leaderID === connection.socketID){
             if(lobby.connections.getFirst() != undefined){

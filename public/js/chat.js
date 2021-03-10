@@ -8,7 +8,6 @@ function initChatListening(){
 
     socket.on('chat', (serverPackage) => {
         let data = JSON.parse(serverPackage);
-        console.log(data);
         let message = data[0];
         let names = data[1];
         if(names === null || names === undefined){
@@ -39,12 +38,22 @@ function initChatListening(){
     })
 }
 
-function displayChatMessage({name, message, roles, color, serverMSG, chatType}){
+function displayChatMessage({names, message, roles, color, serverMSG, chatType}){
     let chatListNode = document.createElement("li");
     chatListNode.classList.add("flex", "flex-row","px-1","rounded","hover:bg-white", "hover:bg-opacity-20")
 
     let chatMsgCont = document.createElement("div");
     chatMsgCont.classList.add("font-semibold");
+
+    let namesList = "";
+    for(let i = 0; i < names.length; i++){
+        namesList += names[i];
+        if(!(i === names.length - 1)){
+            namesList += ", ";
+        }
+    }
+    console.log(names);
+    console.log(namesList);
 
     if (serverMSG === 1) {
         if(roles !== undefined){
@@ -58,14 +67,14 @@ function displayChatMessage({name, message, roles, color, serverMSG, chatType}){
         let chatNameCont = document.createElement("div");
         chatNameCont.style.color = color;
         chatNameCont.classList.add("font-bold", "mr-1");
-        chatNameCont.appendChild(document.createTextNode(decodeURI(name) + ":"));
+        chatNameCont.appendChild(document.createTextNode( namesList+":"));
         chatMsgCont.appendChild(document.createTextNode(decodeURI(message)));
         chatListNode.append(chatNameCont);
         if(chatType === 1){
             chatMsgCont.style.color = "#c9892e";
         }
     } else if (serverMSG === 0) {
-        chatMsgCont.appendChild(document.createTextNode(decodeURI(name + message)));
+        chatMsgCont.appendChild(document.createTextNode(namesList + message));
         chatMsgCont.classList.add("italic")
         chatMsgCont.style.color = color;
     }

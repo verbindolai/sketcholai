@@ -8,6 +8,7 @@ import {signale} from "../server";
 import validator from 'validator';
 import {Game} from "../game";
 
+
 export class CommHandler implements HandlerInterface {
 
     public static readonly SERVER_MSG_COLOR = "#3abd64"
@@ -19,6 +20,7 @@ export class CommHandler implements HandlerInterface {
     public static readonly DRAW_MESSAGE = " is now drawing!"
     public static readonly STREAK_MESSAGE = " IS ON A STREAK!!"
     public static readonly LEAVE_MESSAGE = " disconnected :("
+    public static readonly STREAK_COUNT = 3
 
     init(): void {
     }
@@ -46,11 +48,11 @@ export class CommHandler implements HandlerInterface {
                     //Send message only to players who have guessed the word too.
                     for (let conn of game.connections) {
                         if (conn.player.guessedCorrectly) {
-                            io.to(conn.socketID).emit("chat", CommHandler.packData( message,
-                                                                                          connection,
-                                                                                          connection.chatColor,
-                                                                                          MessageType.CLIENT_MESSAGE,
-                                                                                          ChatType.GUESSED_CHAT ));
+                            io.to(conn.socketID).emit("chat", CommHandler.packData(message,
+                                [connection.name],
+                                connection.chatColor,
+                                MessageType.CLIENT_MESSAGE,
+                                ChatType.GUESSED_CHAT));
                         }
                     }
                 } else if (message == currentWord) {
@@ -59,11 +61,11 @@ export class CommHandler implements HandlerInterface {
                     connection.player.rightGuess(points);
                     socket.emit("triggerPointAnimation", CommHandler.packData(points))
                     //SERVER-MESSAGE
-                    CommHandler.deployMessage(socket, CommHandler.packData( CommHandler.RIGHT_GUESS_MESSAGE,
-                                                                            connection,
-                                                                            CommHandler.SERVER_MSG_COLOR,
-                                                                            MessageType.SERVER_MESSAGE,
-                                                                            ChatType.NORMAL_CHAT ), 'chat', true, lobby, connection, io)
+                    CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.RIGHT_GUESS_MESSAGE,
+                        [connection.name],
+                        CommHandler.SERVER_MSG_COLOR,
+                        MessageType.SERVER_MESSAGE,
+                        ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
 
                     this.checkStreak(game, connection, lobby, socket, io);
                     this.checkAllGuessed(game);
@@ -72,11 +74,11 @@ export class CommHandler implements HandlerInterface {
                     CommHandler.deployMessage(socket, CommHandler.packData(RoomHandler.listToArr(lobby.connections)), "updatePlayerList", true, lobby, connection, io);
 
                 } else {
-                    CommHandler.deployMessage(socket, CommHandler.packData( message,
-                                                                            connection,
-                                                                            connection.chatColor,
-                                                                            MessageType.CLIENT_MESSAGE,
-                                                                            ChatType.NORMAL_CHAT ), 'chat', true, lobby, connection, io)
+                    CommHandler.deployMessage(socket, CommHandler.packData(message,
+                        [connection.name],
+                        connection.chatColor,
+                        MessageType.CLIENT_MESSAGE,
+                        ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io)
                 }
             } catch (e) {
                 signale.error(e);
@@ -91,7 +93,7 @@ export class CommHandler implements HandlerInterface {
     //     socket.emit("triggerPointAnimation", CommHandler.packData(points))
     // }
 
-    private checkAllGuessed(game : Game){
+    private checkAllGuessed(game: Game) {
         let allGuessedRight = true;
         for (let conn of game.connections) {
             if (!conn.player.guessedCorrectly) {
@@ -105,18 +107,18 @@ export class CommHandler implements HandlerInterface {
         }
     }
 
-    private checkStreak(game: Game, connection: Connection, lobby : GameLobby, socket : Socket, io : SocketServer) {
+    private checkStreak(game: Game, connection: Connection, lobby: GameLobby, socket: Socket, io: SocketServer) {
         if (!game.wordGuessed) {
             game.wordGuessed = true;
 
             connection.player.guessStreak += 1;
-            if(connection.player.guessStreak == 1){
+            if (connection.player.guessStreak == CommHandler.STREAK_COUNT) {
                 connection.roles.push(roles.streak);
-                CommHandler.deployMessage(socket, CommHandler.packData( CommHandler.STREAK_MESSAGE,
-                                                                        connection,
-                                                                        CommHandler.STREAK_MSG_COLOR,
-                                                                        MessageType.SERVER_MESSAGE,
-                                                                        ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io );
+                CommHandler.deployMessage(socket, CommHandler.packData(CommHandler.STREAK_MESSAGE,
+                    [connection.name],
+                    CommHandler.STREAK_MSG_COLOR,
+                    MessageType.SERVER_MESSAGE,
+                    ChatType.NORMAL_CHAT), 'chat', true, lobby, connection, io);
             }
             //TODO help
 
